@@ -2,16 +2,6 @@
 
 The **RunPod provider** for the [AI SDK](https://ai-sdk.dev/docs) contains language model support for [RunPod's](https://runpod.io) public endpoints.
 
-## Features
-
-- ✅ **Full OpenAI API Compatibility** - RunPod's LLM endpoints are fully OpenAI API compatible
-- ✅ **Chat Completions** - Support for chat-based conversations
-- ✅ **Text Completions** - Support for text completion tasks
-- ✅ **Streaming** - Real-time response streaming
-- ✅ **Function Calling** - Support for tool/function calling
-- ✅ **Structured Outputs** - Generate structured JSON responses
-- ✅ **TypeScript** - Full TypeScript support with type safety
-
 ## Installation
 
 ```bash
@@ -32,23 +22,10 @@ export RUNPOD_API_KEY="your-api-key-here"
 
 ### Provider Instance
 
-Import the default provider instance:
+Import the provider:
 
 ```ts
 import { runpod } from "@runpod/ai-sdk-provider";
-```
-
-Or create a custom instance with configuration:
-
-```ts
-import { createRunPod } from "@runpod/ai-sdk-provider";
-
-const runpod = createRunPod({
-  apiKey: "your-api-key", // optional if RUNPOD_API_KEY is set
-  headers: {
-    "Custom-Header": "value",
-  },
-});
 ```
 
 ## Supported Models
@@ -76,19 +53,7 @@ console.log(text);
 
 ### Streaming
 
-```ts
-import { runpod } from "@runpod/ai-sdk-provider";
-import { streamText } from "ai";
-
-const { textStream } = await streamText({
-  model: runpod("qwen/qwen3-32b-awq"),
-  prompt: "Explain quantum computing in simple terms.",
-});
-
-for await (const textPart of textStream) {
-  process.stdout.write(textPart);
-}
-```
+**Note**: Streaming is not yet supported by RunPod's public endpoints. The team is working on implementing this feature.
 
 ### Chat Conversations
 
@@ -170,77 +135,16 @@ const model3 = runpod.languageModel("qwen/qwen3-32b-awq");
 const model4 = runpod.completionModel("deep-cogito/deep-cogito-v2-llama-70b");
 ```
 
-## Configuration Options
-
-When creating a custom provider instance:
-
-```ts
-import { createRunPod } from "@runpod/ai-sdk-provider";
-
-const runpod = createRunPod({
-  // API key (optional if RUNPOD_API_KEY environment variable is set)
-  apiKey: "your-api-key",
-
-  // Custom headers to include in requests
-  headers: {
-    "Custom-Header": "value",
-  },
-
-  // Custom fetch implementation for testing or middleware
-  fetch: customFetch,
-});
-```
-
-## Error Handling
-
-The provider includes comprehensive error handling:
-
-```ts
-import { runpod } from "@runpod/ai-sdk-provider";
-import { generateText } from "ai";
-
-try {
-  const { text } = await generateText({
-    model: runpod("deep-cogito/deep-cogito-v2-llama-70b"),
-    prompt: "Hello, world!",
-  });
-} catch (error) {
-  if (error.name === "AI_APICallError") {
-    console.error("API call failed:", error.message);
-  } else if (error.name === "AI_InvalidArgumentError") {
-    console.error("Invalid argument:", error.message);
-  } else {
-    console.error("Unexpected error:", error);
-  }
-}
-```
-
-## TypeScript Support
-
-The provider includes full TypeScript support:
-
-```ts
-import type {
-  RunPodProvider,
-  RunPodProviderSettings,
-  RunPodChatModelId,
-  RunPodCompletionModelId,
-} from "@runpod/ai-sdk-provider";
-
-// Type-safe model IDs
-const modelId: RunPodChatModelId = "deep-cogito/deep-cogito-v2-llama-70b";
-```
-
 ## API Compatibility
 
-Since RunPod's endpoints are fully OpenAI API compatible, all standard OpenAI features work:
+RunPod's endpoints are OpenAI API compatible, supporting:
 
 - Chat completions (`/chat/completions`)
 - Text completions (`/completions`)
-- Streaming responses
 - Function/tool calling
 - Structured outputs
-- All OpenAI-compatible parameters
+
+**Note**: Streaming responses are not yet supported but are being worked on.
 
 ## Links
 
@@ -248,7 +152,3 @@ Since RunPod's endpoints are fully OpenAI API compatible, all standard OpenAI fe
 - [RunPod Public Endpoints Documentation](https://docs.runpod.io/hub/public-endpoints)
 - [AI SDK Documentation](https://ai-sdk.dev/docs)
 - [GitHub Repository](https://github.com/runpod/ai-sdk-provider)
-
-## License
-
-Apache 2.0
