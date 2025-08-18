@@ -1,43 +1,35 @@
 import {
   OpenAICompatibleChatLanguageModel,
   OpenAICompatibleCompletionLanguageModel,
-} from "@ai-sdk/openai-compatible";
-import { LanguageModelV2 } from "@ai-sdk/provider";
-import { loadApiKey } from "@ai-sdk/provider-utils";
-import { createRunPod } from "./runpod-provider";
-import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
+} from '@ai-sdk/openai-compatible';
+import { loadApiKey } from '@ai-sdk/provider-utils';
+import { createRunPod } from './runpod-provider';
+import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 
 // Add type assertion for the mocked class
 const OpenAICompatibleChatLanguageModelMock =
   OpenAICompatibleChatLanguageModel as unknown as Mock;
 
-vi.mock("@ai-sdk/openai-compatible", () => ({
+vi.mock('@ai-sdk/openai-compatible', () => ({
   OpenAICompatibleChatLanguageModel: vi.fn(),
   OpenAICompatibleCompletionLanguageModel: vi.fn(),
 }));
 
-vi.mock("@ai-sdk/provider-utils", () => ({
-  loadApiKey: vi.fn().mockReturnValue("mock-api-key"),
+vi.mock('@ai-sdk/provider-utils', () => ({
+  loadApiKey: vi.fn().mockReturnValue('mock-api-key'),
   withoutTrailingSlash: vi.fn((url) => url),
 }));
 
-describe("RunPodProvider", () => {
-  let mockLanguageModel: LanguageModelV2;
-
+describe('RunPodProvider', () => {
   beforeEach(() => {
-    // Mock implementations of models
-    mockLanguageModel = {
-      // Add any required methods for LanguageModelV2
-    } as LanguageModelV2;
-
     // Reset mocks
     vi.clearAllMocks();
   });
 
-  describe("createRunPod", () => {
-    it("should create a RunPodProvider instance with default options", () => {
+  describe('createRunPod', () => {
+    it('should create a RunPodProvider instance with default options', () => {
       const provider = createRunPod();
-      const model = provider("deep-cogito/deep-cogito-v2-llama-70b");
+      provider('deep-cogito/deep-cogito-v2-llama-70b');
 
       // Use the mocked version
       const constructorCall =
@@ -47,18 +39,18 @@ describe("RunPodProvider", () => {
 
       expect(loadApiKey).toHaveBeenCalledWith({
         apiKey: undefined,
-        environmentVariableName: "RUNPOD_API_KEY",
-        description: "RunPod",
+        environmentVariableName: 'RUNPOD_API_KEY',
+        description: 'RunPod',
       });
     });
 
-    it("should create a RunPodProvider instance with custom options", () => {
+    it('should create a RunPodProvider instance with custom options', () => {
       const options = {
-        apiKey: "custom-key",
-        headers: { "Custom-Header": "value" },
+        apiKey: 'custom-key',
+        headers: { 'Custom-Header': 'value' },
       };
       const provider = createRunPod(options);
-      const model = provider("deep-cogito/deep-cogito-v2-llama-70b");
+      provider('deep-cogito/deep-cogito-v2-llama-70b');
 
       const constructorCall =
         OpenAICompatibleChatLanguageModelMock.mock.calls[0];
@@ -66,33 +58,33 @@ describe("RunPodProvider", () => {
       config.headers();
 
       expect(loadApiKey).toHaveBeenCalledWith({
-        apiKey: "custom-key",
-        environmentVariableName: "RUNPOD_API_KEY",
-        description: "RunPod",
+        apiKey: 'custom-key',
+        environmentVariableName: 'RUNPOD_API_KEY',
+        description: 'RunPod',
       });
     });
 
-    it("should return a chat model when called as a function", () => {
+    it('should return a chat model when called as a function', () => {
       const provider = createRunPod();
-      const modelId = "deep-cogito/deep-cogito-v2-llama-70b";
+      const modelId = 'deep-cogito/deep-cogito-v2-llama-70b';
 
       const model = provider(modelId);
       expect(model).toBeInstanceOf(OpenAICompatibleChatLanguageModel);
     });
 
-    it("should throw error for unsupported model", () => {
+    it('should throw error for unsupported model', () => {
       const provider = createRunPod();
 
-      expect(() => provider("unsupported-model")).toThrow(
-        "Unsupported RunPod model: unsupported-model"
+      expect(() => provider('unsupported-model')).toThrow(
+        'Unsupported RunPod model: unsupported-model'
       );
     });
   });
 
-  describe("chatModel", () => {
-    it("should construct a chat model with correct configuration", () => {
+  describe('chatModel', () => {
+    it('should construct a chat model with correct configuration', () => {
       const provider = createRunPod();
-      const modelId = "deep-cogito/deep-cogito-v2-llama-70b";
+      const modelId = 'deep-cogito/deep-cogito-v2-llama-70b';
 
       const model = provider.chatModel(modelId);
 
@@ -100,10 +92,10 @@ describe("RunPodProvider", () => {
     });
   });
 
-  describe("completionModel", () => {
-    it("should construct a completion model with correct configuration", () => {
+  describe('completionModel', () => {
+    it('should construct a completion model with correct configuration', () => {
       const provider = createRunPod();
-      const modelId = "qwen/qwen3-32b-awq";
+      const modelId = 'qwen/qwen3-32b-awq';
 
       const model = provider.completionModel(modelId);
 
@@ -111,34 +103,34 @@ describe("RunPodProvider", () => {
     });
   });
 
-  describe("model endpoint mapping", () => {
-    it("should use correct endpoint URL for deep-cogito model", () => {
+  describe('model endpoint mapping', () => {
+    it('should use correct endpoint URL for deep-cogito model', () => {
       const provider = createRunPod();
-      provider("deep-cogito/deep-cogito-v2-llama-70b");
+      provider('deep-cogito/deep-cogito-v2-llama-70b');
 
       const constructorCall =
         OpenAICompatibleChatLanguageModelMock.mock.calls[0];
       const modelName = constructorCall[0];
       const config = constructorCall[1];
 
-      expect(modelName).toBe("deepcogito/cogito-v2-preview-llama-70B");
-      expect(config.url({ path: "/chat/completions" })).toBe(
-        "https://api.runpod.ai/v2/deep-cogito-v2-llama-70b/openai/v1/chat/completions"
+      expect(modelName).toBe('deepcogito/cogito-v2-preview-llama-70B');
+      expect(config.url({ path: '/chat/completions' })).toBe(
+        'https://api.runpod.ai/v2/deep-cogito-v2-llama-70b/openai/v1/chat/completions'
       );
     });
 
-    it("should use correct endpoint URL for qwen model", () => {
+    it('should use correct endpoint URL for qwen model', () => {
       const provider = createRunPod();
-      provider("qwen/qwen3-32b-awq");
+      provider('qwen/qwen3-32b-awq');
 
       const constructorCall =
         OpenAICompatibleChatLanguageModelMock.mock.calls[0];
       const modelName = constructorCall[0];
       const config = constructorCall[1];
 
-      expect(modelName).toBe("Qwen/Qwen3-32B-AWQ");
-      expect(config.url({ path: "/chat/completions" })).toBe(
-        "https://api.runpod.ai/v2/qwen3-32b-awq/openai/v1/chat/completions"
+      expect(modelName).toBe('Qwen/Qwen3-32B-AWQ');
+      expect(config.url({ path: '/chat/completions' })).toBe(
+        'https://api.runpod.ai/v2/qwen3-32b-awq/openai/v1/chat/completions'
       );
     });
   });

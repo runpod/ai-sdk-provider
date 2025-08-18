@@ -1,15 +1,15 @@
-import { LanguageModelV2 } from "@ai-sdk/provider";
+import { LanguageModelV2 } from '@ai-sdk/provider';
 import {
   OpenAICompatibleChatLanguageModel,
   OpenAICompatibleCompletionLanguageModel,
-} from "@ai-sdk/openai-compatible";
+} from '@ai-sdk/openai-compatible';
 import {
   FetchFunction,
   loadApiKey,
   withoutTrailingSlash,
-} from "@ai-sdk/provider-utils";
-import { RunPodChatModelId } from "./runpod-chat-options";
-import { RunPodCompletionModelId } from "./runpod-completion-options";
+} from '@ai-sdk/provider-utils';
+import { RunPodChatModelId } from './runpod-chat-options';
+import { RunPodCompletionModelId } from './runpod-completion-options';
 
 export interface RunPodProviderSettings {
   /**
@@ -51,16 +51,16 @@ Creates a completion model for text generation.
 
 // Mapping of RunPod model IDs to their endpoint URLs
 const MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
-  "deep-cogito/deep-cogito-v2-llama-70b":
-    "https://api.runpod.ai/v2/deep-cogito-v2-llama-70b/openai/v1",
-  "qwen/qwen3-32b-awq": "https://api.runpod.ai/v2/qwen3-32b-awq/openai/v1",
+  'deep-cogito/deep-cogito-v2-llama-70b':
+    'https://api.runpod.ai/v2/deep-cogito-v2-llama-70b/openai/v1',
+  'qwen/qwen3-32b-awq': 'https://api.runpod.ai/v2/qwen3-32b-awq/openai/v1',
 };
 
 // Mapping of RunPod model IDs to their OpenAI model names
 const MODEL_ID_TO_OPENAI_NAME: Record<string, string> = {
-  "deep-cogito/deep-cogito-v2-llama-70b":
-    "deepcogito/cogito-v2-preview-llama-70B",
-  "qwen/qwen3-32b-awq": "Qwen/Qwen3-32B-AWQ",
+  'deep-cogito/deep-cogito-v2-llama-70b':
+    'deepcogito/cogito-v2-preview-llama-70B',
+  'qwen/qwen3-32b-awq': 'Qwen/Qwen3-32B-AWQ',
 };
 
 export function createRunPod(
@@ -69,8 +69,8 @@ export function createRunPod(
   const getHeaders = () => ({
     Authorization: `Bearer ${loadApiKey({
       apiKey: options.apiKey,
-      environmentVariableName: "RUNPOD_API_KEY",
-      description: "RunPod",
+      environmentVariableName: 'RUNPOD_API_KEY',
+      description: 'RunPod',
     })}`,
     ...options.headers,
   });
@@ -91,7 +91,7 @@ export function createRunPod(
       throw new Error(
         `Unsupported RunPod model: ${modelId}. Supported models: ${Object.keys(
           MODEL_ID_TO_ENDPOINT_URL
-        ).join(", ")}`
+        ).join(', ')}`
       );
     }
 
@@ -107,7 +107,7 @@ export function createRunPod(
     const openaiModelName = MODEL_ID_TO_OPENAI_NAME[modelId] || modelId;
     return new OpenAICompatibleChatLanguageModel(
       openaiModelName,
-      getModelConfig(modelId, "chat")
+      getModelConfig(modelId, 'chat')
     );
   };
 
@@ -115,7 +115,7 @@ export function createRunPod(
     const openaiModelName = MODEL_ID_TO_OPENAI_NAME[modelId] || modelId;
     return new OpenAICompatibleCompletionLanguageModel(
       openaiModelName,
-      getModelConfig(modelId, "completion")
+      getModelConfig(modelId, 'completion')
     );
   };
 
