@@ -2,6 +2,7 @@ import {
   OpenAICompatibleChatLanguageModel,
   OpenAICompatibleCompletionLanguageModel,
 } from '@ai-sdk/openai-compatible';
+import { RunpodImageModel } from './runpod-image-model';
 import { loadApiKey } from '@ai-sdk/provider-utils';
 import { createRunPod } from './runpod-provider';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
@@ -13,6 +14,10 @@ const OpenAICompatibleChatLanguageModelMock =
 vi.mock('@ai-sdk/openai-compatible', () => ({
   OpenAICompatibleChatLanguageModel: vi.fn(),
   OpenAICompatibleCompletionLanguageModel: vi.fn(),
+}));
+
+vi.mock('./runpod-image-model', () => ({
+  RunpodImageModel: vi.fn(),
 }));
 
 vi.mock('@ai-sdk/provider-utils', () => ({
@@ -100,6 +105,25 @@ describe('RunPodProvider', () => {
       const model = provider.completionModel(modelId);
 
       expect(model).toBeInstanceOf(OpenAICompatibleCompletionLanguageModel);
+    });
+  });
+
+  describe('imageModel', () => {
+    it('should construct an image model with correct configuration', () => {
+      const provider = createRunPod();
+      const modelId = 'qwen/qwen-image';
+
+      const model = provider.imageModel(modelId);
+
+      expect(model).toBeInstanceOf(RunpodImageModel);
+    });
+
+    it('should throw error for unsupported image model', () => {
+      const provider = createRunPod();
+
+      expect(() =>
+        provider.imageModel('unsupported-image-model' as any)
+      ).toThrow('Unsupported Runpod image model: unsupported-image-model');
     });
   });
 
