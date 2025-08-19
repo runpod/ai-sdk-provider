@@ -1,5 +1,16 @@
 # @runpod/ai-sdk-provider
 
+## 0.2.0
+
+### Minor Changes
+
+- 1fec4a8: added support for image gen:
+  - `qwen/qwen-image`
+  - `bytedance/seedream-3.0`
+  - `black-forest-labs/flux-1-kontext-dev`
+  - `black-forest-labs/flux-1-schnell`
+  - `black-forest-labs/flux-1-dev`
+
 ## 0.1.1
 
 ### Patch Changes
