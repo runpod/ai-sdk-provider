@@ -1,5 +1,11 @@
 # @runpod/ai-sdk-provider
 
+## 0.3.3
+
+### Patch Changes
+
+- 7adbc33: docs: moved everything into "about Runpod"
+
 ## 0.3.2
 
 ### Patch Changes
