@@ -1,5 +1,11 @@
 # @runpod/ai-sdk-provider
 
+## 0.2.1
+
+### Patch Changes
+
+- eb1b7f8: improved docs
+
 ## 0.2.0
 
 ### Minor Changes
