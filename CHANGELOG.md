@@ -1,5 +1,11 @@
 # @runpod/ai-sdk-provider
 
+## 0.3.2
+
+### Patch Changes
+
+- 012cb6f: docs: moved "get api key on console" into "apiKey"
+
 ## 0.3.1
 
 ### Patch Changes
