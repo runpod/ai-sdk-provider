@@ -54,7 +54,7 @@ ai-sdk-provider/
 
 - ✅ **Always use "Runpod"** (not "RunPod", "runpod", or "run-pod")
 - ✅ **Package name**: `@runpod/ai-sdk-provider`
-- ✅ **Function names**: `runpod()`, `createRunPod()`
+- ✅ **Function names**: `runpod()`, `createRunpod()`
 - ✅ **Types**: `RunpodProvider`, `RunpodChatModelId`
 
 ### 2. **OpenAI Compatibility**

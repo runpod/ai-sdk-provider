@@ -4,7 +4,7 @@ import {
 } from '@ai-sdk/openai-compatible';
 import { RunpodImageModel } from './runpod-image-model';
 import { loadApiKey } from '@ai-sdk/provider-utils';
-import { createRunPod } from './runpod-provider';
+import { createRunpod } from './runpod-provider';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 
 // Add type assertion for the mocked class
@@ -25,15 +25,15 @@ vi.mock('@ai-sdk/provider-utils', () => ({
   withoutTrailingSlash: vi.fn((url) => url),
 }));
 
-describe('RunPodProvider', () => {
+describe('RunpodProvider', () => {
   beforeEach(() => {
     // Reset mocks
     vi.clearAllMocks();
   });
 
-  describe('createRunPod', () => {
-    it('should create a RunPodProvider instance with default options', () => {
-      const provider = createRunPod();
+  describe('createRunpod', () => {
+    it('should create a RunpodProvider instance with default options', () => {
+      const provider = createRunpod();
       provider('deep-cogito/deep-cogito-v2-llama-70b');
 
       // Use the mocked version
@@ -45,16 +45,16 @@ describe('RunPodProvider', () => {
       expect(loadApiKey).toHaveBeenCalledWith({
         apiKey: undefined,
         environmentVariableName: 'RUNPOD_API_KEY',
-        description: 'RunPod',
+        description: 'Runpod',
       });
     });
 
-    it('should create a RunPodProvider instance with custom options', () => {
+    it('should create a RunpodProvider instance with custom options', () => {
       const options = {
         apiKey: 'custom-key',
         headers: { 'Custom-Header': 'value' },
       };
-      const provider = createRunPod(options);
+      const provider = createRunpod(options);
       provider('deep-cogito/deep-cogito-v2-llama-70b');
 
       const constructorCall =
@@ -65,12 +65,12 @@ describe('RunPodProvider', () => {
       expect(loadApiKey).toHaveBeenCalledWith({
         apiKey: 'custom-key',
         environmentVariableName: 'RUNPOD_API_KEY',
-        description: 'RunPod',
+        description: 'Runpod',
       });
     });
 
     it('should return a chat model when called as a function', () => {
-      const provider = createRunPod();
+      const provider = createRunpod();
       const modelId = 'deep-cogito/deep-cogito-v2-llama-70b';
 
       const model = provider(modelId);
@@ -78,17 +78,17 @@ describe('RunPodProvider', () => {
     });
 
     it('should throw error for unsupported model', () => {
-      const provider = createRunPod();
+      const provider = createRunpod();
 
       expect(() => provider('unsupported-model')).toThrow(
-        'Unsupported RunPod model: unsupported-model'
+        'Unsupported Runpod model: unsupported-model'
       );
     });
   });
 
   describe('chatModel', () => {
     it('should construct a chat model with correct configuration', () => {
-      const provider = createRunPod();
+      const provider = createRunpod();
       const modelId = 'deep-cogito/deep-cogito-v2-llama-70b';
 
       const model = provider.chatModel(modelId);
@@ -99,7 +99,7 @@ describe('RunPodProvider', () => {
 
   describe('completionModel', () => {
     it('should construct a completion model with correct configuration', () => {
-      const provider = createRunPod();
+      const provider = createRunpod();
       const modelId = 'qwen/qwen3-32b-awq';
 
       const model = provider.completionModel(modelId);
@@ -110,7 +110,7 @@ describe('RunPodProvider', () => {
 
   describe('imageModel', () => {
     it('should construct an image model with correct configuration', () => {
-      const provider = createRunPod();
+      const provider = createRunpod();
       const modelId = 'qwen/qwen-image';
 
       const model = provider.imageModel(modelId);
@@ -119,7 +119,7 @@ describe('RunPodProvider', () => {
     });
 
     it('should throw error for unsupported image model', () => {
-      const provider = createRunPod();
+      const provider = createRunpod();
 
       expect(() =>
         provider.imageModel('unsupported-image-model' as any)
@@ -129,7 +129,7 @@ describe('RunPodProvider', () => {
 
   describe('model endpoint mapping', () => {
     it('should use correct endpoint URL for deep-cogito model', () => {
-      const provider = createRunPod();
+      const provider = createRunpod();
       provider('deep-cogito/deep-cogito-v2-llama-70b');
 
       const constructorCall =
@@ -144,7 +144,7 @@ describe('RunPodProvider', () => {
     });
 
     it('should use correct endpoint URL for qwen model', () => {
-      const provider = createRunPod();
+      const provider = createRunpod();
       provider('qwen/qwen3-32b-awq');
 
       const constructorCall =
