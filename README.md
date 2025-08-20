@@ -2,8 +2,6 @@
 
 The **Runpod provider** for the [AI SDK](https://ai-sdk.dev/docs) contains language model and image generation support for [Runpod's](https://runpod.io) public endpoints.
 
-Runpod is the foundation for developers to build, deploy, and scale custom AI systems.
-
 ## Setup
 
 The Runpod provider is available in the `@runpod/ai-sdk-provider` module. You can install it with:
@@ -166,7 +164,6 @@ const { object } = await generateObject({
 ## Image Models
 
 You can create Runpod image models using the `.imageModel()` factory method.
-For more on image generation with the AI SDK see [generateImage()](/docs/reference/ai-sdk-core/generate-image).
 
 ### Basic Usage
 
@@ -303,13 +300,8 @@ Runpod image models support flexible provider options through the `providerOptio
 | `maxPollAttempts`       | `number`  | `60`    | Maximum polling attempts for async generation                           |
 | `pollIntervalMillis`    | `number`  | `5000`  | Polling interval in milliseconds (5 seconds)                            |
 
-## Advanced Features
+## About Runpod
 
-Runpod offers public endpoints (everything above), custom serverless endpoints / pods / clusters and a hub of open-source AI repositories including ComfyUI, Axolotl, FLUX.1-dev-juiced, Chatterbox, vLLM, and SGLang.
+[Runpod](https://runpod.io) is the foundation for developers to build, deploy, and scale custom AI systems.
 
-## Links
-
-- [Runpod](https://runpod.io) - Cloud platform for AI compute
-- [Runpod Public Endpoints Documentation](https://docs.runpod.io/hub/public-endpoints)
-- [AI SDK Documentation](https://ai-sdk.dev/docs)
-- [GitHub Repository](https://github.com/runpod/ai-sdk-provider)
+Beyond some of the public endpoints you've seen above (+ more generative media apis), Runpod offers custom [serverless endpoints](https://docs.runpod.io/serverless/overview), dedicated [pods](https://docs.runpod.io/pods/overview) and [instant clusters](https://docs.runpod.io/instant-clusters), [fine-tuning](https://docs.runpod.io/fine-tune), and a comprehensive [hub of open-source AI repos](https://docs.runpod.io/hub/overview) (like ComfyUI, Axolotl, FLUX.1-dev-juiced, Chatterbox, vLLM or SGLang).
