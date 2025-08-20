@@ -8,14 +8,14 @@ import {
   loadApiKey,
   withoutTrailingSlash,
 } from '@ai-sdk/provider-utils';
-import { RunPodChatModelId } from './runpod-chat-options';
-import { RunPodCompletionModelId } from './runpod-completion-options';
+import { RunpodChatModelId } from './runpod-chat-options';
+import { RunpodCompletionModelId } from './runpod-completion-options';
 import { RunpodImageModelId } from './runpod-image-options';
 import { RunpodImageModel } from './runpod-image-model';
 
-export interface RunPodProviderSettings {
+export interface RunpodProviderSettings {
   /**
-RunPod API key.
+Runpod API key.
 */
   apiKey?: string;
   /**
@@ -29,26 +29,26 @@ or to provide a custom fetch implementation for e.g. testing.
   fetch?: FetchFunction;
 }
 
-export interface RunPodProvider {
+export interface RunpodProvider {
   /**
 Creates a model for text generation.
 */
-  (modelId: RunPodChatModelId): LanguageModelV2;
+  (modelId: RunpodChatModelId): LanguageModelV2;
 
   /**
 Creates a chat model for text generation.
 */
-  chatModel(modelId: RunPodChatModelId): LanguageModelV2;
+  chatModel(modelId: RunpodChatModelId): LanguageModelV2;
 
   /**
 Creates a chat model for text generation.
 */
-  languageModel(modelId: RunPodChatModelId): LanguageModelV2;
+  languageModel(modelId: RunpodChatModelId): LanguageModelV2;
 
   /**
 Creates a completion model for text generation.
 */
-  completionModel(modelId: RunPodCompletionModelId): LanguageModelV2;
+  completionModel(modelId: RunpodCompletionModelId): LanguageModelV2;
 
   /**
 Creates an image model for image generation.
@@ -56,14 +56,14 @@ Creates an image model for image generation.
   imageModel(modelId: RunpodImageModelId): ImageModelV2;
 }
 
-// Mapping of RunPod model IDs to their endpoint URLs
+// Mapping of Runpod model IDs to their endpoint URLs
 const MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   'deep-cogito/deep-cogito-v2-llama-70b':
     'https://api.runpod.ai/v2/deep-cogito-v2-llama-70b/openai/v1',
   'qwen/qwen3-32b-awq': 'https://api.runpod.ai/v2/qwen3-32b-awq/openai/v1',
 };
 
-// Mapping of RunPod image model IDs to their endpoint URLs
+// Mapping of Runpod image model IDs to their endpoint URLs
 const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   'qwen/qwen-image': 'https://api.runpod.ai/v2/qwen-image-t2i',
   'bytedance/seedream-3.0': 'https://api.runpod.ai/v2/seedream-3-0-t2i',
@@ -75,21 +75,21 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
     'https://api.runpod.ai/v2/black-forest-labs-flux-1-dev',
 };
 
-// Mapping of RunPod model IDs to their OpenAI model names
+// Mapping of Runpod model IDs to their OpenAI model names
 const MODEL_ID_TO_OPENAI_NAME: Record<string, string> = {
   'deep-cogito/deep-cogito-v2-llama-70b':
     'deepcogito/cogito-v2-preview-llama-70B',
   'qwen/qwen3-32b-awq': 'Qwen/Qwen3-32B-AWQ',
 };
 
-export function createRunPod(
-  options: RunPodProviderSettings = {}
-): RunPodProvider {
+export function createRunpod(
+  options: RunpodProviderSettings = {}
+): RunpodProvider {
   const getHeaders = () => ({
     Authorization: `Bearer ${loadApiKey({
       apiKey: options.apiKey,
       environmentVariableName: 'RUNPOD_API_KEY',
-      description: 'RunPod',
+      description: 'Runpod',
     })}`,
     ...options.headers,
   });
@@ -108,7 +108,7 @@ export function createRunPod(
     const baseURL = MODEL_ID_TO_ENDPOINT_URL[modelId];
     if (!baseURL) {
       throw new Error(
-        `Unsupported RunPod model: ${modelId}. Supported models: ${Object.keys(
+        `Unsupported Runpod model: ${modelId}. Supported models: ${Object.keys(
           MODEL_ID_TO_ENDPOINT_URL
         ).join(', ')}`
       );
@@ -122,7 +122,7 @@ export function createRunPod(
     };
   };
 
-  const createChatModel = (modelId: RunPodChatModelId) => {
+  const createChatModel = (modelId: RunpodChatModelId) => {
     const openaiModelName = MODEL_ID_TO_OPENAI_NAME[modelId] || modelId;
     return new OpenAICompatibleChatLanguageModel(
       openaiModelName,
@@ -130,7 +130,7 @@ export function createRunPod(
     );
   };
 
-  const createCompletionModel = (modelId: RunPodCompletionModelId) => {
+  const createCompletionModel = (modelId: RunpodCompletionModelId) => {
     const openaiModelName = MODEL_ID_TO_OPENAI_NAME[modelId] || modelId;
     return new OpenAICompatibleCompletionLanguageModel(
       openaiModelName,
@@ -156,7 +156,7 @@ export function createRunPod(
     });
   };
 
-  const provider = (modelId: RunPodChatModelId) => createChatModel(modelId);
+  const provider = (modelId: RunpodChatModelId) => createChatModel(modelId);
 
   provider.completionModel = createCompletionModel;
   provider.languageModel = createChatModel;
@@ -166,4 +166,4 @@ export function createRunPod(
   return provider;
 }
 
-export const runpod = createRunPod();
+export const runpod = createRunpod();

@@ -154,15 +154,36 @@ const MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
 
 ## 📚 Documentation
 
-### README.md Structure
+### Dual Documentation Strategy
+
+**CRITICAL**: We maintain TWO documentation files that must stay in sync:
+
+1. **`README.md`** - Main package documentation (for npm, GitHub)
+2. **`ai/content/providers/03-community-providers/runpod.mdx`** - AI SDK community provider docs
+
+**🚨 SYNC RULE**: Any changes to examples, features, or capabilities must be updated in BOTH files.
+
+### Documentation Structure (Both Files)
 
 1. **Title & Description**
-2. **Installation** (npm, pnpm, yarn)
-3. **Setup** (API key instructions)
-4. **Supported Models** (table format)
-5. **Usage Examples** (basic → advanced)
-6. **Streaming Note** (not supported yet)
-7. **Links**
+2. **Setup** (installation with tabs)
+3. **Provider Instance** (with optional settings in FAL format)
+4. **Language Models** (with capabilities table)
+5. **Image Models** (with model capabilities and provider options)
+6. **Advanced Features**
+7. **Links/Resources**
+
+### Optional Settings Format
+
+Always use the FAL/DeepInfra format for optional settings:
+
+```markdown
+- **baseURL** _string_
+
+  Use a different URL prefix for API calls, e.g. to use proxy servers or custom endpoints.
+  Supports vLLM deployments, SGLang servers, and any OpenAI-compatible API.
+  The default prefix is `https://api.runpod.ai/v2`.
+```
 
 ### Code Comments
 
@@ -174,6 +195,17 @@ const MODEL_ID_TO_OPENAI_NAME: Record<string, string> = {
   // ...
 };
 ```
+
+### Documentation Sync Checklist
+
+When updating documentation, ensure BOTH files have:
+
+- ✅ Same installation examples
+- ✅ Same model capabilities tables
+- ✅ Same usage examples
+- ✅ Same provider options
+- ✅ Same advanced features list
+- ✅ Consistent custom endpoint support (vLLM/SGLang)
 
 ## 🚀 Release Management
 

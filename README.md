@@ -1,8 +1,10 @@
 # Runpod AI SDK Provider
 
-The **Runpod provider** for the [AI SDK](https://ai-sdk.dev/docs) contains language model and image generation support for [Runpod's](https://runpod.io) public endpoints.
+The **Runpod provider** for the [AI SDK](https://ai-sdk.dev/docs) contains language model and image generation support for [Runpod's](https://runpod.io) public endpoints. Runpod is a foundational platform for developers to build, deploy, and scale custom AI systems.
 
-## Installation
+## Setup
+
+The Runpod provider is available in the `@runpod/ai-sdk-provider` module. You can install it with:
 
 ```bash
 # npm
@@ -13,50 +15,61 @@ pnpm add @runpod/ai-sdk-provider
 
 # yarn
 yarn add @runpod/ai-sdk-provider
+
+# bun
+bun add @runpod/ai-sdk-provider
 ```
 
-## Setup
+## Provider Instance
 
-The Runpod provider requires a Runpod API key. You can obtain one from the [Runpod console](https://console.runpod.io/user/settings) under "API Keys".
-
-### Environment Variable
-
-Set your API key as an environment variable:
-
-```bash
-export RUNPOD_API_KEY="your-api-key-here"
-```
-
-### Provider Instance
-
-Import the provider:
+You can import the default provider instance `runpod` from `@runpod/ai-sdk-provider`:
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
 ```
 
-## Supported Models
+If you need a customized setup, you can import `createRunpod` and create a provider instance with your settings:
 
-### Language Models
+```ts
+import { createRunpod } from '@runpod/ai-sdk-provider';
 
-| Model ID                               | Description                                                         |
-| -------------------------------------- | ------------------------------------------------------------------- |
-| `deep-cogito/deep-cogito-v2-llama-70b` | 70B parameter general-purpose LLM with advanced reasoning           |
-| `qwen/qwen3-32b-awq`                   | 32B parameter multilingual model with strong reasoning capabilities |
+const runpod = createRunpod({
+  apiKey: 'your-api-key', // optional, defaults to RUNPOD_API_KEY environment variable
+  baseURL: 'custom-url', // optional, for custom endpoints
+  headers: {
+    /* custom headers */
+  }, // optional
+});
+```
 
-### Image Models
+You can use the following optional settings to customize the Runpod provider instance:
 
-| Model ID                               | Description                     | Supported Aspect Ratios |
-| -------------------------------------- | ------------------------------- | ----------------------- |
-| `qwen/qwen-image`                      | Text-to-image generation        | 1:1, 4:3, 3:4           |
-| `bytedance/seedream-3.0`               | Advanced text-to-image model    | 1:1, 4:3, 3:4           |
-| `black-forest-labs/flux-1-kontext-dev` | Context-aware image generation  | 1:1, 4:3, 3:4           |
-| `black-forest-labs/flux-1-schnell`     | Fast image generation (4 steps) | 1:1, 4:3, 3:4           |
-| `black-forest-labs/flux-1-dev`         | High-quality image generation   | 1:1, 4:3, 3:4           |
+- **baseURL** _string_
 
-## Text Generation
+  Use a different URL prefix for API calls, e.g. to use proxy servers or custom endpoints.
+  Supports vLLM deployments, SGLang servers, and any OpenAI-compatible API.
+  The default prefix is `https://api.runpod.ai/v2`.
 
-### Basic Usage
+- **apiKey** _string_
+
+  API key that is being sent using the `Authorization` header.
+  It defaults to the `RUNPOD_API_KEY` environment variable.
+
+- **headers** _Record&lt;string,string&gt;_
+
+  Custom headers to include in the requests.
+
+- **fetch** _(input: RequestInfo, init?: RequestInit) => Promise&lt;Response&gt;_
+
+  Custom [fetch](https://developer.mozilla.org/en-US/docs/Web/API/fetch) implementation.
+  You can use it as a middleware to intercept requests,
+  or to provide a custom fetch implementation for e.g. testing.
+
+You can obtain your Runpod API key from the [Runpod Console](https://console.runpod.io/user/settings) under "API Keys".
+
+## Language Models
+
+You can create language models using the provider instance. The first argument is the model ID:
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
@@ -73,6 +86,17 @@ const { text } = await generateText({
 - `text` - Generated text string
 - `finishReason` - Why generation stopped ('stop', 'length', etc.)
 - `usage` - Token usage information (prompt, completion, total tokens)
+
+Runpod language models can also be used in the `streamText` function (see [AI SDK Core](/docs/ai-sdk-core)).
+
+**Note**: Streaming is not yet supported by Runpod's public endpoints. The team is working on implementing this feature.
+
+### Model Capabilities
+
+| Model ID                               | Description                                                         | Object Generation | Tool Usage |
+| -------------------------------------- | ------------------------------------------------------------------- | ----------------- | ---------- |
+| `deep-cogito/deep-cogito-v2-llama-70b` | 70B parameter general-purpose LLM with advanced reasoning           | ✅                | ✅         |
+| `qwen/qwen3-32b-awq`                   | 32B parameter multilingual model with strong reasoning capabilities | ✅                | ✅         |
 
 ### Chat Conversations
 
@@ -138,11 +162,10 @@ const { object } = await generateObject({
 - `object` - Parsed object matching your schema
 - `usage` - Token usage information
 
-### Streaming
+## Image Models
 
-**Note**: Streaming is not yet supported by Runpod's public endpoints. The team is working on implementing this feature.
-
-## Image Generation
+You can create Runpod image models using the `.imageModel()` factory method.
+For more on image generation with the AI SDK see [generateImage()](/docs/reference/ai-sdk-core/generate-image).
 
 ### Basic Usage
 
@@ -152,9 +175,13 @@ import { experimental_generateImage as generateImage } from 'ai';
 
 const { image } = await generateImage({
   model: runpod.imageModel('qwen/qwen-image'),
-  prompt: 'A fashion-forward woman in Paris wearing a trench coat',
+  prompt: 'A serene mountain landscape at sunset',
   aspectRatio: '4:3',
 });
+
+// Save to filesystem
+import { writeFileSync } from 'fs';
+writeFileSync('landscape.jpg', image.uint8Array);
 ```
 
 **Returns:**
@@ -163,6 +190,18 @@ const { image } = await generateImage({
 - `image.base64` - Base64 encoded string (for web display)
 - `image.mediaType` - MIME type ('image/jpeg' or 'image/png')
 - `warnings` - Array of any warnings about unsupported parameters
+
+### Model Capabilities
+
+| Model ID                               | Description                     | Supported Aspect Ratios |
+| -------------------------------------- | ------------------------------- | ----------------------- |
+| `qwen/qwen-image`                      | Text-to-image generation        | 1:1, 4:3, 3:4           |
+| `bytedance/seedream-3.0`               | Advanced text-to-image model    | 1:1, 4:3, 3:4           |
+| `black-forest-labs/flux-1-schnell`     | Fast image generation (4 steps) | 1:1, 4:3, 3:4           |
+| `black-forest-labs/flux-1-dev`         | High-quality image generation   | 1:1, 4:3, 3:4           |
+| `black-forest-labs/flux-1-kontext-dev` | Context-aware image generation  | 1:1, 4:3, 3:4           |
+
+**Note**: The provider uses strict validation for image parameters. Unsupported aspect ratios (like `16:9`, `9:16`, `3:2`, `2:3`) will throw an `InvalidArgumentError` with a clear message about supported alternatives.
 
 ### Advanced Parameters
 
@@ -179,36 +218,32 @@ const { image } = await generateImage({
     },
   },
 });
-
-// Save to filesystem
-import { writeFileSync } from 'fs';
-writeFileSync('generated-image.jpg', image.uint8Array);
 ```
 
-### Context-Aware Generation (Flux Kontext)
+#### Modify Image
+
+Transform existing images using text prompts.
 
 ```ts
+// Example: Transform existing image
 const { image } = await generateImage({
   model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
   prompt: 'Transform this into a cyberpunk style with neon lights',
   aspectRatio: '1:1',
   providerOptions: {
     runpod: {
-      image: 'https://example.com/input-image.jpg', // Image URL
-      negative_prompt: 'blurry, distorted',
+      image: 'https://example.com/input-image.jpg',
     },
   },
 });
 
-// Alternative: Using base64 encoded image
+// Example: Using base64 encoded image
 const { image } = await generateImage({
   model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
   prompt: 'Make this image look like a painting',
-  aspectRatio: '4:3',
   providerOptions: {
     runpod: {
-      image: 'data:image/png;base64,iVBORw0KGgoAAAANS...', // Base64 data URI
-      negative_prompt: 'blurry, distorted',
+      image: 'data:image/png;base64,iVBORw0KGgoAAAANS...',
     },
   },
 });
@@ -254,6 +289,8 @@ const { image } = await generateImage({
 
 ### Provider Options
 
+Runpod image models support flexible provider options through the `providerOptions.runpod` object:
+
 | Option                  | Type      | Default | Description                                                             |
 | ----------------------- | --------- | ------- | ----------------------------------------------------------------------- |
 | `negative_prompt`       | `string`  | `""`    | Text describing what you don't want in the image                        |
@@ -265,7 +302,23 @@ const { image } = await generateImage({
 | `maxPollAttempts`       | `number`  | `60`    | Maximum polling attempts for async generation                           |
 | `pollIntervalMillis`    | `number`  | `5000`  | Polling interval in milliseconds (5 seconds)                            |
 
-**Note**: The provider uses strict validation for image parameters. Unsupported aspect ratios (like `16:9`, `9:16`, `3:2`, `2:3`) will throw an `InvalidArgumentError` with a clear message about supported alternatives.
+## Advanced Features
+
+Runpod offers several advanced features to enhance your AI applications:
+
+1. **Multiple Model Families**: Access to both language models (LLMs) and cutting-edge image generation models.
+
+2. **OpenAI Compatibility**: Language models support full OpenAI API features including function calling and structured output.
+
+3. **Custom Endpoint Support**: Use with vLLM, SGLang, or any OpenAI-compatible server.
+
+4. **Advanced Image Controls**: Fine-tune image generation with parameters like inference steps, guidance scale, and output format.
+
+5. **Context-Aware Generation**: Transform existing images with Flux Kontext models using URL or base64 inputs.
+
+6. **Automatic Polling**: Seamless handling of both synchronous and asynchronous image generation.
+
+7. **Strict Validation**: Clear error messages for unsupported parameters to prevent confusion.
 
 ## Links
 
