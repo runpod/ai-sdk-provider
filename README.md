@@ -56,6 +56,7 @@ You can use the following optional settings to customize the Runpod provider ins
 
   API key that is being sent using the `Authorization` header.
   It defaults to the `RUNPOD_API_KEY` environment variable.
+  You can obtain your api key from the [Runpod Console](https://console.runpod.io/user/settings) under "API Keys".
 
 - **headers** _Record&lt;string,string&gt;_
 
@@ -66,8 +67,6 @@ You can use the following optional settings to customize the Runpod provider ins
   Custom [fetch](https://developer.mozilla.org/en-US/docs/Web/API/fetch) implementation.
   You can use it as a middleware to intercept requests,
   or to provide a custom fetch implementation for e.g. testing.
-
-You can obtain your Runpod API key from the [Runpod Console](https://console.runpod.io/user/settings) under "API Keys".
 
 ## Language Models
 
