@@ -54,9 +54,9 @@ import { runpod } from '@runpod/ai-sdk-provider';
 | `black-forest-labs/flux-1-schnell`     | Fast image generation (4 steps) | 1:1, 4:3, 3:4           |
 | `black-forest-labs/flux-1-dev`         | High-quality image generation   | 1:1, 4:3, 3:4           |
 
-## Usage Examples
+## Text Generation
 
-### Basic Text Generation
+### Basic Usage
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
@@ -66,20 +66,17 @@ const { text } = await generateText({
   model: runpod('deep-cogito/deep-cogito-v2-llama-70b'),
   prompt: 'Write a Python function that sorts a list:',
 });
-
-console.log(text);
 ```
 
-### Streaming
+**Returns:**
 
-**Note**: Streaming is not yet supported by Runpod's public endpoints. The team is working on implementing this feature.
+- `text` - Generated text string
+- `finishReason` - Why generation stopped ('stop', 'length', etc.)
+- `usage` - Token usage information (prompt, completion, total tokens)
 
 ### Chat Conversations
 
 ```ts
-import { runpod } from '@runpod/ai-sdk-provider';
-import { generateText } from 'ai';
-
 const { text } = await generateText({
   model: runpod('deep-cogito/deep-cogito-v2-llama-70b'),
   messages: [
@@ -92,7 +89,6 @@ const { text } = await generateText({
 ### Function Calling
 
 ```ts
-import { runpod } from '@runpod/ai-sdk-provider';
 import { generateText, tool } from 'ai';
 import { z } from 'zod';
 
@@ -106,7 +102,6 @@ const { text, toolCalls } = await generateText({
         city: z.string().describe('The city name'),
       }),
       execute: async ({ city }) => {
-        // Your weather API call here
         return `The weather in ${city} is sunny.`;
       },
     }),
@@ -114,10 +109,14 @@ const { text, toolCalls } = await generateText({
 });
 ```
 
+**Additional Returns:**
+
+- `toolCalls` - Array of tool calls made by the model
+- `toolResults` - Results from executed tools
+
 ### Structured Output
 
 ```ts
-import { runpod } from '@runpod/ai-sdk-provider';
 import { generateObject } from 'ai';
 import { z } from 'zod';
 
@@ -132,11 +131,20 @@ const { object } = await generateObject({
   }),
   prompt: 'Generate a recipe for chocolate chip cookies.',
 });
-
-console.log(object.recipe);
 ```
 
-### Image Generation
+**Returns:**
+
+- `object` - Parsed object matching your schema
+- `usage` - Token usage information
+
+### Streaming
+
+**Note**: Streaming is not yet supported by Runpod's public endpoints. The team is working on implementing this feature.
+
+## Image Generation
+
+### Basic Usage
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
@@ -147,10 +155,20 @@ const { image } = await generateImage({
   prompt: 'A fashion-forward woman in Paris wearing a trench coat',
   aspectRatio: '4:3',
 });
+```
 
-// With additional parameters
+**Returns:**
+
+- `image.uint8Array` - Binary image data (efficient for processing/saving)
+- `image.base64` - Base64 encoded string (for web display)
+- `image.mediaType` - MIME type ('image/jpeg' or 'image/png')
+- `warnings` - Array of any warnings about unsupported parameters
+
+### Advanced Parameters
+
+```ts
 const { image } = await generateImage({
-  model: runpod.imageModel('qwen/qwen-image'),
+  model: runpod.imageModel('bytedance/seedream-3.0'),
   prompt: 'A sunset over mountains',
   size: '1328x1328',
   seed: 42,
@@ -161,34 +179,93 @@ const { image } = await generateImage({
     },
   },
 });
+
+// Save to filesystem
+import { writeFileSync } from 'fs';
+writeFileSync('generated-image.jpg', image.uint8Array);
 ```
 
-#### Provider Options
+### Context-Aware Generation (Flux Kontext)
 
-The Runpod provider supports additional options via `providerOptions.runpod`:
+```ts
+const { image } = await generateImage({
+  model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
+  prompt: 'Transform this into a cyberpunk style with neon lights',
+  aspectRatio: '1:1',
+  providerOptions: {
+    runpod: {
+      image: 'https://example.com/input-image.jpg', // Image URL
+      negative_prompt: 'blurry, distorted',
+    },
+  },
+});
 
-| Option                  | Type      | Default | Description                                         |
-| ----------------------- | --------- | ------- | --------------------------------------------------- |
-| `negative_prompt`       | `string`  | -       | Text describing what you don't want in the image    |
-| `enable_safety_checker` | `boolean` | `true`  | Enable content safety filtering                     |
-| `image`                 | `string`  | -       | Input image URL (required for Flux Kontext models)  |
-| `maxPollAttempts`       | `number`  | `60`    | Maximum polling attempts for async image generation |
-| `pollIntervalMillis`    | `number`  | `5000`  | Polling interval in milliseconds (5 seconds)        |
+// Alternative: Using base64 encoded image
+const { image } = await generateImage({
+  model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
+  prompt: 'Make this image look like a painting',
+  aspectRatio: '4:3',
+  providerOptions: {
+    runpod: {
+      image: 'data:image/png;base64,iVBORw0KGgoAAAANS...', // Base64 data URI
+      negative_prompt: 'blurry, distorted',
+    },
+  },
+});
+```
 
-**Notes**:
+### Advanced Configuration
 
-- The provider uses strict validation for image parameters. Unsupported aspect ratios (like `16:9`, `9:16`, `3:2`, `2:3`) will throw an `InvalidArgumentError` with a clear message about supported alternatives.
-- Model availability may vary. Some models might be temporarily unavailable or require specific parameters.
-- **Verified working models**: All models tested and confirmed working
-  - `qwen/qwen-image` - Original model (60s, JPEG)
-  - `bytedance/seedream-3.0` - Fast model (17s, JPEG)
-  - `black-forest-labs/flux-1-schnell` - Very fast (2s, PNG)
-  - `black-forest-labs/flux-1-dev` - High quality (6s, PNG)
-  - `black-forest-labs/flux-1-kontext-dev` - Context-aware with input images (38s, PNG)
-- The provider automatically handles different parameter formats:
-  - **Qwen/Seedream**: `size` parameter, `result` response field
-  - **Flux standard**: `width/height` parameters, `image_url` response field
-  - **Flux Kontext**: `size` parameter + `image` input, `image_url` response field
+```ts
+// Full control over generation parameters
+const { image } = await generateImage({
+  model: runpod.imageModel('black-forest-labs/flux-1-dev'),
+  prompt: 'A majestic dragon breathing fire in a medieval castle',
+  size: '1328x1328',
+  seed: 42, // For reproducible results
+  providerOptions: {
+    runpod: {
+      negative_prompt: 'blurry, low quality, distorted, ugly, bad anatomy',
+      enable_safety_checker: true,
+      num_inference_steps: 50, // Higher quality (default: 28)
+      guidance: 3.5, // Stronger prompt adherence (default: 2)
+      output_format: 'png', // High quality format
+      // Polling settings for long generations
+      maxPollAttempts: 30,
+      pollIntervalMillis: 4000,
+    },
+  },
+});
+
+// Fast generation with minimal steps
+const { image } = await generateImage({
+  model: runpod.imageModel('black-forest-labs/flux-1-schnell'),
+  prompt: 'A simple red apple',
+  aspectRatio: '1:1',
+  providerOptions: {
+    runpod: {
+      num_inference_steps: 2, // Even faster (default: 4)
+      guidance: 10, // Higher guidance for simple prompts
+      output_format: 'jpg', // Smaller file size
+    },
+  },
+});
+```
+
+### Provider Options
+
+| Option                  | Type      | Default | Description                                                             |
+| ----------------------- | --------- | ------- | ----------------------------------------------------------------------- |
+| `negative_prompt`       | `string`  | `""`    | Text describing what you don't want in the image                        |
+| `enable_safety_checker` | `boolean` | `true`  | Enable content safety filtering                                         |
+| `image`                 | `string`  | -       | Input image: URL or base64 data URI (required for Flux Kontext models)  |
+| `num_inference_steps`   | `number`  | Auto    | Number of denoising steps (Flux: 4 for schnell, 28 for others)          |
+| `guidance`              | `number`  | Auto    | Guidance scale for prompt adherence (Flux: 7 for schnell, 2 for others) |
+| `output_format`         | `string`  | `"png"` | Output image format ("png" or "jpg")                                    |
+| `maxPollAttempts`       | `number`  | `60`    | Maximum polling attempts for async generation                           |
+| `pollIntervalMillis`    | `number`  | `5000`  | Polling interval in milliseconds (5 seconds)                            |
+
+**Note**: The provider uses strict validation for image parameters. Unsupported aspect ratios (like `16:9`, `9:16`, `3:2`, `2:3`) will throw an `InvalidArgumentError` with a clear message about supported alternatives.
 
 ## Links
 
