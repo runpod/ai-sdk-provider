@@ -1,6 +1,8 @@
 # Runpod AI SDK Provider
 
-The **Runpod provider** for the [AI SDK](https://ai-sdk.dev/docs) contains language model and image generation support for [Runpod's](https://runpod.io) public endpoints. Runpod is a foundational platform for developers to build, deploy, and scale custom AI systems.
+The **Runpod provider** for the [AI SDK](https://ai-sdk.dev/docs) contains language model and image generation support for [Runpod's](https://runpod.io) public endpoints.
+
+Runpod is the foundation for developers to build, deploy, and scale custom AI systems.
 
 ## Setup
 
@@ -304,21 +306,7 @@ Runpod image models support flexible provider options through the `providerOptio
 
 ## Advanced Features
 
-Runpod offers several advanced features to enhance your AI applications:
-
-1. **Multiple Model Families**: Access to both language models (LLMs) and cutting-edge image generation models.
-
-2. **OpenAI Compatibility**: Language models support full OpenAI API features including function calling and structured output.
-
-3. **Custom Endpoint Support**: Use with vLLM, SGLang, or any OpenAI-compatible server.
-
-4. **Advanced Image Controls**: Fine-tune image generation with parameters like inference steps, guidance scale, and output format.
-
-5. **Context-Aware Generation**: Transform existing images with Flux Kontext models using URL or base64 inputs.
-
-6. **Automatic Polling**: Seamless handling of both synchronous and asynchronous image generation.
-
-7. **Strict Validation**: Clear error messages for unsupported parameters to prevent confusion.
+Runpod offers public endpoints (everything above), custom serverless endpoints / pods / clusters and a hub of open-source AI repositories including ComfyUI, Axolotl, FLUX.1-dev-juiced, Chatterbox, vLLM, and SGLang.
 
 ## Links
 
