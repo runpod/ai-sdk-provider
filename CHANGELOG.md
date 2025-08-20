@@ -1,5 +1,11 @@
 # @runpod/ai-sdk-provider
 
+## 0.3.1
+
+### Patch Changes
+
+- 179e006: docs: improve intro and outro
+
 ## 0.3.0
 
 ### Minor Changes
