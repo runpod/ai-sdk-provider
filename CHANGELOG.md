@@ -1,5 +1,11 @@
 # @runpod/ai-sdk-provider
 
+## 0.3.0
+
+### Minor Changes
+
+- ef53393: use consistent brandname "Runpod"
+
 ## 0.2.1
 
 ### Patch Changes
