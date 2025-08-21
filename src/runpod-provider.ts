@@ -19,6 +19,11 @@ Runpod API key.
 */
   apiKey?: string;
   /**
+Custom base URL for Runpod API. Use this to point to custom endpoints or different Runpod deployments.
+Example: 'https://api.runpod.ai/v2/your-endpoint-id/openai/v1'
+*/
+  baseURL?: string;
+  /**
 Custom headers to include in the requests.
 */
   headers?: Record<string, string>;
@@ -105,13 +110,22 @@ export function createRunpod(
     modelId: string,
     modelType: string
   ): CommonModelConfig => {
-    const baseURL = MODEL_ID_TO_ENDPOINT_URL[modelId];
-    if (!baseURL) {
-      throw new Error(
-        `Unsupported Runpod model: ${modelId}. Supported models: ${Object.keys(
-          MODEL_ID_TO_ENDPOINT_URL
-        ).join(', ')}`
-      );
+    // Use custom baseURL if provided, otherwise fall back to default endpoints
+    let baseURL: string;
+
+    if (options.baseURL) {
+      // Custom baseURL provided - use it directly
+      baseURL = options.baseURL;
+    } else {
+      // Use default endpoint mapping
+      baseURL = MODEL_ID_TO_ENDPOINT_URL[modelId];
+      if (!baseURL) {
+        throw new Error(
+          `Unsupported Runpod model: ${modelId}. Supported models: ${Object.keys(
+            MODEL_ID_TO_ENDPOINT_URL
+          ).join(', ')}. Or provide a custom baseURL.`
+        );
+      }
     }
 
     return {
@@ -139,13 +153,22 @@ export function createRunpod(
   };
 
   const createImageModel = (modelId: RunpodImageModelId) => {
-    const baseURL = IMAGE_MODEL_ID_TO_ENDPOINT_URL[modelId];
-    if (!baseURL) {
-      throw new Error(
-        `Unsupported Runpod image model: ${modelId}. Supported models: ${Object.keys(
-          IMAGE_MODEL_ID_TO_ENDPOINT_URL
-        ).join(', ')}`
-      );
+    // Use custom baseURL if provided, otherwise fall back to default endpoints
+    let baseURL: string;
+
+    if (options.baseURL) {
+      // Custom baseURL provided - use it directly
+      baseURL = options.baseURL;
+    } else {
+      // Use default endpoint mapping
+      baseURL = IMAGE_MODEL_ID_TO_ENDPOINT_URL[modelId];
+      if (!baseURL) {
+        throw new Error(
+          `Unsupported Runpod image model: ${modelId}. Supported models: ${Object.keys(
+            IMAGE_MODEL_ID_TO_ENDPOINT_URL
+          ).join(', ')}. Or provide a custom baseURL.`
+        );
+      }
     }
 
     return new RunpodImageModel(modelId, {
