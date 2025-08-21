@@ -1,5 +1,13 @@
 # @runpod/ai-sdk-provider
 
+## 0.4.0
+
+### Minor Changes
+
+- 0d8d20a: - chore: updated dependencies to latest version
+  - docs: improvements
+  - fix: actually use the provided baseURL
+
 ## 0.3.3
 
 ### Patch Changes
