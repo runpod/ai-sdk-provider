@@ -1,5 +1,11 @@
 # @runpod/ai-sdk-provider
 
+## 0.4.1
+
+### Patch Changes
+
+- d7dc293: docs: fix tool calling example
+
 ## 0.4.0
 
 ### Minor Changes
