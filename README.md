@@ -109,7 +109,7 @@ const { text } = await generateText({
 });
 ```
 
-### Function Calling
+### Tool Calling
 
 ```ts
 import { generateText, tool } from 'ai';
@@ -121,7 +121,7 @@ const { text, toolCalls } = await generateText({
   tools: {
     getWeather: tool({
       description: 'Get weather information for a city',
-      parameters: z.object({
+      inputSchema: z.object({
         city: z.string().describe('The city name'),
       }),
       execute: async ({ city }) => {
