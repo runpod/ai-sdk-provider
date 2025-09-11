@@ -1,5 +1,11 @@
 # @runpod/ai-sdk-provider
 
+## 0.5.0
+
+### Minor Changes
+
+- a93a4ec: feat: added streamText
+
 ## 0.4.1
 
 ### Patch Changes
