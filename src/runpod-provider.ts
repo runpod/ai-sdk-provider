@@ -99,6 +99,20 @@ export function createRunpod(
     ...options.headers,
   });
 
+  const runpodFetch: FetchFunction = async (url, requestInit) => {
+    if (requestInit?.body) {
+      try {
+        const body = JSON.parse(requestInit.body as string);
+        if (body.stream === true && !body.stream_options) {
+          body.stream_options = { include_usage: true };
+          requestInit.body = JSON.stringify(body);
+        }
+      } catch {}
+    }
+    const fetchFn = options.fetch || fetch;
+    return fetchFn(url, requestInit);
+  };
+
   interface CommonModelConfig {
     provider: string;
     url: ({ path }: { path: string }) => string;
@@ -110,14 +124,11 @@ export function createRunpod(
     modelId: string,
     modelType: string
   ): CommonModelConfig => {
-    // Use custom baseURL if provided, otherwise fall back to default endpoints
     let baseURL: string;
 
     if (options.baseURL) {
-      // Custom baseURL provided - use it directly
       baseURL = options.baseURL;
     } else {
-      // Use default endpoint mapping
       baseURL = MODEL_ID_TO_ENDPOINT_URL[modelId];
       if (!baseURL) {
         throw new Error(
@@ -132,35 +143,32 @@ export function createRunpod(
       provider: `runpod.${modelType}`,
       url: ({ path }) => `${withoutTrailingSlash(baseURL)}${path}`,
       headers: getHeaders,
-      fetch: options.fetch,
+      fetch: runpodFetch,
     };
   };
 
   const createChatModel = (modelId: RunpodChatModelId) => {
     const openaiModelName = MODEL_ID_TO_OPENAI_NAME[modelId] || modelId;
-    return new OpenAICompatibleChatLanguageModel(
-      openaiModelName,
-      getModelConfig(modelId, 'chat')
-    );
+    return new OpenAICompatibleChatLanguageModel(openaiModelName, {
+      ...getModelConfig(modelId, 'chat'),
+      includeUsage: true,
+    });
   };
 
   const createCompletionModel = (modelId: RunpodCompletionModelId) => {
     const openaiModelName = MODEL_ID_TO_OPENAI_NAME[modelId] || modelId;
-    return new OpenAICompatibleCompletionLanguageModel(
-      openaiModelName,
-      getModelConfig(modelId, 'completion')
-    );
+    return new OpenAICompatibleCompletionLanguageModel(openaiModelName, {
+      ...getModelConfig(modelId, 'completion'),
+      includeUsage: true,
+    });
   };
 
   const createImageModel = (modelId: RunpodImageModelId) => {
-    // Use custom baseURL if provided, otherwise fall back to default endpoints
     let baseURL: string;
 
     if (options.baseURL) {
-      // Custom baseURL provided - use it directly
       baseURL = options.baseURL;
     } else {
-      // Use default endpoint mapping
       baseURL = IMAGE_MODEL_ID_TO_ENDPOINT_URL[modelId];
       if (!baseURL) {
         throw new Error(

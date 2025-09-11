@@ -76,7 +76,7 @@ import { generateText } from 'ai';
 
 const { text } = await generateText({
   model: runpod('deep-cogito/deep-cogito-v2-llama-70b'),
-  prompt: 'Write a Python function that sorts a list:',
+  prompt: 'What is the capital of Germany?',
 });
 ```
 
@@ -88,14 +88,30 @@ const { text } = await generateText({
 
 Runpod language models can also be used in the `streamText` function (see [AI SDK Core](/docs/ai-sdk-core)).
 
-**Note**: Streaming is not yet supported by Runpod's public endpoints. The team is working on implementing this feature.
+### Streaming
+
+```ts
+import { runpod } from '@runpod/ai-sdk-provider';
+import { streamText } from 'ai';
+
+const { textStream } = await streamText({
+  model: runpod('deep-cogito/deep-cogito-v2-llama-70b'),
+  prompt:
+    'Write a short poem about artificial intelligence in exactly 4 lines.',
+  temperature: 0.7,
+});
+
+for await (const delta of textStream) {
+  process.stdout.write(delta);
+}
+```
 
 ### Model Capabilities
 
-| Model ID                               | Description                                                         | Object Generation | Tool Usage |
-| -------------------------------------- | ------------------------------------------------------------------- | ----------------- | ---------- |
-| `deep-cogito/deep-cogito-v2-llama-70b` | 70B parameter general-purpose LLM with advanced reasoning           | ✅                | ✅         |
-| `qwen/qwen3-32b-awq`                   | 32B parameter multilingual model with strong reasoning capabilities | ✅                | ✅         |
+| Model ID                               | Description                                                         | Streaming | Object Generation | Tool Usage |
+| -------------------------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- |
+| `deep-cogito/deep-cogito-v2-llama-70b` | 70B parameter general-purpose LLM with advanced reasoning           | ✅        | ✅                | ✅         |
+| `qwen/qwen3-32b-awq`                   | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ✅                | ✅         |
 
 ### Chat Conversations
 
