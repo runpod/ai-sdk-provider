@@ -106,10 +106,10 @@ for await (const delta of textStream) {
 
 ### Model Capabilities
 
-| Model ID                               | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes |
-| -------------------------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- | --------------- |
+| Model ID                               | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes                                              |
+| -------------------------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- | ------------------------------------------------------------ |
 | `deep-cogito/deep-cogito-v2-llama-70b` | 70B parameter general-purpose LLM with advanced reasoning           | ✅        | ❌                | ✅         | Emits `<think>…</think>` inline; no separate reasoning parts |
-| `qwen/qwen3-32b-awq`                   | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ❌                | ✅         | Standard reasoning events |
+| `qwen/qwen3-32b-awq`                   | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ❌                | ✅         | Standard reasoning events                                    |
 
 ### Chat Conversations
 
