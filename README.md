@@ -86,8 +86,6 @@ const { text } = await generateText({
 - `finishReason` - Why generation stopped ('stop', 'length', etc.)
 - `usage` - Token usage information (prompt, completion, total tokens)
 
-Runpod language models can also be used in the `streamText` function (see [AI SDK Core](/docs/ai-sdk-core)).
-
 ### Streaming
 
 ```ts
@@ -108,10 +106,10 @@ for await (const delta of textStream) {
 
 ### Model Capabilities
 
-| Model ID                               | Description                                                         | Streaming | Object Generation | Tool Usage |
-| -------------------------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- |
-| `deep-cogito/deep-cogito-v2-llama-70b` | 70B parameter general-purpose LLM with advanced reasoning           | ✅        | ✅                | ✅         |
-| `qwen/qwen3-32b-awq`                   | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ✅                | ✅         |
+| Model ID                               | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes |
+| -------------------------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- | --------------- |
+| `deep-cogito/deep-cogito-v2-llama-70b` | 70B parameter general-purpose LLM with advanced reasoning           | ✅        | ❌                | ✅         | Emits `<think>…</think>` inline; no separate reasoning parts |
+| `qwen/qwen3-32b-awq`                   | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ❌                | ✅         | Standard reasoning events |
 
 ### Chat Conversations
 
@@ -153,29 +151,45 @@ const { text, toolCalls } = await generateText({
 - `toolCalls` - Array of tool calls made by the model
 - `toolResults` - Results from executed tools
 
-### Structured Output
+### Structured output
+
+Using `generateObject` to enforce structured ouput is not supported by two models that are part of this provider.
+
+You can still return structured data by instructing the model to return JSON and validating it yourself.
 
 ```ts
-import { generateObject } from 'ai';
+import { runpod } from '@runpod/ai-sdk-provider';
+import { generateText } from 'ai';
 import { z } from 'zod';
 
-const { object } = await generateObject({
-  model: runpod('qwen/qwen3-32b-awq'),
-  schema: z.object({
-    recipe: z.object({
-      name: z.string(),
-      ingredients: z.array(z.string()),
-      steps: z.array(z.string()),
-    }),
-  }),
-  prompt: 'Generate a recipe for chocolate chip cookies.',
+const RecipeSchema = z.object({
+  name: z.string(),
+  ingredients: z.array(z.string()),
+  steps: z.array(z.string()),
 });
+
+const { text } = await generateText({
+  model: runpod('qwen/qwen3-32b-awq'),
+  messages: [
+    {
+      role: 'system',
+      content:
+        'return ONLY valid JSON matching { name: string; ingredients: string[]; steps: string[] }',
+    },
+    { role: 'user', content: 'generate a lasagna recipe.' },
+  ],
+  temperature: 0,
+});
+
+const parsed = JSON.parse(text);
+const result = RecipeSchema.safeParse(parsed);
+
+if (!result.success) {
+  // handle invalid JSON shape
+}
+
+console.log(result.success ? result.data : parsed);
 ```
-
-**Returns:**
-
-- `object` - Parsed object matching your schema
-- `usage` - Token usage information
 
 ## Image Models
 
