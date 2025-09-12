@@ -71,6 +71,7 @@ const MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
 // Mapping of Runpod image model IDs to their endpoint URLs
 const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   'qwen/qwen-image': 'https://api.runpod.ai/v2/qwen-image-t2i',
+  'qwen/qwen-image-edit': 'https://api.runpod.ai/v2/qwen-image-edit',
   'bytedance/seedream-3.0': 'https://api.runpod.ai/v2/seedream-3-0-t2i',
   'black-forest-labs/flux-1-kontext-dev':
     'https://api.runpod.ai/v2/black-forest-labs-flux-1-kontext-dev',

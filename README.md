@@ -228,6 +228,7 @@ writeFileSync('landscape.jpg', image.uint8Array);
 | `black-forest-labs/flux-1-schnell`     | Fast image generation (4 steps) | 1:1, 4:3, 3:4           |
 | `black-forest-labs/flux-1-dev`         | High-quality image generation   | 1:1, 4:3, 3:4           |
 | `black-forest-labs/flux-1-kontext-dev` | Context-aware image generation  | 1:1, 4:3, 3:4           |
+| `qwen/qwen-image-edit`                 | Image editing (prompt-guided)   | 1:1, 4:3, 3:4           |
 
 **Note**: The provider uses strict validation for image parameters. Unsupported aspect ratios (like `16:9`, `9:16`, `3:2`, `2:3`) will throw an `InvalidArgumentError` with a clear message about supported alternatives.
 
