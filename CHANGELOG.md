@@ -1,5 +1,11 @@
 # @runpod/ai-sdk-provider
 
+## 0.5.1
+
+### Patch Changes
+
+- 1d60f42: docs: llms don't support object generation
+
 ## 0.5.0
 
 ### Minor Changes
