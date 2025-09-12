@@ -1,5 +1,11 @@
 # @runpod/ai-sdk-provider
 
+## 0.6.0
+
+### Minor Changes
+
+- bec4dfe: feat: added "qwen/qwen-image-edit"
+
 ## 0.5.1
 
 ### Patch Changes
