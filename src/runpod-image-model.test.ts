@@ -56,7 +56,7 @@ describe('RunpodImageModel', () => {
         model.doGenerate({
           prompt: 'Test prompt',
           n: 1,
-          size: '2048x2048', // Unsupported size
+          size: '1234x1234', // Unsupported size
           aspectRatio: undefined,
           seed: undefined,
           providerOptions: {},
@@ -86,8 +86,22 @@ describe('RunpodImageModel', () => {
 
     it('should accept supported sizes', () => {
       // Test that supported sizes don't throw during validation
-      const supportedSizes = ['1328x1328', '1024x768', '512x512'];
-      const supportedRunpodSizes = ['1328*1328', '1024*768', '512*512'];
+      const supportedSizes = [
+        '1328x1328',
+        '1024x768',
+        '512x512',
+        '1536x1536',
+        '2048x2048',
+        '4096x4096',
+      ];
+      const supportedRunpodSizes = [
+        '1328*1328',
+        '1024*768',
+        '512*512',
+        '1536*1536',
+        '2048*2048',
+        '4096*4096',
+      ];
 
       supportedSizes.forEach((size, _index) => {
         expect(() => {
