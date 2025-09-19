@@ -1,5 +1,11 @@
 # @runpod/ai-sdk-provider
 
+## 0.7.0
+
+### Minor Changes
+
+- a9ffb1d: feat: added bytedance/seedream-4.0 & bytedance/seedream-4.0-edit
+
 ## 0.6.0
 
 ### Minor Changes
