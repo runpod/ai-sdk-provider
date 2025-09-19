@@ -73,6 +73,9 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   'qwen/qwen-image': 'https://api.runpod.ai/v2/qwen-image-t2i',
   'qwen/qwen-image-edit': 'https://api.runpod.ai/v2/qwen-image-edit',
   'bytedance/seedream-3.0': 'https://api.runpod.ai/v2/seedream-3-0-t2i',
+  // Seadream v4 (t2i and edit)
+  'bytedance/seedream-4.0': 'https://api.runpod.ai/v2/seedream-v4-t2i',
+  'bytedance/seedream-4.0-edit': 'https://api.runpod.ai/v2/seedream-v4-edit',
   'black-forest-labs/flux-1-kontext-dev':
     'https://api.runpod.ai/v2/black-forest-labs-flux-1-kontext-dev',
   'black-forest-labs/flux-1-schnell':

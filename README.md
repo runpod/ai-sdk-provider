@@ -221,14 +221,16 @@ writeFileSync('landscape.jpg', image.uint8Array);
 
 ### Model Capabilities
 
-| Model ID                               | Description                     | Supported Aspect Ratios |
-| -------------------------------------- | ------------------------------- | ----------------------- |
-| `qwen/qwen-image`                      | Text-to-image generation        | 1:1, 4:3, 3:4           |
-| `bytedance/seedream-3.0`               | Advanced text-to-image model    | 1:1, 4:3, 3:4           |
-| `black-forest-labs/flux-1-schnell`     | Fast image generation (4 steps) | 1:1, 4:3, 3:4           |
-| `black-forest-labs/flux-1-dev`         | High-quality image generation   | 1:1, 4:3, 3:4           |
-| `black-forest-labs/flux-1-kontext-dev` | Context-aware image generation  | 1:1, 4:3, 3:4           |
-| `qwen/qwen-image-edit`                 | Image editing (prompt-guided)   | 1:1, 4:3, 3:4           |
+| Model ID                               | Description                     | Supported Aspect Ratios               |
+| -------------------------------------- | ------------------------------- | ------------------------------------- |
+| `bytedance/seedream-3.0`               | Advanced text-to-image model    | 1:1, 4:3, 3:4                         |
+| `bytedance/seedream-4.0`               | Text-to-image (v4)              | 1:1 (supports 1024, 2048, 4096)       |
+| `bytedance/seedream-4.0-edit`          | Image editing (v4, multi-image) | 1:1 (supports 1024, 1536, 2048, 4096) |
+| `black-forest-labs/flux-1-schnell`     | Fast image generation (4 steps) | 1:1, 4:3, 3:4                         |
+| `black-forest-labs/flux-1-dev`         | High-quality image generation   | 1:1, 4:3, 3:4                         |
+| `black-forest-labs/flux-1-kontext-dev` | Context-aware image generation  | 1:1, 4:3, 3:4                         |
+| `qwen/qwen-image`                      | Text-to-image generation        | 1:1, 4:3, 3:4                         |
+| `qwen/qwen-image-edit`                 | Image editing (prompt-guided)   | 1:1, 4:3, 3:4                         |
 
 **Note**: The provider uses strict validation for image parameters. Unsupported aspect ratios (like `16:9`, `9:16`, `3:2`, `2:3`) will throw an `InvalidArgumentError` with a clear message about supported alternatives.
 
