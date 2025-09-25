@@ -337,4 +337,4 @@ Runpod image models support flexible provider options through the `providerOptio
 
 [Runpod](https://runpod.io) is the foundation for developers to build, deploy, and scale custom AI systems.
 
-Beyond some of the public endpoints you've seen above (+ more generative media APIs), Runpod offers custom [serverless endpoints](https://docs.runpod.io/serverless/overview), dedicated [pods](https://docs.runpod.io/pods/overview) and [instant clusters](https://docs.runpod.io/instant-clusters), [fine-tuning](https://docs.runpod.io/fine-tune), and a comprehensive [hub of open-source AI repositories](https://docs.runpod.io/hub/overview) (like ComfyUI, Axolotl, FLUX.1-dev-juiced, Chatterbox, vLLM, and SGLang).
+Beyond some of the public endpoints you've seen above (+ more generative media APIs), Runpod offers private [serverless endpoints](https://docs.runpod.io/serverless/overview) / [pods](https://docs.runpod.io/pods/overview) / [instant clusters](https://docs.runpod.io/instant-clusters), so that you can train, fine-tune or run any open-source or private model on your terms.
