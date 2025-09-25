@@ -1,4 +1,4 @@
-import { LanguageModelV2, ImageModelV2 } from '@ai-sdk/provider';
+import { LanguageModelV2, ImageModelV2, VideoModelV2 } from '@ai-sdk/provider';
 import {
   OpenAICompatibleChatLanguageModel,
   OpenAICompatibleCompletionLanguageModel,
@@ -12,6 +12,8 @@ import { RunpodChatModelId } from './runpod-chat-options';
 import { RunpodCompletionModelId } from './runpod-completion-options';
 import { RunpodImageModelId } from './runpod-image-options';
 import { RunpodImageModel } from './runpod-image-model';
+import { RunpodVideoModel } from './runpod-video-model';
+import { RunpodVideoModelId } from './runpod-video-options';
 
 export interface RunpodProviderSettings {
   /**
@@ -59,6 +61,11 @@ Creates a completion model for text generation.
 Creates an image model for image generation.
 */
   imageModel(modelId: RunpodImageModelId): ImageModelV2;
+
+  /**
+  Creates a video model for video generation.
+  */
+  videoModel?(modelId: RunpodVideoModelId): VideoModelV2;
 }
 
 // Mapping of Runpod model IDs to their endpoint URLs
@@ -82,6 +89,13 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
     'https://api.runpod.ai/v2/black-forest-labs-flux-1-schnell',
   'black-forest-labs/flux-1-dev':
     'https://api.runpod.ai/v2/black-forest-labs-flux-1-dev',
+};
+
+// Mapping of Runpod video model IDs to their endpoint URLs
+const VIDEO_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
+  'alibaba/wan-2-2-t2v-720': 'https://api.runpod.ai/v2/wan-2-2-t2v-720',
+  'example/video-t2v': 'https://api.runpod.ai/v2/example-video-t2v',
+  'example/video-edit': 'https://api.runpod.ai/v2/example-video-edit',
 };
 
 // Mapping of Runpod model IDs to their OpenAI model names
@@ -191,12 +205,37 @@ export function createRunpod(
     });
   };
 
+  const createVideoModel = (modelId: RunpodVideoModelId) => {
+    let baseURL: string;
+
+    if (options.baseURL) {
+      baseURL = options.baseURL;
+    } else {
+      baseURL = VIDEO_MODEL_ID_TO_ENDPOINT_URL[modelId];
+      if (!baseURL) {
+        throw new Error(
+          `Unsupported Runpod video model: ${modelId}. Supported models: ${Object.keys(
+            VIDEO_MODEL_ID_TO_ENDPOINT_URL
+          ).join(', ')}. Or provide a custom baseURL.`
+        );
+      }
+    }
+
+    return new RunpodVideoModel(modelId, {
+      provider: 'runpod.video',
+      baseURL,
+      headers: getHeaders,
+      fetch: options.fetch,
+    });
+  };
+
   const provider = (modelId: RunpodChatModelId) => createChatModel(modelId);
 
   provider.completionModel = createCompletionModel;
   provider.languageModel = createChatModel;
   provider.chatModel = createChatModel;
   provider.imageModel = createImageModel;
+  provider.videoModel = createVideoModel;
 
   return provider;
 }
