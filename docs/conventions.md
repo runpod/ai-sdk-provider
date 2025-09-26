@@ -159,9 +159,13 @@ const MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
 **CRITICAL**: We maintain TWO documentation files that must stay in sync:
 
 1. **`README.md`** - Main package documentation (for npm, GitHub)
-2. **`ai/content/providers/03-community-providers/runpod.mdx`** - AI SDK community provider docs
+2. **`ai/content/providers/03-community-providers/22-runpod.mdx`** - AI SDK community provider docs
 
 **🚨 SYNC RULE**: Any changes to examples, features, or capabilities must be updated in BOTH files.
+
+- Whenever you modify `README.md`, you must also update
+  `ai/content/providers/03-community-providers/22-runpod.mdx` in the AI docs
+  within the same PR. These two files should remain identical in content.
 
 ### Documentation Structure (Both Files)
 
