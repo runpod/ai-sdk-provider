@@ -11,6 +11,7 @@ import {
 import { InvalidArgumentError } from '@ai-sdk/provider';
 import { z } from 'zod';
 import { RunpodImageModelId } from './runpod-image-options';
+// No auto URL->base64 conversion; tests should reflect native endpoint behavior
 
 interface RunpodImageModelConfig {
   provider: string;
@@ -124,11 +125,31 @@ export class RunpodImageModel implements ImageModelV2 {
     const currentDate = this.config._internal?.currentDate?.() ?? new Date();
 
     // Runpod uses a different request format - /runsync endpoint with input wrapper
+    const normalizedRunpodOptions = await this.normalizeRunpodOptions(
+      providerOptions.runpod as Record<string, unknown> | undefined
+    );
+
+    // For models that prefer aspect ratio, infer it from size when the user only provided size
+    let aspectRatioForPayload = aspectRatio;
+    if (
+      aspectRatioForPayload == null &&
+      this.modelId.includes('qwen-image-edit')
+    ) {
+      // runpodSize is in the form "W*H"
+      const [wStr, hStr] = runpodSize.split('*');
+      const w = Number(wStr);
+      const h = Number(hStr);
+      if (w === h) aspectRatioForPayload = '1:1';
+      else if (Math.abs(w * 3 - h * 4) === 0) aspectRatioForPayload = '4:3';
+      else if (Math.abs(w * 4 - h * 3) === 0) aspectRatioForPayload = '3:4';
+    }
+
     const inputPayload = this.buildInputPayload(
       prompt,
       runpodSize,
       seed,
-      providerOptions.runpod
+      normalizedRunpodOptions,
+      aspectRatioForPayload
     );
 
     const { value: response, responseHeaders } = await postJsonToApi({
@@ -215,6 +236,13 @@ export class RunpodImageModel implements ImageModelV2 {
           },
         },
       };
+    } else if (typedResponse.status === 'FAILED') {
+      const details =
+        typedResponse.error ||
+        typedResponse.output?.error ||
+        typedResponse.message ||
+        JSON.stringify(typedResponse.output ?? typedResponse);
+      throw new Error(`Runpod image generation failed: ${details}`);
     } else {
       throw new Error(`Unexpected response status: ${typedResponse.status}`);
     }
@@ -235,6 +263,43 @@ export class RunpodImageModel implements ImageModelV2 {
       fetch: this.config.fetch,
     });
     return imageData;
+  }
+
+  private async normalizeRunpodOptions(
+    runpodOptions: Record<string, unknown> | undefined
+  ): Promise<Record<string, unknown> | undefined> {
+    if (!runpodOptions) return undefined;
+
+    // Normalize per-model input shape without changing content type (no URL->base64).
+    const opts: Record<string, unknown> = { ...runpodOptions };
+
+    const id = this.modelId;
+
+    if (id.includes('qwen-image-edit')) {
+      const hasImages =
+        Array.isArray(opts.images) && (opts.images as unknown[]).length > 0;
+      const hasImage = typeof opts.image === 'string';
+      // If both provided, prefer images (multi-image edit is supported). Avoid sending both.
+      if (hasImages && hasImage) {
+        delete (opts as any).image;
+      }
+      if (opts.output_format == null) {
+        opts.output_format = 'png';
+      }
+    }
+
+    if (id.includes('flux-1-kontext')) {
+      // Kontext expects single 'image'; if images[] was provided, use the first
+      const hasImages =
+        Array.isArray(opts.images) && (opts.images as unknown[]).length > 0;
+      const hasImage = typeof opts.image === 'string';
+      if (!hasImage && hasImages) {
+        opts.image = (opts.images as unknown[])[0];
+      }
+      delete (opts as any).images;
+    }
+
+    return opts;
   }
 
   private async pollForCompletion(
@@ -296,7 +361,8 @@ export class RunpodImageModel implements ImageModelV2 {
     prompt: string,
     runpodSize: string,
     seed?: number,
-    runpodOptions?: Record<string, unknown>
+    runpodOptions?: Record<string, unknown>,
+    aspectRatio?: `${number}:${number}`
   ): Record<string, unknown> {
     // Check if this is a Flux model that uses different parameters
     const isFluxModel =
@@ -338,15 +404,24 @@ export class RunpodImageModel implements ImageModelV2 {
       }
     }
 
-    // Default format for Qwen and other models
-    return {
+    // Qwen/Seedream: some endpoints prefer aspect ratio only. If aspectRatio was provided by user,
+    // send aspectRatio and omit size for better compatibility. Otherwise send size.
+    const payload: Record<string, unknown> = {
       prompt,
       negative_prompt: runpodOptions?.negative_prompt ?? '',
-      size: runpodSize,
       seed: seed ?? -1,
       enable_safety_checker: runpodOptions?.enable_safety_checker ?? true,
       ...runpodOptions,
     };
+
+    if (aspectRatio) {
+      // prefer aspect ratio when provided
+      (payload as any).aspect_ratio = aspectRatio;
+    } else {
+      (payload as any).size = runpodSize;
+    }
+
+    return payload;
   }
 }
 
