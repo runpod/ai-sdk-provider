@@ -21,7 +21,7 @@ const model = openai('gpt-4');
 
 // Users can now use Runpod models:
 import { runpod } from '@runpod/ai-sdk-provider';
-const model = runpod('deep-cogito/deep-cogito-v2-llama-70b');
+const model = runpod('qwen/qwen3-32b-awq');
 
 // Same AI SDK functions work with both:
 const { text } = await generateText({ model, prompt: '...' });
@@ -130,8 +130,6 @@ if (!baseURL) {
 ```typescript
 // ✅ Good - Clear mappings and consistent patterns
 const MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
-  'deep-cogito/deep-cogito-v2-llama-70b':
-    'https://api.runpod.ai/v2/deep-cogito-v2-llama-70b/openai/v1',
   'qwen/qwen3-32b-awq': 'https://api.runpod.ai/v2/qwen3-32b-awq/openai/v1',
 };
 ```
