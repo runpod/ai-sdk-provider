@@ -90,6 +90,5 @@
 ### Minor Changes
 
 - 4fa63d7: first release of the Runpod provider for the AI SDK
-  - generateText for two llms
-    - deep-cogito/deep-cogito-v2-llama-70b
+  - generateText for llms
     - qwen/qwen3-32b-awq

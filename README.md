@@ -75,7 +75,7 @@ import { runpod } from '@runpod/ai-sdk-provider';
 import { generateText } from 'ai';
 
 const { text } = await generateText({
-  model: runpod('deep-cogito/deep-cogito-v2-llama-70b'),
+  model: runpod('qwen/qwen3-32b-awq'),
   prompt: 'What is the capital of Germany?',
 });
 ```
@@ -93,7 +93,7 @@ import { runpod } from '@runpod/ai-sdk-provider';
 import { streamText } from 'ai';
 
 const { textStream } = await streamText({
-  model: runpod('deep-cogito/deep-cogito-v2-llama-70b'),
+  model: runpod('qwen/qwen3-32b-awq'),
   prompt:
     'Write a short poem about artificial intelligence in exactly 4 lines.',
   temperature: 0.7,
@@ -106,16 +106,15 @@ for await (const delta of textStream) {
 
 ### Model Capabilities
 
-| Model ID                               | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes                                              |
-| -------------------------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- | ------------------------------------------------------------ |
-| `deep-cogito/deep-cogito-v2-llama-70b` | 70B parameter general-purpose LLM with advanced reasoning           | ✅        | ❌                | ✅         | Emits `<think>…</think>` inline; no separate reasoning parts |
-| `qwen/qwen3-32b-awq`                   | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ❌                | ✅         | Standard reasoning events                                    |
+| Model ID             | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes           |
+| -------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- | ------------------------- |
+| `qwen/qwen3-32b-awq` | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ❌                | ✅         | Standard reasoning events |
 
 ### Chat Conversations
 
 ```ts
 const { text } = await generateText({
-  model: runpod('deep-cogito/deep-cogito-v2-llama-70b'),
+  model: runpod('qwen/qwen3-32b-awq'),
   messages: [
     { role: 'system', content: 'You are a helpful assistant.' },
     { role: 'user', content: 'What is the capital of France?' },
@@ -130,7 +129,7 @@ import { generateText, tool } from 'ai';
 import { z } from 'zod';
 
 const { text, toolCalls } = await generateText({
-  model: runpod('deep-cogito/deep-cogito-v2-llama-70b'),
+  model: runpod('qwen/qwen3-32b-awq'),
   prompt: 'What is the weather like in San Francisco?',
   tools: {
     getWeather: tool({

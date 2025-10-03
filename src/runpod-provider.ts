@@ -63,8 +63,6 @@ Creates an image model for image generation.
 
 // Mapping of Runpod model IDs to their endpoint URLs
 const MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
-  'deep-cogito/deep-cogito-v2-llama-70b':
-    'https://api.runpod.ai/v2/deep-cogito-v2-llama-70b/openai/v1',
   'qwen/qwen3-32b-awq': 'https://api.runpod.ai/v2/qwen3-32b-awq/openai/v1',
 };
 
@@ -86,8 +84,6 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
 
 // Mapping of Runpod model IDs to their OpenAI model names
 const MODEL_ID_TO_OPENAI_NAME: Record<string, string> = {
-  'deep-cogito/deep-cogito-v2-llama-70b':
-    'deepcogito/cogito-v2-preview-llama-70B',
   'qwen/qwen3-32b-awq': 'Qwen/Qwen3-32B-AWQ',
 };
 

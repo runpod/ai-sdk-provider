@@ -34,7 +34,7 @@ describe('RunpodProvider', () => {
   describe('createRunpod', () => {
     it('should create a RunpodProvider instance with default options', () => {
       const provider = createRunpod();
-      provider('deep-cogito/deep-cogito-v2-llama-70b');
+      provider('qwen/qwen3-32b-awq');
 
       // Use the mocked version
       const constructorCall =
@@ -55,7 +55,7 @@ describe('RunpodProvider', () => {
         headers: { 'Custom-Header': 'value' },
       };
       const provider = createRunpod(options);
-      provider('deep-cogito/deep-cogito-v2-llama-70b');
+      provider('qwen/qwen3-32b-awq');
 
       const constructorCall =
         OpenAICompatibleChatLanguageModelMock.mock.calls[0];
@@ -71,7 +71,7 @@ describe('RunpodProvider', () => {
 
     it('should return a chat model when called as a function', () => {
       const provider = createRunpod();
-      const modelId = 'deep-cogito/deep-cogito-v2-llama-70b';
+      const modelId = 'qwen/qwen3-32b-awq';
 
       const model = provider(modelId);
       expect(model).toBeInstanceOf(OpenAICompatibleChatLanguageModel);
@@ -89,7 +89,7 @@ describe('RunpodProvider', () => {
   describe('chatModel', () => {
     it('should construct a chat model with correct configuration', () => {
       const provider = createRunpod();
-      const modelId = 'deep-cogito/deep-cogito-v2-llama-70b';
+      const modelId = 'qwen/qwen3-32b-awq';
 
       const model = provider.chatModel(modelId);
 
@@ -128,21 +128,6 @@ describe('RunpodProvider', () => {
   });
 
   describe('model endpoint mapping', () => {
-    it('should use correct endpoint URL for deep-cogito model', () => {
-      const provider = createRunpod();
-      provider('deep-cogito/deep-cogito-v2-llama-70b');
-
-      const constructorCall =
-        OpenAICompatibleChatLanguageModelMock.mock.calls[0];
-      const modelName = constructorCall[0];
-      const config = constructorCall[1];
-
-      expect(modelName).toBe('deepcogito/cogito-v2-preview-llama-70B');
-      expect(config.url({ path: '/chat/completions' })).toBe(
-        'https://api.runpod.ai/v2/deep-cogito-v2-llama-70b/openai/v1/chat/completions'
-      );
-    });
-
     it('should use correct endpoint URL for qwen model', () => {
       const provider = createRunpod();
       provider('qwen/qwen3-32b-awq');
