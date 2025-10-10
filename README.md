@@ -231,6 +231,7 @@ writeFileSync('landscape.jpg', image.uint8Array);
 | `black-forest-labs/flux-1-kontext-dev` | Context-aware image generation  | 1:1, 4:3, 3:4                         |
 | `qwen/qwen-image`                      | Text-to-image generation        | 1:1, 4:3, 3:4                         |
 | `qwen/qwen-image-edit`                 | Image editing (prompt-guided)   | 1:1, 4:3, 3:4                         |
+| `nano-banana-edit`                     | Image editing (multi-image)     | 1:1, 4:3, 3:4                         |
 
 **Note**: The provider uses strict validation for image parameters. Unsupported aspect ratios (like `16:9`, `9:16`, `3:2`, `2:3`) will throw an `InvalidArgumentError` with a clear message about supported alternatives.
 
@@ -280,6 +281,27 @@ const { image } = await generateImage({
 });
 ```
 
+```ts
+// Example: Combine multiple images using Nano Banana edit
+const { image } = await generateImage({
+  model: runpod.imageModel('nano-banana-edit'),
+  prompt:
+    'Combine these four images into a single realistic 3D character scene.',
+  // Defaults to 1:1; you can also set size: '1328x1328' or aspectRatio: '4:3'
+  providerOptions: {
+    runpod: {
+      images: [
+        'https://image.runpod.ai/uploads/0bz_xzhuLq/a2166199-5bd5-496b-b9ab-a8bae3f73bdc.jpg',
+        'https://image.runpod.ai/uploads/Yw86rhY6xi/2ff8435f-f416-4096-9a4d-2f8c838b2d53.jpg',
+        'https://image.runpod.ai/uploads/bpCCX9zLY8/3bc27605-6f9a-40ad-83e9-c29bed45fed9.jpg',
+        'https://image.runpod.ai/uploads/LPHEY6pyHp/f950ceb8-fafa-4800-bdf1-fd3fd684d843.jpg',
+      ],
+      enable_safety_checker: true,
+    },
+  },
+});
+```
+
 ### Advanced Configuration
 
 ```ts
@@ -322,16 +344,17 @@ const { image } = await generateImage({
 
 Runpod image models support flexible provider options through the `providerOptions.runpod` object:
 
-| Option                  | Type      | Default | Description                                                             |
-| ----------------------- | --------- | ------- | ----------------------------------------------------------------------- |
-| `negative_prompt`       | `string`  | `""`    | Text describing what you don't want in the image                        |
-| `enable_safety_checker` | `boolean` | `true`  | Enable content safety filtering                                         |
-| `image`                 | `string`  | -       | Input image: URL or base64 data URI (required for Flux Kontext models)  |
-| `num_inference_steps`   | `number`  | Auto    | Number of denoising steps (Flux: 4 for schnell, 28 for others)          |
-| `guidance`              | `number`  | Auto    | Guidance scale for prompt adherence (Flux: 7 for schnell, 2 for others) |
-| `output_format`         | `string`  | `"png"` | Output image format ("png" or "jpg")                                    |
-| `maxPollAttempts`       | `number`  | `60`    | Maximum polling attempts for async generation                           |
-| `pollIntervalMillis`    | `number`  | `5000`  | Polling interval in milliseconds (5 seconds)                            |
+| Option                  | Type       | Default | Description                                                              |
+| ----------------------- | ---------- | ------- | ------------------------------------------------------------------------ |
+| `negative_prompt`       | `string`   | `""`    | Text describing what you don't want in the image                         |
+| `enable_safety_checker` | `boolean`  | `true`  | Enable content safety filtering                                          |
+| `image`                 | `string`   | -       | Single input image: URL or base64 data URI (Flux Kontext)                |
+| `images`                | `string[]` | -       | Multiple input images (e.g., for `nano-banana-edit` multi-image editing) |
+| `num_inference_steps`   | `number`   | Auto    | Number of denoising steps (Flux: 4 for schnell, 28 for others)           |
+| `guidance`              | `number`   | Auto    | Guidance scale for prompt adherence (Flux: 7 for schnell, 2 for others)  |
+| `output_format`         | `string`   | `"png"` | Output image format ("png" or "jpg")                                     |
+| `maxPollAttempts`       | `number`   | `60`    | Maximum polling attempts for async generation                            |
+| `pollIntervalMillis`    | `number`   | `5000`  | Polling interval in milliseconds (5 seconds)                             |
 
 ## About Runpod
 
