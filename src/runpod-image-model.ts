@@ -10,8 +10,8 @@ import {
 } from '@ai-sdk/provider-utils';
 import { InvalidArgumentError } from '@ai-sdk/provider';
 import { z } from 'zod';
-import { RunpodImageModelId } from './runpod-image-options';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 interface RunpodImageModelConfig {
   provider: string;
   baseURL: string;
@@ -136,8 +136,7 @@ export class RunpodImageModel implements ImageModelV2 {
       headers: combineHeaders(this.config.headers(), headers),
       body: {
         input: inputPayload,
-      },
-      failedResponseHandler: createJsonErrorResponseHandler({
+      },      failedResponseHandler: createJsonErrorResponseHandler({
         errorSchema: runpodImageErrorSchema as any,
         errorToMessage: (data: any) => data.error ?? 'Unknown error',
       }),

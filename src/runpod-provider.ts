@@ -8,9 +8,6 @@ import {
   loadApiKey,
   withoutTrailingSlash,
 } from '@ai-sdk/provider-utils';
-import { RunpodChatModelId } from './runpod-chat-options';
-import { RunpodCompletionModelId } from './runpod-completion-options';
-import { RunpodImageModelId } from './runpod-image-options';
 import { RunpodImageModel } from './runpod-image-model';
 
 export interface RunpodProviderSettings {
