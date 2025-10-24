@@ -57,7 +57,7 @@ export class RunpodImageModel implements ImageModelV2 {
   }
 
   constructor(
-    readonly modelId: RunpodImageModelId,
+    readonly modelId: string,
     private config: RunpodImageModelConfig
   ) {}
 
