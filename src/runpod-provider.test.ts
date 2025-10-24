@@ -77,11 +77,19 @@ describe('RunpodProvider', () => {
       expect(model).toBeInstanceOf(OpenAICompatibleChatLanguageModel);
     });
 
-    it('should throw error for unsupported model', () => {
+    it('should accept any model ID and derive endpoint for unknown models', () => {
       const provider = createRunpod();
 
-      expect(() => provider('unsupported-model')).toThrow(
-        'Unsupported Runpod model: unsupported-model'
+      const model = provider('my-custom/model-name');
+      expect(model).toBeInstanceOf(OpenAICompatibleChatLanguageModel);
+
+      const constructorCall =
+        OpenAICompatibleChatLanguageModelMock.mock.calls[0];
+      const config = constructorCall[1];
+
+      // Verify endpoint is derived by replacing / with -
+      expect(config.url({ path: '/chat/completions' })).toBe(
+        'https://api.runpod.ai/v2/my-custom-model-name/openai/v1/chat/completions'
       );
     });
   });
@@ -118,12 +126,16 @@ describe('RunpodProvider', () => {
       expect(model).toBeInstanceOf(RunpodImageModel);
     });
 
-    it('should throw error for unsupported image model', () => {
+    it('should accept any image model ID and derive endpoint for unknown models', () => {
       const provider = createRunpod();
 
-      expect(() =>
-        provider.imageModel('unsupported-image-model' as any)
-      ).toThrow('Unsupported Runpod image model: unsupported-image-model');
+      const model = provider.imageModel('my-custom/image-model' as any);
+      expect(model).toBeInstanceOf(RunpodImageModel);
+
+      // Verify the model was created with derived endpoint
+      expect((RunpodImageModel as any).mock.calls[0][1].baseURL).toBe(
+        'https://api.runpod.ai/v2/my-custom-image-model/openai/v1'
+      );
     });
   });
 
