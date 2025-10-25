@@ -80,6 +80,8 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
     'https://api.runpod.ai/v2/black-forest-labs-flux-1-schnell',
   'black-forest-labs/flux-1-dev':
     'https://api.runpod.ai/v2/black-forest-labs-flux-1-dev',
+  // Nano Banana (edit only)
+  'nano-banana-edit': 'https://api.runpod.ai/v2/nano-banana-edit',
 };
 
 // Mapping of Runpod model IDs to their OpenAI model names
