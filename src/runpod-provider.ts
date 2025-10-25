@@ -8,9 +8,6 @@ import {
   loadApiKey,
   withoutTrailingSlash,
 } from '@ai-sdk/provider-utils';
-import { RunpodChatModelId } from './runpod-chat-options';
-import { RunpodCompletionModelId } from './runpod-completion-options';
-import { RunpodImageModelId } from './runpod-image-options';
 import { RunpodImageModel } from './runpod-image-model';
 
 export interface RunpodProviderSettings {
@@ -38,32 +35,33 @@ export interface RunpodProvider {
   /**
 Creates a model for text generation.
 */
-  (modelId: RunpodChatModelId): LanguageModelV2;
+  (modelId: string): LanguageModelV2;
 
   /**
 Creates a chat model for text generation.
 */
-  chatModel(modelId: RunpodChatModelId): LanguageModelV2;
+  chatModel(modelId: string): LanguageModelV2;
 
   /**
 Creates a chat model for text generation.
 */
-  languageModel(modelId: RunpodChatModelId): LanguageModelV2;
+  languageModel(modelId: string): LanguageModelV2;
 
   /**
 Creates a completion model for text generation.
 */
-  completionModel(modelId: RunpodCompletionModelId): LanguageModelV2;
+  completionModel(modelId: string): LanguageModelV2;
 
   /**
 Creates an image model for image generation.
 */
-  imageModel(modelId: RunpodImageModelId): ImageModelV2;
+  imageModel(modelId: string): ImageModelV2;
 }
 
 // Mapping of Runpod model IDs to their endpoint URLs
 const MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   'qwen/qwen3-32b-awq': 'https://api.runpod.ai/v2/qwen3-32b-awq/openai/v1',
+  'ibm-granite/granite-4.0-h-small': 'https://api.runpod.ai/v2/granite-4-0-h-small/openai/v1',
 };
 
 // Mapping of Runpod image model IDs to their endpoint URLs
@@ -88,6 +86,15 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
 const MODEL_ID_TO_OPENAI_NAME: Record<string, string> = {
   'qwen/qwen3-32b-awq': 'Qwen/Qwen3-32B-AWQ',
 };
+
+/**
+ * Derives the endpoint URL for a model by replacing slashes with hyphens.
+ * Example: 'ibm-granite/granite-4.0-h-small' -> 'https://api.runpod.ai/v2/ibm-granite-granite-4.0-h-small/openai/v1'
+ */
+function deriveEndpointURL(modelId: string): string {
+  const normalized = modelId.replace(/\//g, '-');
+  return `https://api.runpod.ai/v2/${normalized}/openai/v1`;
+}
 
 export function createRunpod(
   options: RunpodProviderSettings = {}
@@ -131,14 +138,8 @@ export function createRunpod(
     if (options.baseURL) {
       baseURL = options.baseURL;
     } else {
-      baseURL = MODEL_ID_TO_ENDPOINT_URL[modelId];
-      if (!baseURL) {
-        throw new Error(
-          `Unsupported Runpod model: ${modelId}. Supported models: ${Object.keys(
-            MODEL_ID_TO_ENDPOINT_URL
-          ).join(', ')}. Or provide a custom baseURL.`
-        );
-      }
+      // Use hardcoded mapping if available, otherwise derive endpoint
+      baseURL = MODEL_ID_TO_ENDPOINT_URL[modelId] || deriveEndpointURL(modelId);
     }
 
     return {
@@ -149,7 +150,7 @@ export function createRunpod(
     };
   };
 
-  const createChatModel = (modelId: RunpodChatModelId) => {
+  const createChatModel = (modelId: string) => {
     const openaiModelName = MODEL_ID_TO_OPENAI_NAME[modelId] || modelId;
     return new OpenAICompatibleChatLanguageModel(openaiModelName, {
       ...getModelConfig(modelId, 'chat'),
@@ -157,7 +158,7 @@ export function createRunpod(
     });
   };
 
-  const createCompletionModel = (modelId: RunpodCompletionModelId) => {
+  const createCompletionModel = (modelId: string) => {
     const openaiModelName = MODEL_ID_TO_OPENAI_NAME[modelId] || modelId;
     return new OpenAICompatibleCompletionLanguageModel(openaiModelName, {
       ...getModelConfig(modelId, 'completion'),
@@ -165,20 +166,15 @@ export function createRunpod(
     });
   };
 
-  const createImageModel = (modelId: RunpodImageModelId) => {
+  const createImageModel = (modelId: string) => {
     let baseURL: string;
 
     if (options.baseURL) {
       baseURL = options.baseURL;
     } else {
-      baseURL = IMAGE_MODEL_ID_TO_ENDPOINT_URL[modelId];
-      if (!baseURL) {
-        throw new Error(
-          `Unsupported Runpod image model: ${modelId}. Supported models: ${Object.keys(
-            IMAGE_MODEL_ID_TO_ENDPOINT_URL
-          ).join(', ')}. Or provide a custom baseURL.`
-        );
-      }
+      // Use hardcoded mapping if available, otherwise derive endpoint
+      baseURL =
+        IMAGE_MODEL_ID_TO_ENDPOINT_URL[modelId] || deriveEndpointURL(modelId);
     }
 
     return new RunpodImageModel(modelId, {
@@ -189,7 +185,7 @@ export function createRunpod(
     });
   };
 
-  const provider = (modelId: RunpodChatModelId) => createChatModel(modelId);
+  const provider = (modelId: string) => createChatModel(modelId);
 
   provider.completionModel = createCompletionModel;
   provider.languageModel = createChatModel;

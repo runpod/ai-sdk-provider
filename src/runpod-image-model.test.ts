@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { RunpodImageModel } from './runpod-image-model';
 import { InvalidArgumentError } from '@ai-sdk/provider';
