@@ -208,6 +208,38 @@ describe('RunpodImageModel', () => {
         negative_prompt: 'bad quality',
       });
     });
+
+    it('should build correct payload for Nano Banana edit (multi-image)', () => {
+      const nanoBananaEditModel = new RunpodImageModel('nano-banana-edit', {
+        provider: 'runpod',
+        baseURL: 'https://api.runpod.ai/v2/nano-banana-edit',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+
+      const images = [
+        'https://example.com/img1.jpg',
+        'https://example.com/img2.jpg',
+        'https://example.com/img3.jpg',
+        'https://example.com/img4.jpg',
+      ];
+
+      const payload = (nanoBananaEditModel as any).buildInputPayload(
+        'Combine these four source images into a single scene',
+        '1328*1328',
+        // seed intentionally omitted to verify default assignment
+        undefined,
+        { images, enable_safety_checker: true }
+      );
+
+      expect(payload).toMatchObject({
+        prompt: 'Combine these four source images into a single scene',
+        size: '1328*1328',
+        seed: -1,
+        images,
+        enable_safety_checker: true,
+      });
+    });
   });
 
   describe('model detection', () => {
