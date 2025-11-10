@@ -1,5 +1,15 @@
 # @runpod/ai-sdk-provider
 
+## 0.8.0
+
+### Minor Changes
+
+- 2394ad6: Accept any model ID string and automatically derive endpoints for unknown models instead of throwing validation errors. Known models use hardcoded endpoint mappings. Added support for IBM Granite models.
+
+### Patch Changes
+
+- 9520f2a: chore: removed deep-cogito
+
 ## 0.7.0
 
 ### Minor Changes
