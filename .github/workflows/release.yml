@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
+  # Changesets needs write to create/version PRs; OIDC needs id-token: write
   contents: write
   pull-requests: write
   id-token: write
@@ -28,9 +30,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
-          cache: "pnpm"
-          registry-url: 'https://registry.npmjs.org'
+          node-version: 20 # Node 20 ships a new npm; we'll still update to latest
+          registry-url: https://registry.npmjs.org
+
+      # ⛔️ REMOVE token-based auth. OIDC will mint a short-lived token automatically.
+      # (No ~/.npmrc writes, no NODE_AUTH_TOKEN.)
+
+      - name: Ensure recent npm (OIDC + provenance support)
+        run: npm i -g npm@latest
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
@@ -41,13 +48,17 @@ jobs:
       - name: Run tests
         run: pnpm run test
 
-      - name: Create Release Pull Request or Publish to npm
+      # Changesets will call `npm publish` under the hood.
+      # For FIRST-EVER publish of a scoped public package, ensure access=public is set.
+      # This env forces `--access public` even when the CLI is invoked by Changesets.
+      - name: Create Release PR or Publish to npm (OIDC)
         id: changesets
         uses: changesets/action@v1
         with:
           publish: pnpm changeset:publish
           version: pnpm changeset:version
-          commit: "chore: version packages"
-          title: "chore: version packages"
+          commit: 'chore: version packages'
+          title: 'chore: version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_ACCESS: public # <-- forces public access on first publish
