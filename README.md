@@ -106,9 +106,10 @@ for await (const delta of textStream) {
 
 ### Model Capabilities
 
-| Model ID             | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes           |
-| -------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- | ------------------------- |
-| `qwen/qwen3-32b-awq` | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ❌                | ✅         | Standard reasoning events |
+| Model ID              | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes           |
+| --------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- | ------------------------- |
+| `qwen/qwen3-32b-awq`  | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ❌                | ✅         | Standard reasoning events |
+| `openai/gpt-oss-120b` | 120B parameter open-source GPT model                                | ✅        | ❌                | ✅         | Standard reasoning events |
 
 ### Chat Conversations
 
@@ -129,7 +130,7 @@ import { generateText, tool } from 'ai';
 import { z } from 'zod';
 
 const { text, toolCalls } = await generateText({
-  model: runpod('qwen/qwen3-32b-awq'),
+  model: runpod('openai/gpt-oss-120b'),
   prompt: 'What is the weather like in San Francisco?',
   tools: {
     getWeather: tool({
