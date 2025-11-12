@@ -2,7 +2,6 @@ import { ImageModelV2, ImageModelV2CallWarning } from '@ai-sdk/provider';
 import {
   combineHeaders,
   createJsonResponseHandler,
-  createJsonErrorResponseHandler,
   createBinaryResponseHandler,
   FetchFunction,
   postJsonToApi,
@@ -10,6 +9,7 @@ import {
 } from '@ai-sdk/provider-utils';
 import { InvalidArgumentError } from '@ai-sdk/provider';
 import { z } from 'zod';
+import { runpodImageFailedResponseHandler } from './runpod-error';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface RunpodImageModelConfig {
@@ -136,10 +136,8 @@ export class RunpodImageModel implements ImageModelV2 {
       headers: combineHeaders(this.config.headers(), headers),
       body: {
         input: inputPayload,
-      },      failedResponseHandler: createJsonErrorResponseHandler({
-        errorSchema: runpodImageErrorSchema as any,
-        errorToMessage: (data: any) => data.error ?? 'Unknown error',
-      }),
+      },
+      failedResponseHandler: runpodImageFailedResponseHandler,
       successfulResponseHandler: createJsonResponseHandler(
         runpodImageResponseSchema as any
       ),
@@ -226,10 +224,7 @@ export class RunpodImageModel implements ImageModelV2 {
     const { value: imageData } = await getFromApi({
       url: imageUrl,
       successfulResponseHandler: createBinaryResponseHandler(),
-      failedResponseHandler: createJsonErrorResponseHandler({
-        errorSchema: runpodImageErrorSchema as any,
-        errorToMessage: (data: any) => data.error ?? 'Failed to download image',
-      }),
+      failedResponseHandler: runpodImageFailedResponseHandler,
       abortSignal,
       fetch: this.config.fetch,
     });
@@ -255,11 +250,7 @@ export class RunpodImageModel implements ImageModelV2 {
         successfulResponseHandler: createJsonResponseHandler(
           runpodImageStatusSchema as any
         ),
-        failedResponseHandler: createJsonErrorResponseHandler({
-          errorSchema: runpodImageErrorSchema as any,
-          errorToMessage: (data: any) =>
-            data.error ?? 'Failed to check job status',
-        }),
+        failedResponseHandler: runpodImageFailedResponseHandler,
         abortSignal,
         fetch: this.config.fetch,
       });
@@ -376,10 +367,4 @@ const runpodImageStatusSchema = z.object({
     })
     .optional(),
   error: z.string().optional(), // Error message if FAILED
-});
-
-// Runpod image API error schema
-const runpodImageErrorSchema = z.object({
-  error: z.string(),
-  message: z.string().optional(),
 });
