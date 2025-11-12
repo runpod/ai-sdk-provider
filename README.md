@@ -106,9 +106,10 @@ for await (const delta of textStream) {
 
 ### Model Capabilities
 
-| Model ID             | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes           |
-| -------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- | ------------------------- |
-| `qwen/qwen3-32b-awq` | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ❌                | ✅         | Standard reasoning events |
+| Model ID              | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes           |
+| --------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- | ------------------------- |
+| `qwen/qwen3-32b-awq`  | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ❌                | ✅         | Standard reasoning events |
+| `openai/gpt-oss-120b` | 120B parameter open-source GPT model                                | ✅        | ❌                | ✅         | Standard reasoning events |
 
 **Note:** This list is not complete. For a full list of all available models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
 
@@ -131,7 +132,7 @@ import { generateText, tool } from 'ai';
 import { z } from 'zod';
 
 const { text, toolCalls } = await generateText({
-  model: runpod('qwen/qwen3-32b-awq'),
+  model: runpod('openai/gpt-oss-120b'),
   prompt: 'What is the weather like in San Francisco?',
   tools: {
     getWeather: tool({
@@ -236,7 +237,7 @@ writeFileSync('landscape.jpg', image.uint8Array);
 
 **Note**: The provider uses strict validation for image parameters. Unsupported aspect ratios (like `16:9`, `9:16`, `3:2`, `2:3`) will throw an `InvalidArgumentError` with a clear message about supported alternatives.
 
-**Note:** This list is not complete. For a full list of all available image models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
+**Note:** This list is not complete. For a full list of all available models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
 
 ### Advanced Parameters
 
@@ -347,17 +348,17 @@ const { image } = await generateImage({
 
 Runpod image models support flexible provider options through the `providerOptions.runpod` object:
 
-| Option                  | Type      | Default | Description                                                             |
-| ----------------------- | --------- | ------- | ----------------------------------------------------------------------- |
-| `negative_prompt`       | `string`  | `""`    | Text describing what you don't want in the image                        |
-| `enable_safety_checker` | `boolean` | `true`  | Enable content safety filtering                                         |
-| `image`                 | `string`  | -       | Input image: URL or base64 data URI (required for Flux Kontext models)  |
+| Option                  | Type       | Default | Description                                                              |
+| ----------------------- | ---------- | ------- | ------------------------------------------------------------------------ |
+| `negative_prompt`       | `string`   | `""`    | Text describing what you don't want in the image                         |
+| `enable_safety_checker` | `boolean`  | `true`  | Enable content safety filtering                                          |
+| `image`                 | `string`   | -       | Single input image: URL or base64 data URI (Flux Kontext)                |
 | `images`                | `string[]` | -       | Multiple input images (e.g., for `nano-banana-edit` multi-image editing) |
-| `num_inference_steps`   | `number`  | Auto    | Number of denoising steps (Flux: 4 for schnell, 28 for others)          |
-| `guidance`              | `number`  | Auto    | Guidance scale for prompt adherence (Flux: 7 for schnell, 2 for others) |
-| `output_format`         | `string`  | `"png"` | Output image format ("png" or "jpg")                                    |
-| `maxPollAttempts`       | `number`  | `60`    | Maximum polling attempts for async generation                           |
-| `pollIntervalMillis`    | `number`  | `5000`  | Polling interval in milliseconds (5 seconds)                            |
+| `num_inference_steps`   | `number`   | Auto    | Number of denoising steps (Flux: 4 for schnell, 28 for others)           |
+| `guidance`              | `number`   | Auto    | Guidance scale for prompt adherence (Flux: 7 for schnell, 2 for others)  |
+| `output_format`         | `string`   | `"png"` | Output image format ("png" or "jpg")                                     |
+| `maxPollAttempts`       | `number`   | `60`    | Maximum polling attempts for async generation                            |
+| `pollIntervalMillis`    | `number`   | `5000`  | Polling interval in milliseconds (5 seconds)                             |
 
 ## About Runpod
 
