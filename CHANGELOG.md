@@ -1,5 +1,11 @@
 # @runpod/ai-sdk-provider
 
+## 0.9.0
+
+### Minor Changes
+
+- 77439af: Add support for `openai/gpt-oss-120b` model. Users can now use this 120B parameter open-source GPT model for text generation and tool calling. The model supports streaming and tool usage.
+
 ## 0.8.1
 
 ### Patch Changes
