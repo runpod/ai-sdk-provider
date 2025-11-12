@@ -111,6 +111,8 @@ for await (const delta of textStream) {
 | `qwen/qwen3-32b-awq`  | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ❌                | ✅         | Standard reasoning events |
 | `openai/gpt-oss-120b` | 120B parameter open-source GPT model                                | ✅        | ❌                | ✅         | Standard reasoning events |
 
+**Note:** This list is not complete. For a full list of all available models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
+
 ### Chat Conversations
 
 ```ts
@@ -234,6 +236,8 @@ writeFileSync('landscape.jpg', image.uint8Array);
 | `nano-banana-edit`                     | Image editing (multi-image)     | 1:1, 4:3, 3:4                         |
 
 **Note**: The provider uses strict validation for image parameters. Unsupported aspect ratios (like `16:9`, `9:16`, `3:2`, `2:3`) will throw an `InvalidArgumentError` with a clear message about supported alternatives.
+
+**Note:** This list is not complete. For a full list of all available models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
 
 ### Advanced Parameters
 
