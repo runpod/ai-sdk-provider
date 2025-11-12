@@ -62,6 +62,8 @@ Creates an image model for image generation.
 const MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   'qwen/qwen3-32b-awq': 'https://api.runpod.ai/v2/qwen3-32b-awq/openai/v1',
   'ibm-granite/granite-4.0-h-small': 'https://api.runpod.ai/v2/granite-4-0-h-small/openai/v1',
+  'gpt-oss-120b': 'https://api.runpod.ai/v2/gpt-oss-120b/openai/v1',
+  'openai/gpt-oss-120b': 'https://api.runpod.ai/v2/gpt-oss-120b/openai/v1',
 };
 
 // Mapping of Runpod image model IDs to their endpoint URLs
