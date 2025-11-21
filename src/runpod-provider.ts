@@ -64,6 +64,8 @@ const MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   'ibm-granite/granite-4.0-h-small': 'https://api.runpod.ai/v2/granite-4-0-h-small/openai/v1',
   'gpt-oss-120b': 'https://api.runpod.ai/v2/gpt-oss-120b/openai/v1',
   'openai/gpt-oss-120b': 'https://api.runpod.ai/v2/gpt-oss-120b/openai/v1',
+  'deepcogito/cogito-671b-v2.1-fp8': 'https://api.runpod.ai/v2/cogito-671b-v2-1-fp8-dynamic/openai/v1',
+  'deepcogito/cogito-671b-v2.1-FP8': 'https://api.runpod.ai/v2/cogito-671b-v2-1-fp8-dynamic/openai/v1',
 };
 
 // Mapping of Runpod image model IDs to their endpoint URLs
@@ -87,6 +89,8 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
 // Mapping of Runpod model IDs to their OpenAI model names
 const MODEL_ID_TO_OPENAI_NAME: Record<string, string> = {
   'qwen/qwen3-32b-awq': 'Qwen/Qwen3-32B-AWQ',
+  'deepcogito/cogito-671b-v2.1-fp8': 'deepcogito/cogito-671b-v2.1-FP8',
+  'deepcogito/cogito-671b-v2.1-FP8': 'deepcogito/cogito-671b-v2.1-FP8',
 };
 
 /**

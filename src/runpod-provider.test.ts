@@ -155,5 +155,35 @@ describe('RunpodProvider', () => {
         'https://api.runpod.ai/v2/qwen3-32b-awq/openai/v1/chat/completions'
       );
     });
+
+    it('should use correct endpoint URL for cogito model (lowercase)', () => {
+      const provider = createRunpod();
+      provider('deepcogito/cogito-671b-v2.1-fp8');
+
+      const constructorCall =
+        OpenAICompatibleChatLanguageModelMock.mock.calls[0];
+      const modelName = constructorCall[0];
+      const config = constructorCall[1];
+
+      expect(modelName).toBe('deepcogito/cogito-671b-v2.1-FP8');
+      expect(config.url({ path: '/chat/completions' })).toBe(
+        'https://api.runpod.ai/v2/cogito-671b-v2-1-fp8-dynamic/openai/v1/chat/completions'
+      );
+    });
+
+    it('should use correct endpoint URL for cogito model (uppercase)', () => {
+      const provider = createRunpod();
+      provider('deepcogito/cogito-671b-v2.1-FP8');
+
+      const constructorCall =
+        OpenAICompatibleChatLanguageModelMock.mock.calls[0];
+      const modelName = constructorCall[0];
+      const config = constructorCall[1];
+
+      expect(modelName).toBe('deepcogito/cogito-671b-v2.1-FP8');
+      expect(config.url({ path: '/chat/completions' })).toBe(
+        'https://api.runpod.ai/v2/cogito-671b-v2-1-fp8-dynamic/openai/v1/chat/completions'
+      );
+    });
   });
 });
