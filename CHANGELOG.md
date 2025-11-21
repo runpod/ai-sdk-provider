@@ -1,5 +1,11 @@
 # @runpod/ai-sdk-provider
 
+## 0.10.0
+
+### Minor Changes
+
+- 3ca13ef: Add support for deepcogito/cogito-671b-v2.1-fp8 model. Users can now use either `deepcogito/cogito-671b-v2.1-fp8` (lowercase) or `deepcogito/cogito-671b-v2.1-FP8` (uppercase) - both will work correctly. The model supports text generation, streaming, object generation, and tool calling.
+
 ## 0.9.0
 
 ### Minor Changes
