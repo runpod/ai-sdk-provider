@@ -106,11 +106,10 @@ for await (const delta of textStream) {
 
 ### Model Capabilities
 
-| Model ID                        | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes           |
-| ------------------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- | ------------------------- |
-| `qwen/qwen3-32b-awq`           | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ❌                | ✅         | Standard reasoning events |
-| `openai/gpt-oss-120b`           | 120B parameter open-source GPT model                                | ✅        | ❌                | ✅         | Standard reasoning events |
-| `deepcogito/cogito-671b-v2.1-fp8` | 671B parameter Cogito model with FP8 quantization                | ✅        | ❌                | ✅         | Standard reasoning events |
+| Model ID              | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes           |
+| --------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- | ------------------------- |
+| `qwen/qwen3-32b-awq`  | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ❌                | ✅         | Standard reasoning events |
+| `openai/gpt-oss-120b` | 120B parameter open-source GPT model                                | ✅        | ❌                | ✅         | Standard reasoning events |
 
 **Note:** This list is not complete. For a full list of all available models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
 
