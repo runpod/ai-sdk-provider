@@ -75,10 +75,21 @@ export class RunpodImageModel implements ImageModelV2 {
   > {
     const warnings: Array<ImageModelV2CallWarning> = [];
 
+    // Check if this is a Pruna model (skip standard size/aspectRatio validation)
+    const isPrunaModel =
+      this.modelId.includes('pruna') || this.modelId.includes('p-image');
+
+    // Check if this is a Nano Banana Pro model (skip standard size/aspectRatio validation)
+    const isNanoBananaProModel = this.modelId.includes('nano-banana-pro');
+
     // Determine the size to use
     let runpodSize: string;
 
-    if (size) {
+    if (isPrunaModel || isNanoBananaProModel) {
+      // These models use aspect_ratio string directly, skip size validation
+      // Pass through the aspectRatio or use default, validation happens at API level
+      runpodSize = aspectRatio || '1:1';
+    } else if (size) {
       // Convert AI SDK format "1328x1328" to Runpod format "1328*1328"
       const runpodSizeCandidate = size.replace('x', '*');
 
@@ -128,7 +139,8 @@ export class RunpodImageModel implements ImageModelV2 {
       prompt,
       runpodSize,
       seed,
-      providerOptions.runpod
+      providerOptions.runpod,
+      aspectRatio
     );
 
     const { value: response, responseHeaders } = await postJsonToApi({
@@ -286,7 +298,8 @@ export class RunpodImageModel implements ImageModelV2 {
     prompt: string,
     runpodSize: string,
     seed?: number,
-    runpodOptions?: Record<string, unknown>
+    runpodOptions?: Record<string, unknown>,
+    aspectRatio?: string
   ): Record<string, unknown> {
     // Check if this is a Flux model that uses different parameters
     const isFluxModel =
@@ -329,60 +342,96 @@ export class RunpodImageModel implements ImageModelV2 {
     }
 
     // Check if this is a Pruna model
-    const isPrunaModel = this.modelId.includes('pruna') || this.modelId.includes('p-image');
+    const isPrunaModel =
+      this.modelId.includes('pruna') || this.modelId.includes('p-image');
     if (isPrunaModel) {
       const isPrunaEdit = this.modelId.includes('edit');
 
       if (isPrunaEdit) {
-        // Pruna image edit uses images array and aspect_ratio string
-        return {
+        // Pruna image edit
+        // Supported aspect_ratio: "match_input_image", "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3"
+        // Supports 1-5 images via providerOptions.runpod.images
+        const editPayload: Record<string, unknown> = {
           prompt,
-          seed: seed ?? -1,
-          aspect_ratio: runpodOptions?.aspect_ratio ?? 'match_input_image',
-          disable_safety_checker: runpodOptions?.disable_safety_checker ?? false,
-          enable_sync_mode: runpodOptions?.enable_sync_mode ?? false,
-          ...runpodOptions,
+          aspect_ratio:
+            (runpodOptions?.aspect_ratio as string) ??
+            aspectRatio ??
+            'match_input_image',
+          disable_safety_checker:
+            (runpodOptions?.disable_safety_checker as boolean) ?? false,
         };
-      } else {
-        // Pruna text-to-image uses aspect_ratio string format
-        const aspectRatioMap: Record<string, string> = {
-          '1328*1328': '1:1',
-          '1472*1140': '4:3',
-          '1140*1472': '3:4',
-          '512*512': '1:1',
-          '768*768': '1:1',
-          '1024*1024': '1:1',
-          '1536*1536': '1:1',
-          '2048*2048': '1:1',
-          '4096*4096': '1:1',
-          '512*768': '2:3',
-          '768*512': '3:2',
-          '1024*768': '4:3',
-          '768*1024': '3:4',
-        };
-        const aspectRatio = runpodOptions?.aspect_ratio ?? aspectRatioMap[runpodSize] ?? '1:1';
 
-        return {
+        // Add seed if provided
+        if (seed !== undefined) {
+          editPayload.seed = seed;
+        } else if (runpodOptions?.seed !== undefined) {
+          editPayload.seed = runpodOptions.seed;
+        }
+
+        // Add images array (required, 1-5 images)
+        if (runpodOptions?.images) {
+          editPayload.images = runpodOptions.images;
+        }
+
+        return editPayload;
+      } else {
+        // Pruna text-to-image
+        // Supported aspect_ratio: "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "custom"
+        // For custom: width/height 256-1440, must be multiple of 16
+        const t2iPayload: Record<string, unknown> = {
           prompt,
-          seed: seed ?? 0,
-          aspect_ratio: aspectRatio,
-          enable_safety_checker: runpodOptions?.enable_safety_checker ?? true,
-          ...runpodOptions,
+          aspect_ratio:
+            (runpodOptions?.aspect_ratio as string) ?? aspectRatio ?? '1:1',
+          disable_safety_checker:
+            (runpodOptions?.disable_safety_checker as boolean) ?? false,
         };
+
+        // Add seed if provided
+        if (seed !== undefined) {
+          t2iPayload.seed = seed;
+        } else if (runpodOptions?.seed !== undefined) {
+          t2iPayload.seed = runpodOptions.seed;
+        }
+
+        // Handle custom aspect ratio with width/height
+        if (t2iPayload.aspect_ratio === 'custom') {
+          if (runpodOptions?.width) {
+            t2iPayload.width = runpodOptions.width;
+          }
+          if (runpodOptions?.height) {
+            t2iPayload.height = runpodOptions.height;
+          }
+        }
+
+        return t2iPayload;
       }
     }
 
     // Check if this is a Nano Banana Pro model (google/nano-banana-pro-edit)
     const isNanaBananaProModel = this.modelId.includes('nano-banana-pro');
     if (isNanaBananaProModel) {
-      return {
+      // Nano Banana Pro image edit
+      // Supported aspect_ratio: "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "21:9", "9:21"
+      // Supported resolution: "1k", "2k", "4k"
+      // Supported output_format: "jpeg", "png", "webp"
+      const nanoBananaPayload: Record<string, unknown> = {
         prompt,
-        resolution: runpodOptions?.resolution ?? '1k',
-        output_format: runpodOptions?.output_format ?? 'jpeg',
-        enable_base64_output: runpodOptions?.enable_base64_output ?? false,
-        enable_sync_mode: runpodOptions?.enable_sync_mode ?? false,
-        ...runpodOptions,
+        aspect_ratio:
+          (runpodOptions?.aspect_ratio as string) ?? aspectRatio ?? '1:1',
+        resolution: (runpodOptions?.resolution as string) ?? '1k',
+        output_format: (runpodOptions?.output_format as string) ?? 'jpeg',
+        enable_base64_output:
+          (runpodOptions?.enable_base64_output as boolean) ?? false,
+        enable_sync_mode:
+          (runpodOptions?.enable_sync_mode as boolean) ?? false,
       };
+
+      // Add images array (required)
+      if (runpodOptions?.images) {
+        nanoBananaPayload.images = runpodOptions.images;
+      }
+
+      return nanoBananaPayload;
     }
 
     // Default format for Qwen and other models
