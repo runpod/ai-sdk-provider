@@ -235,13 +235,84 @@ writeFileSync('landscape.jpg', image.uint8Array);
 | `qwen/qwen-image`                      | Text-to-image generation        | 1:1, 4:3, 3:4                         |
 | `qwen/qwen-image-edit`                 | Image editing (prompt-guided)   | 1:1, 4:3, 3:4                         |
 | `nano-banana-edit`                     | Image editing (multi-image)     | 1:1, 4:3, 3:4                         |
-| `google/nano-banana-pro-edit`          | Image editing (Gemini-powered)  | Uses resolution param (1k, 2k)        |
-| `pruna/p-image-t2i`                    | Pruna text-to-image             | 1:1, 16:9, 9:16, 4:3, 3:4, etc.       |
-| `pruna/p-image-edit`                   | Pruna image editing             | match_input_image, 1:1, 16:9, etc.    |
-
-**Note**: The provider uses strict validation for image parameters. Unsupported aspect ratios (like `16:9`, `9:16`, `3:2`, `2:3`) will throw an `InvalidArgumentError` with a clear message about supported alternatives.
 
 **Note:** This list is not complete. For a full list of all available models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
+
+### Pruna Models
+
+Pruna models support flexible aspect ratios directly via the standard `aspectRatio` parameter.
+
+#### Pruna Text-to-Image (`pruna/p-image-t2i`)
+
+```ts
+const { image } = await generateImage({
+  model: runpod.imageModel('pruna/p-image-t2i'),
+  prompt: 'A majestic lion standing on a rocky cliff at sunset',
+  aspectRatio: '16:9', // Use standard AI SDK parameter
+  seed: 42, // Optional: for reproducible results
+});
+```
+
+**Supported aspect ratios:** `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `custom`
+
+For custom aspect ratio, use `providerOptions.runpod.width` and `height` (256-1440, must be multiple of 16):
+
+```ts
+const { image } = await generateImage({
+  model: runpod.imageModel('pruna/p-image-t2i'),
+  prompt: 'A robot',
+  providerOptions: {
+    runpod: {
+      aspect_ratio: 'custom',
+      width: 512,
+      height: 768,
+    },
+  },
+});
+```
+
+#### Pruna Image Edit (`pruna/p-image-edit`)
+
+```ts
+const { image } = await generateImage({
+  model: runpod.imageModel('pruna/p-image-edit'),
+  prompt: 'Transform into watercolor painting style',
+  aspectRatio: '16:9', // Use standard AI SDK parameter
+  seed: 42, // Optional
+  providerOptions: {
+    runpod: {
+      images: ['https://example.com/input.jpg'], // 1-5 images required
+    },
+  },
+});
+```
+
+**Supported aspect ratios:** `match_input_image`, `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`
+
+### Nano Banana Pro Model
+
+#### Google Nano Banana Pro Edit (`google/nano-banana-pro-edit`)
+
+```ts
+const { image } = await generateImage({
+  model: runpod.imageModel('google/nano-banana-pro-edit'),
+  prompt: 'Add Christmas decorations to this scene',
+  aspectRatio: '16:9', // Use standard AI SDK parameter
+  providerOptions: {
+    runpod: {
+      images: ['https://example.com/input.jpg'], // Required
+      resolution: '1k', // Optional: "1k", "2k", or "4k"
+      output_format: 'jpeg', // Optional: "jpeg", "png", or "webp"
+    },
+  },
+});
+```
+
+**Supported aspect ratios:** `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `9:21`
+
+**Supported resolutions:** `1k`, `2k`, `4k`
+
+**Supported output formats:** `jpeg`, `png`, `webp`
 
 ### Advanced Parameters
 
