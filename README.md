@@ -106,11 +106,11 @@ for await (const delta of textStream) {
 
 ### Model Capabilities
 
-| Model ID                        | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes           |
-| ------------------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- | ------------------------- |
-| `qwen/qwen3-32b-awq`           | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ❌                | ✅         | Standard reasoning events |
-| `openai/gpt-oss-120b`           | 120B parameter open-source GPT model                                | ✅        | ❌                | ✅         | Standard reasoning events |
-| `deepcogito/cogito-671b-v2.1-fp8` | 671B parameter Cogito model with FP8 quantization                | ✅        | ❌                | ✅         | Standard reasoning events |
+| Model ID                          | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes           |
+| --------------------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- | ------------------------- |
+| `qwen/qwen3-32b-awq`              | 32B parameter multilingual model with strong reasoning capabilities | ✅        | ❌                | ✅         | Standard reasoning events |
+| `openai/gpt-oss-120b`             | 120B parameter open-source GPT model                                | ✅        | ❌                | ✅         | Standard reasoning events |
+| `deepcogito/cogito-671b-v2.1-fp8` | 671B parameter Cogito model with FP8 quantization                   | ✅        | ❌                | ✅         | Standard reasoning events |
 
 **Note:** This list is not complete. For a full list of all available models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
 
@@ -235,6 +235,9 @@ writeFileSync('landscape.jpg', image.uint8Array);
 | `qwen/qwen-image`                      | Text-to-image generation        | 1:1, 4:3, 3:4                         |
 | `qwen/qwen-image-edit`                 | Image editing (prompt-guided)   | 1:1, 4:3, 3:4                         |
 | `nano-banana-edit`                     | Image editing (multi-image)     | 1:1, 4:3, 3:4                         |
+| `google/nano-banana-pro-edit`          | Image editing (Gemini-powered)  | Uses resolution param (1k, 2k)        |
+| `pruna/p-image-t2i`                    | Pruna text-to-image             | 1:1, 16:9, 9:16, 4:3, 3:4, etc.       |
+| `pruna/p-image-edit`                   | Pruna image editing             | match_input_image, 1:1, 16:9, etc.    |
 
 **Note**: The provider uses strict validation for image parameters. Unsupported aspect ratios (like `16:9`, `9:16`, `3:2`, `2:3`) will throw an `InvalidArgumentError` with a clear message about supported alternatives.
 
@@ -307,6 +310,8 @@ const { image } = await generateImage({
 });
 ```
 
+Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
+
 ### Advanced Configuration
 
 ```ts
@@ -349,17 +354,22 @@ const { image } = await generateImage({
 
 Runpod image models support flexible provider options through the `providerOptions.runpod` object:
 
-| Option                  | Type       | Default | Description                                                              |
-| ----------------------- | ---------- | ------- | ------------------------------------------------------------------------ |
-| `negative_prompt`       | `string`   | `""`    | Text describing what you don't want in the image                         |
-| `enable_safety_checker` | `boolean`  | `true`  | Enable content safety filtering                                          |
-| `image`                 | `string`   | -       | Single input image: URL or base64 data URI (Flux Kontext)                |
-| `images`                | `string[]` | -       | Multiple input images (e.g., for `nano-banana-edit` multi-image editing) |
-| `num_inference_steps`   | `number`   | Auto    | Number of denoising steps (Flux: 4 for schnell, 28 for others)           |
-| `guidance`              | `number`   | Auto    | Guidance scale for prompt adherence (Flux: 7 for schnell, 2 for others)  |
-| `output_format`         | `string`   | `"png"` | Output image format ("png" or "jpg")                                     |
-| `maxPollAttempts`       | `number`   | `60`    | Maximum polling attempts for async generation                            |
-| `pollIntervalMillis`    | `number`   | `5000`  | Polling interval in milliseconds (5 seconds)                             |
+| Option                   | Type       | Default | Description                                                              |
+| ------------------------ | ---------- | ------- | ------------------------------------------------------------------------ |
+| `negative_prompt`        | `string`   | `""`    | Text describing what you don't want in the image                         |
+| `enable_safety_checker`  | `boolean`  | `true`  | Enable content safety filtering                                          |
+| `disable_safety_checker` | `boolean`  | `false` | Disable safety checker (Pruna models)                                    |
+| `image`                  | `string`   | -       | Single input image: URL or base64 data URI (Flux Kontext)                |
+| `images`                 | `string[]` | -       | Multiple input images (e.g., for `nano-banana-edit` multi-image editing) |
+| `aspect_ratio`           | `string`   | `"1:1"` | Aspect ratio string (Pruna: "16:9", "match_input_image", etc.)           |
+| `resolution`             | `string`   | `"1k"`  | Output resolution (Nano Banana Pro: "1k", "2k")                          |
+| `num_inference_steps`    | `number`   | Auto    | Number of denoising steps (Flux: 4 for schnell, 28 for others)           |
+| `guidance`               | `number`   | Auto    | Guidance scale for prompt adherence (Flux: 7 for schnell, 2 for others)  |
+| `output_format`          | `string`   | `"png"` | Output image format ("png", "jpg", or "jpeg")                            |
+| `enable_base64_output`   | `boolean`  | `false` | Return base64 instead of URL (Nano Banana Pro)                           |
+| `enable_sync_mode`       | `boolean`  | `false` | Enable synchronous mode (some models)                                    |
+| `maxPollAttempts`        | `number`   | `60`    | Maximum polling attempts for async generation                            |
+| `pollIntervalMillis`     | `number`   | `5000`  | Polling interval in milliseconds (5 seconds)                             |
 
 ## About Runpod
 
