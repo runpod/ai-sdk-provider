@@ -328,6 +328,63 @@ export class RunpodImageModel implements ImageModelV2 {
       }
     }
 
+    // Check if this is a Pruna model
+    const isPrunaModel = this.modelId.includes('pruna') || this.modelId.includes('p-image');
+    if (isPrunaModel) {
+      const isPrunaEdit = this.modelId.includes('edit');
+
+      if (isPrunaEdit) {
+        // Pruna image edit uses images array and aspect_ratio string
+        return {
+          prompt,
+          seed: seed ?? -1,
+          aspect_ratio: runpodOptions?.aspect_ratio ?? 'match_input_image',
+          disable_safety_checker: runpodOptions?.disable_safety_checker ?? false,
+          enable_sync_mode: runpodOptions?.enable_sync_mode ?? false,
+          ...runpodOptions,
+        };
+      } else {
+        // Pruna text-to-image uses aspect_ratio string format
+        const aspectRatioMap: Record<string, string> = {
+          '1328*1328': '1:1',
+          '1472*1140': '4:3',
+          '1140*1472': '3:4',
+          '512*512': '1:1',
+          '768*768': '1:1',
+          '1024*1024': '1:1',
+          '1536*1536': '1:1',
+          '2048*2048': '1:1',
+          '4096*4096': '1:1',
+          '512*768': '2:3',
+          '768*512': '3:2',
+          '1024*768': '4:3',
+          '768*1024': '3:4',
+        };
+        const aspectRatio = runpodOptions?.aspect_ratio ?? aspectRatioMap[runpodSize] ?? '1:1';
+
+        return {
+          prompt,
+          seed: seed ?? 0,
+          aspect_ratio: aspectRatio,
+          enable_safety_checker: runpodOptions?.enable_safety_checker ?? true,
+          ...runpodOptions,
+        };
+      }
+    }
+
+    // Check if this is a Nano Banana Pro model (google/nano-banana-pro-edit)
+    const isNanaBananaProModel = this.modelId.includes('nano-banana-pro');
+    if (isNanaBananaProModel) {
+      return {
+        prompt,
+        resolution: runpodOptions?.resolution ?? '1k',
+        output_format: runpodOptions?.output_format ?? 'jpeg',
+        enable_base64_output: runpodOptions?.enable_base64_output ?? false,
+        enable_sync_mode: runpodOptions?.enable_sync_mode ?? false,
+        ...runpodOptions,
+      };
+    }
+
     // Default format for Qwen and other models
     return {
       prompt,
