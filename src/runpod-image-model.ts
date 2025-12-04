@@ -349,14 +349,12 @@ export class RunpodImageModel implements ImageModelV2 {
 
       if (isPrunaEdit) {
         // Pruna image edit
-        // Supported aspect_ratio: "match_input_image", "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3"
+        // Supported aspect_ratio: "1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3"
         // Supports 1-5 images via providerOptions.runpod.images
         const editPayload: Record<string, unknown> = {
           prompt,
           aspect_ratio:
-            (runpodOptions?.aspect_ratio as string) ??
-            aspectRatio ??
-            'match_input_image',
+            (runpodOptions?.aspect_ratio as string) ?? aspectRatio ?? '1:1',
           disable_safety_checker:
             (runpodOptions?.disable_safety_checker as boolean) ?? false,
         };
