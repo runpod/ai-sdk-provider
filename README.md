@@ -224,39 +224,35 @@ writeFileSync('landscape.jpg', image.uint8Array);
 
 ### Model Capabilities
 
-| Model ID                               | Description                     | Supported Aspect Ratios                         |
-| -------------------------------------- | ------------------------------- | ----------------------------------------------- |
-| `bytedance/seedream-3.0`               | Advanced text-to-image model    | 1:1, 4:3, 3:4                                   |
-| `bytedance/seedream-4.0`               | Text-to-image (v4)              | 1:1 (supports 1024, 2048, 4096)                 |
-| `bytedance/seedream-4.0-edit`          | Image editing (v4, multi-image) | 1:1 (supports 1024, 1536, 2048, 4096)           |
-| `black-forest-labs/flux-1-schnell`     | Fast image generation (4 steps) | 1:1, 4:3, 3:4                                   |
-| `black-forest-labs/flux-1-dev`         | High-quality image generation   | 1:1, 4:3, 3:4                                   |
-| `black-forest-labs/flux-1-kontext-dev` | Context-aware image generation  | 1:1, 4:3, 3:4                                   |
-| `qwen/qwen-image`                      | Text-to-image generation        | 1:1, 4:3, 3:4                                   |
-| `qwen/qwen-image-edit`                 | Image editing (prompt-guided)   | 1:1, 4:3, 3:4                                   |
-| `nano-banana-edit`                     | Image editing (multi-image)     | 1:1, 4:3, 3:4                                   |
-| `google/nano-banana-pro-edit`          | Image editing (Gemini-powered)  | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, 21:9, 9:21 |
+| Model ID                               | Type |
+| -------------------------------------- | ---- |
+| `bytedance/seedream-3.0`               | t2i  |
+| `bytedance/seedream-4.0`               | t2i  |
+| `bytedance/seedream-4.0-edit`          | edit |
+| `black-forest-labs/flux-1-schnell`     | t2i  |
+| `black-forest-labs/flux-1-dev`         | t2i  |
+| `black-forest-labs/flux-1-kontext-dev` | edit |
+| `qwen/qwen-image`                      | t2i  |
+| `qwen/qwen-image-edit`                 | edit |
+| `nano-banana-edit`                     | edit |
+| `google/nano-banana-pro-edit`          | edit |
+| `pruna/p-image-t2i`                    | t2i  |
+| `pruna/p-image-edit`                   | edit |
 
-**Note:** This list is not complete. For a full list of all available models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
+For the full list of models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
 
 ### Pruna Models
 
-Pruna models support flexible aspect ratios directly via the standard `aspectRatio` parameter.
+Supported models: `pruna/p-image-t2i`, `pruna/p-image-edit`
 
-#### Pruna Text-to-Image (`pruna/p-image-t2i`)
+| Parameter                       | Supported Values                                  | Notes                                                 |
+| :------------------------------ | :------------------------------------------------ | :---------------------------------------------------- |
+| `aspectRatio`                   | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3` | Standard AI SDK parameter                             |
+| `aspectRatio` (t2i only)        | `custom`                                          | Requires `width` & `height` in providerOptions        |
+| `providerOptions.runpod.width` / `height` | `256` - `1440`                                    | Custom dimensions (t2i only). Must be multiple of 16. |
+| `providerOptions.runpod.images` | `string[]`                                        | Required for `p-image-edit`. Supports 1-5 images.     |
 
-```ts
-const { image } = await generateImage({
-  model: runpod.imageModel('pruna/p-image-t2i'),
-  prompt: 'A majestic lion standing on a rocky cliff at sunset',
-  aspectRatio: '16:9', // Use standard AI SDK parameter
-  seed: 42, // Optional: for reproducible results
-});
-```
-
-**Supported aspect ratios:** `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `custom`
-
-For custom aspect ratio, use `providerOptions.runpod.width` and `height` (256-1440, must be multiple of 16):
+**Example: Custom Resolution (t2i)**
 
 ```ts
 const { image } = await generateImage({
@@ -272,48 +268,25 @@ const { image } = await generateImage({
 });
 ```
 
-#### Pruna Image Edit (`pruna/p-image-edit`)
+### Google Models
 
-```ts
-const { image } = await generateImage({
-  model: runpod.imageModel('pruna/p-image-edit'),
-  prompt: 'Transform into watercolor painting style',
-  aspectRatio: '16:9', // Use standard AI SDK parameter
-  seed: 42, // Optional
-  providerOptions: {
-    runpod: {
-      images: ['https://example.com/input.jpg'], // 1-5 images required
-    },
-  },
-});
-```
+#### Nano Banana Pro
 
-**Supported aspect ratios:** `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`
+Supported model: `google/nano-banana-pro-edit`
 
-### Nano Banana Pro Model
+| Parameter                       | Supported Values                                                  | Notes                             |
+| :------------------------------ | :---------------------------------------------------------------- | :-------------------------------- |
+| `aspectRatio`                   | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `9:21` | Standard AI SDK parameter         |
+| `resolution`                    | `1k`, `2k`, `4k`                                                  | Output resolution quality         |
+| `output_format`                 | `jpeg`, `png`, `webp`                                             | Output image format               |
+| `providerOptions.runpod.images` | `string[]`                                                        | Required. Input image(s) to edit. |
 
-#### Google Nano Banana Pro Edit (`google/nano-banana-pro-edit`)
+### Other Models
 
-```ts
-const { image } = await generateImage({
-  model: runpod.imageModel('google/nano-banana-pro-edit'),
-  prompt: 'Add Christmas decorations to this scene',
-  aspectRatio: '16:9', // Use standard AI SDK parameter
-  providerOptions: {
-    runpod: {
-      images: ['https://example.com/input.jpg'], // Required
-      resolution: '1k', // Optional: "1k", "2k", or "4k"
-      output_format: 'jpeg', // Optional: "jpeg", "png", or "webp"
-    },
-  },
-});
-```
+Most other models (Flux, Seedream, Qwen, etc.) support standard `1:1`, `4:3`, and `3:4` aspect ratios.
 
-**Supported aspect ratios:** `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `9:21`
-
-**Supported resolutions:** `1k`, `2k`, `4k`
-
-**Supported output formats:** `jpeg`, `png`, `webp`
+- **Flux models**: Support `num_inference_steps` and `guidance` settings.
+- **Edit models**: Require an input image via `providerOptions.runpod.image` (single) or `images` (multiple).
 
 ### Advanced Parameters
 
@@ -424,24 +397,22 @@ const { image } = await generateImage({
 
 ### Provider Options
 
-Runpod image models support flexible provider options through the `providerOptions.runpod` object:
+Use `providerOptions.runpod` for model-specific parameters:
 
-| Option                   | Type       | Default | Description                                                              |
-| ------------------------ | ---------- | ------- | ------------------------------------------------------------------------ |
-| `negative_prompt`        | `string`   | `""`    | Text describing what you don't want in the image                         |
-| `enable_safety_checker`  | `boolean`  | `true`  | Enable content safety filtering                                          |
-| `disable_safety_checker` | `boolean`  | `false` | Disable safety checker (Pruna models)                                    |
-| `image`                  | `string`   | -       | Single input image: URL or base64 data URI (Flux Kontext)                |
-| `images`                 | `string[]` | -       | Multiple input images (e.g., for `nano-banana-edit` multi-image editing) |
-| `aspect_ratio`           | `string`   | `"1:1"` | Aspect ratio string (Pruna: "16:9", "match_input_image", etc.)           |
-| `resolution`             | `string`   | `"1k"`  | Output resolution (Nano Banana Pro: "1k", "2k")                          |
-| `num_inference_steps`    | `number`   | Auto    | Number of denoising steps (Flux: 4 for schnell, 28 for others)           |
-| `guidance`               | `number`   | Auto    | Guidance scale for prompt adherence (Flux: 7 for schnell, 2 for others)  |
-| `output_format`          | `string`   | `"png"` | Output image format ("png", "jpg", or "jpeg")                            |
-| `enable_base64_output`   | `boolean`  | `false` | Return base64 instead of URL (Nano Banana Pro)                           |
-| `enable_sync_mode`       | `boolean`  | `false` | Enable synchronous mode (some models)                                    |
-| `maxPollAttempts`        | `number`   | `60`    | Maximum polling attempts for async generation                            |
-| `pollIntervalMillis`     | `number`   | `5000`  | Polling interval in milliseconds (5 seconds)                             |
+| Option                   | Type       | Default | Description                                     |
+| ------------------------ | ---------- | ------- | ----------------------------------------------- |
+| `negative_prompt`        | `string`   | `""`    | What to avoid in the image                      |
+| `enable_safety_checker`  | `boolean`  | `true`  | Content safety filtering                        |
+| `disable_safety_checker` | `boolean`  | `false` | Disable safety checker (Pruna)                  |
+| `image`                  | `string`   | -       | Input image URL or base64 (Flux Kontext)        |
+| `images`                 | `string[]` | -       | Multiple input images (edit models)             |
+| `resolution`             | `string`   | `"1k"`  | Output resolution: 1k, 2k, 4k (Nano Banana Pro) |
+| `width` / `height`       | `number`   | -       | Custom dimensions (Pruna t2i, 256-1440)         |
+| `num_inference_steps`    | `number`   | Auto    | Denoising steps                                 |
+| `guidance`               | `number`   | Auto    | Prompt adherence strength                       |
+| `output_format`          | `string`   | `"png"` | Output format: png, jpg, jpeg, webp             |
+| `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                            |
+| `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                           |
 
 ## About Runpod
 
