@@ -1,5 +1,11 @@
 # @runpod/ai-sdk-provider
 
+## 0.11.2
+
+### Patch Changes
+
+- ace58c2: Add comprehensive documentation for Pruna and Nano Banana Pro models, including all supported aspect ratios, resolutions, and output formats. Update examples to use standard AI SDK options where possible.
+
 ## 0.11.1
 
 ### Patch Changes
