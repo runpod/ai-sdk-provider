@@ -55,6 +55,11 @@ Creates a completion model for text generation.
   /**
 Creates an image model for image generation.
 */
+  image(modelId: string): ImageModelV2;
+
+  /**
+Creates an image model for image generation.
+*/
   imageModel(modelId: string): ImageModelV2;
 }
 
@@ -201,6 +206,7 @@ export function createRunpod(
   provider.completionModel = createCompletionModel;
   provider.languageModel = createChatModel;
   provider.chatModel = createChatModel;
+  provider.image = createImageModel;
   provider.imageModel = createImageModel;
 
   return provider;

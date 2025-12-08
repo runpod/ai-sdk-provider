@@ -196,7 +196,7 @@ console.log(result.success ? result.data : parsed);
 
 ## Image Models
 
-You can create Runpod image models using the `.imageModel()` factory method.
+You can create Runpod image models using the `.image()` method (or its alias `.imageModel()`).
 
 ### Basic Usage
 
@@ -205,7 +205,7 @@ import { runpod } from '@runpod/ai-sdk-provider';
 import { experimental_generateImage as generateImage } from 'ai';
 
 const { image } = await generateImage({
-  model: runpod.imageModel('qwen/qwen-image'),
+  model: runpod.image('qwen/qwen-image'),
   prompt: 'A serene mountain landscape at sunset',
   aspectRatio: '4:3',
 });
@@ -245,18 +245,18 @@ For the full list of models, see the [Runpod Public Endpoint Reference](https://
 
 Supported models: `pruna/p-image-t2i`, `pruna/p-image-edit`
 
-| Parameter                       | Supported Values                                  | Notes                                                 |
-| :------------------------------ | :------------------------------------------------ | :---------------------------------------------------- |
-| `aspectRatio`                   | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3` | Standard AI SDK parameter                             |
-| `aspectRatio` (t2i only)        | `custom`                                          | Requires `width` & `height` in providerOptions        |
+| Parameter                                 | Supported Values                                  | Notes                                                 |
+| :---------------------------------------- | :------------------------------------------------ | :---------------------------------------------------- |
+| `aspectRatio`                             | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3` | Standard AI SDK parameter                             |
+| `aspectRatio` (t2i only)                  | `custom`                                          | Requires `width` & `height` in providerOptions        |
 | `providerOptions.runpod.width` / `height` | `256` - `1440`                                    | Custom dimensions (t2i only). Must be multiple of 16. |
-| `providerOptions.runpod.images` | `string[]`                                        | Required for `p-image-edit`. Supports 1-5 images.     |
+| `providerOptions.runpod.images`           | `string[]`                                        | Required for `p-image-edit`. Supports 1-5 images.     |
 
 **Example: Custom Resolution (t2i)**
 
 ```ts
 const { image } = await generateImage({
-  model: runpod.imageModel('pruna/p-image-t2i'),
+  model: runpod.image('pruna/p-image-t2i'),
   prompt: 'A robot',
   providerOptions: {
     runpod: {
@@ -292,7 +292,7 @@ Most other models (Flux, Seedream, Qwen, etc.) support standard `1:1`, `4:3`, an
 
 ```ts
 const { image } = await generateImage({
-  model: runpod.imageModel('bytedance/seedream-3.0'),
+  model: runpod.image('bytedance/seedream-3.0'),
   prompt: 'A sunset over mountains',
   size: '1328x1328',
   seed: 42,
@@ -312,7 +312,7 @@ Transform existing images using text prompts.
 ```ts
 // Example: Transform existing image
 const { image } = await generateImage({
-  model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
+  model: runpod.image('black-forest-labs/flux-1-kontext-dev'),
   prompt: 'Transform this into a cyberpunk style with neon lights',
   aspectRatio: '1:1',
   providerOptions: {
@@ -324,7 +324,7 @@ const { image } = await generateImage({
 
 // Example: Using base64 encoded image
 const { image } = await generateImage({
-  model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
+  model: runpod.image('black-forest-labs/flux-1-kontext-dev'),
   prompt: 'Make this image look like a painting',
   providerOptions: {
     runpod: {
@@ -337,7 +337,7 @@ const { image } = await generateImage({
 ```ts
 // Example: Combine multiple images using Nano Banana edit
 const { image } = await generateImage({
-  model: runpod.imageModel('nano-banana-edit'),
+  model: runpod.image('nano-banana-edit'),
   prompt:
     'Combine these four images into a single realistic 3D character scene.',
   // Defaults to 1:1; you can also set size: '1328x1328' or aspectRatio: '4:3'
@@ -362,7 +362,7 @@ Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/get
 ```ts
 // Full control over generation parameters
 const { image } = await generateImage({
-  model: runpod.imageModel('black-forest-labs/flux-1-dev'),
+  model: runpod.image('black-forest-labs/flux-1-dev'),
   prompt: 'A majestic dragon breathing fire in a medieval castle',
   size: '1328x1328',
   seed: 42, // For reproducible results
@@ -382,7 +382,7 @@ const { image } = await generateImage({
 
 // Fast generation with minimal steps
 const { image } = await generateImage({
-  model: runpod.imageModel('black-forest-labs/flux-1-schnell'),
+  model: runpod.image('black-forest-labs/flux-1-schnell'),
   prompt: 'A simple red apple',
   aspectRatio: '1:1',
   providerOptions: {
