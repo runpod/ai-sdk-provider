@@ -1,4 +1,4 @@
-import { LanguageModelV2, ImageModelV2 } from '@ai-sdk/provider';
+import { ImageModelV2, LanguageModelV2, SpeechModelV3 } from '@ai-sdk/provider';
 import {
   OpenAICompatibleChatLanguageModel,
   OpenAICompatibleCompletionLanguageModel,
@@ -9,6 +9,7 @@ import {
   withoutTrailingSlash,
 } from '@ai-sdk/provider-utils';
 import { RunpodImageModel } from './runpod-image-model';
+import { RunpodSpeechModel } from './runpod-speech-model';
 
 export interface RunpodProviderSettings {
   /**
@@ -56,6 +57,16 @@ Creates a completion model for text generation.
 Creates an image model for image generation.
 */
   imageModel(modelId: string): ImageModelV2;
+
+  /**
+Creates a speech model for speech generation.
+*/
+  speechModel(modelId: string): SpeechModelV3;
+
+  /**
+Creates a speech model for speech generation.
+*/
+  speech(modelId: string): SpeechModelV3;
 }
 
 // Mapping of Runpod model IDs to their endpoint URLs
@@ -105,6 +116,29 @@ const MODEL_ID_TO_OPENAI_NAME: Record<string, string> = {
 function deriveEndpointURL(modelId: string): string {
   const normalized = modelId.replace(/\//g, '-');
   return `https://api.runpod.ai/v2/${normalized}/openai/v1`;
+}
+
+function parseRunpodConsoleEndpointId(modelIdOrUrl: string): string | null {
+  if (!modelIdOrUrl.startsWith('http')) {
+    return null;
+  }
+
+  try {
+    const url = new URL(modelIdOrUrl);
+    if (url.hostname !== 'console.runpod.io') {
+      return null;
+    }
+
+    // Example:
+    // https://console.runpod.io/serverless/user/endpoint/<ENDPOINT_ID>
+    const parts = url.pathname.split('/').filter(Boolean);
+    const idx = parts.lastIndexOf('endpoint');
+    const endpointId = idx !== -1 ? parts[idx + 1] : undefined;
+
+    return endpointId || null;
+  } catch {
+    return null;
+  }
 }
 
 export function createRunpod(
@@ -196,12 +230,31 @@ export function createRunpod(
     });
   };
 
+  const createSpeechModel = (modelId: string) => {
+    const endpointIdFromConsole = parseRunpodConsoleEndpointId(modelId);
+    const normalizedModelId = endpointIdFromConsole ?? modelId;
+
+    const baseURL =
+      normalizedModelId.startsWith('http')
+        ? normalizedModelId
+        : `https://api.runpod.ai/v2/${normalizedModelId}`;
+
+    return new RunpodSpeechModel(normalizedModelId, {
+      provider: 'runpod.speech',
+      baseURL,
+      headers: getHeaders,
+      fetch: runpodFetch,
+    });
+  };
+
   const provider = (modelId: string) => createChatModel(modelId);
 
   provider.completionModel = createCompletionModel;
   provider.languageModel = createChatModel;
   provider.chatModel = createChatModel;
   provider.imageModel = createImageModel;
+  provider.speechModel = createSpeechModel;
+  provider.speech = createSpeechModel;
 
   return provider;
 }

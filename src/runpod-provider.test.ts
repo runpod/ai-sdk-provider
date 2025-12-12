@@ -4,6 +4,7 @@ import {
   OpenAICompatibleCompletionLanguageModel,
 } from '@ai-sdk/openai-compatible';
 import { RunpodImageModel } from './runpod-image-model';
+import { RunpodSpeechModel } from './runpod-speech-model';
 import { loadApiKey } from '@ai-sdk/provider-utils';
 import { createRunpod } from './runpod-provider';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
@@ -19,6 +20,10 @@ vi.mock('@ai-sdk/openai-compatible', () => ({
 
 vi.mock('./runpod-image-model', () => ({
   RunpodImageModel: vi.fn(),
+}));
+
+vi.mock('./runpod-speech-model', () => ({
+  RunpodSpeechModel: vi.fn(),
 }));
 
 vi.mock('@ai-sdk/provider-utils', () => ({
@@ -136,6 +141,34 @@ describe('RunpodProvider', () => {
       // Verify the model was created with derived endpoint
       expect(      (RunpodImageModel as any).mock.calls[0][1].baseURL).toBe(
         'https://api.runpod.ai/v2/my-custom-image-model/openai/v1'
+      );
+    });
+  });
+
+  describe('speechModel', () => {
+    it('should construct a speech model for a serverless endpoint id', () => {
+      const provider = createRunpod();
+      const modelId = 'uhyz0hnkemrk6r';
+
+      const model = provider.speechModel(modelId);
+      expect(model).toBeInstanceOf(RunpodSpeechModel);
+
+      expect((RunpodSpeechModel as any).mock.calls[0][0]).toBe(modelId);
+      expect((RunpodSpeechModel as any).mock.calls[0][1].baseURL).toBe(
+        `https://api.runpod.ai/v2/${modelId}`
+      );
+    });
+
+    it('should accept a Runpod Console endpoint URL', () => {
+      const provider = createRunpod();
+      const url =
+        'https://console.runpod.io/serverless/user/endpoint/uhyz0hnkemrk6r';
+
+      provider.speechModel(url);
+
+      expect((RunpodSpeechModel as any).mock.calls[0][0]).toBe('uhyz0hnkemrk6r');
+      expect((RunpodSpeechModel as any).mock.calls[0][1].baseURL).toBe(
+        'https://api.runpod.ai/v2/uhyz0hnkemrk6r'
       );
     });
   });
