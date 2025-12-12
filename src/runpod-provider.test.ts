@@ -146,6 +146,19 @@ describe('RunpodProvider', () => {
   });
 
   describe('speechModel', () => {
+    it('should use mapping for known speech model IDs', () => {
+      const provider = createRunpod();
+
+      provider.speechModel('resembleai/chatterbox-turbo');
+
+      expect((RunpodSpeechModel as any).mock.calls[0][0]).toBe(
+        'resembleai/chatterbox-turbo'
+      );
+      expect((RunpodSpeechModel as any).mock.calls[0][1].baseURL).toBe(
+        'https://api.runpod.ai/v2/uhyz0hnkemrk6r'
+      );
+    });
+
     it('should construct a speech model for a serverless endpoint id', () => {
       const provider = createRunpod();
       const modelId = 'uhyz0hnkemrk6r';

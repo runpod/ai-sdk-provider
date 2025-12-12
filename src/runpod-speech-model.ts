@@ -186,7 +186,7 @@ export class RunpodSpeechModel implements SpeechModelV3 {
       providerMetadata: {
         runpod: {
           audioUrl,
-          cost: typeof output?.cost === 'number' ? output.cost : undefined,
+          ...(typeof output?.cost === 'number' ? { cost: output.cost } : {}),
         },
       },
     };

@@ -102,6 +102,12 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   'pruna/p-image-edit': 'https://api.runpod.ai/v2/p-image-edit',
 };
 
+// Mapping of Runpod speech model IDs to their serverless endpoint URLs
+// Note: This is intentionally a temporary mapping for a stealth release.
+const SPEECH_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
+  'resembleai/chatterbox-turbo': 'https://api.runpod.ai/v2/uhyz0hnkemrk6r',
+};
+
 // Mapping of Runpod model IDs to their OpenAI model names
 const MODEL_ID_TO_OPENAI_NAME: Record<string, string> = {
   'qwen/qwen3-32b-awq': 'Qwen/Qwen3-32B-AWQ',
@@ -234,10 +240,14 @@ export function createRunpod(
     const endpointIdFromConsole = parseRunpodConsoleEndpointId(modelId);
     const normalizedModelId = endpointIdFromConsole ?? modelId;
 
+    // Prefer explicit mapping for known speech model IDs.
+    const mappedBaseURL = SPEECH_MODEL_ID_TO_ENDPOINT_URL[normalizedModelId];
+
     const baseURL =
-      normalizedModelId.startsWith('http')
+      mappedBaseURL ??
+      (normalizedModelId.startsWith('http')
         ? normalizedModelId
-        : `https://api.runpod.ai/v2/${normalizedModelId}`;
+        : `https://api.runpod.ai/v2/${normalizedModelId}`);
 
     return new RunpodSpeechModel(normalizedModelId, {
       provider: 'runpod.speech',
