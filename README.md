@@ -414,6 +414,58 @@ Use `providerOptions.runpod` for model-specific parameters:
 | `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                            |
 | `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                           |
 
+## Speech (experimental)
+
+You can generate speech using the AI SDK's `experimental_generateSpeech` and a Runpod speech model created via `runpod.speechModel()` (or the shorthand `runpod.speech()`).
+
+```ts
+import { runpod } from '@runpod/ai-sdk-provider';
+import { experimental_generateSpeech as generateSpeech } from 'ai';
+
+const result = await generateSpeech({
+  model: runpod.speechModel('resembleai/chatterbox-turbo'),
+  text: 'Hello, this is Chatterbox Turbo running on Runpod.',
+  voice: 'lucy',
+  outputFormat: 'wav',
+});
+
+// Save to filesystem:
+import { writeFileSync } from 'fs';
+writeFileSync('speech.wav', result.audio.uint8Array);
+```
+
+### Voice cloning (via URL)
+
+You can provide a `voice_url` (5–10s audio) through `providerOptions.runpod`:
+
+```ts
+const result = await generateSpeech({
+  model: runpod.speech('resembleai/chatterbox-turbo'),
+  text: 'Hello!',
+  outputFormat: 'wav',
+  providerOptions: {
+    runpod: {
+      voice_url: 'https://example.com/voice.wav',
+    },
+  },
+});
+```
+
+### What you receive
+
+`experimental_generateSpeech` returns:
+
+- `result.audio` (`GeneratedAudioFile`)
+  - `result.audio.uint8Array` (binary audio)
+  - `result.audio.base64` (base64-encoded audio)
+  - `result.audio.mediaType` (e.g. `audio/wav`)
+  - `result.audio.format` (e.g. `wav`)
+- `result.warnings` (e.g. unsupported parameters)
+- `result.responses` (telemetry/debug metadata)
+- `result.providerMetadata.runpod`
+  - `audioUrl` (public URL to the generated audio)
+  - `cost` (if available)
+
 ## About Runpod
 
 [Runpod](https://runpod.io) is the foundation for developers to build, deploy, and scale custom AI systems.
