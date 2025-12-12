@@ -117,13 +117,22 @@ export class RunpodSpeechModel implements SpeechModelV3 {
 
     const fetchFn = this.config.fetch ?? fetch;
 
+    const requestHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...this.config.headers(),
+    };
+
+    if (headers) {
+      for (const [key, value] of Object.entries(headers)) {
+        if (value != null) {
+          requestHeaders[key] = value;
+        }
+      }
+    }
+
     const response = await fetchFn(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...this.config.headers(),
-        ...(headers ?? {}),
-      },
+      headers: requestHeaders,
       body: JSON.stringify(requestBody),
       signal: abortSignal,
     });
