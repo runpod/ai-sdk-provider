@@ -135,11 +135,11 @@ describe('RunpodProvider', () => {
     it('should accept any image model ID and derive endpoint for unknown models', () => {
       const provider = createRunpod();
 
-      const model =      provider.imageModel('my-custom/image-model' as any);
+      const model = provider.imageModel('my-custom/image-model' as any);
       expect(model).toBeInstanceOf(RunpodImageModel);
 
       // Verify the model was created with derived endpoint
-      expect(      (RunpodImageModel as any).mock.calls[0][1].baseURL).toBe(
+      expect((RunpodImageModel as any).mock.calls[0][1].baseURL).toBe(
         'https://api.runpod.ai/v2/my-custom-image-model/openai/v1'
       );
     });
@@ -179,7 +179,9 @@ describe('RunpodProvider', () => {
 
       provider.speechModel(url);
 
-      expect((RunpodSpeechModel as any).mock.calls[0][0]).toBe('uhyz0hnkemrk6r');
+      expect((RunpodSpeechModel as any).mock.calls[0][0]).toBe(
+        'uhyz0hnkemrk6r'
+      );
       expect((RunpodSpeechModel as any).mock.calls[0][1].baseURL).toBe(
         'https://api.runpod.ai/v2/uhyz0hnkemrk6r'
       );

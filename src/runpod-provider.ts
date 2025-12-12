@@ -1,4 +1,4 @@
-import { ImageModelV2, LanguageModelV2, SpeechModelV3 } from '@ai-sdk/provider';
+import { ImageModelV2, LanguageModelV2, SpeechModelV2 } from '@ai-sdk/provider';
 import {
   OpenAICompatibleChatLanguageModel,
   OpenAICompatibleCompletionLanguageModel,
@@ -61,22 +61,25 @@ Creates an image model for image generation.
   /**
 Creates a speech model for speech generation.
 */
-  speechModel(modelId: string): SpeechModelV3;
+  speechModel(modelId: string): SpeechModelV2;
 
   /**
 Creates a speech model for speech generation.
 */
-  speech(modelId: string): SpeechModelV3;
+  speech(modelId: string): SpeechModelV2;
 }
 
 // Mapping of Runpod model IDs to their endpoint URLs
 const MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   'qwen/qwen3-32b-awq': 'https://api.runpod.ai/v2/qwen3-32b-awq/openai/v1',
-  'ibm-granite/granite-4.0-h-small': 'https://api.runpod.ai/v2/granite-4-0-h-small/openai/v1',
+  'ibm-granite/granite-4.0-h-small':
+    'https://api.runpod.ai/v2/granite-4-0-h-small/openai/v1',
   'gpt-oss-120b': 'https://api.runpod.ai/v2/gpt-oss-120b/openai/v1',
   'openai/gpt-oss-120b': 'https://api.runpod.ai/v2/gpt-oss-120b/openai/v1',
-  'deepcogito/cogito-671b-v2.1-fp8': 'https://api.runpod.ai/v2/cogito-671b-v2-1-fp8-dynamic/openai/v1',
-  'deepcogito/cogito-671b-v2.1-FP8': 'https://api.runpod.ai/v2/cogito-671b-v2-1-fp8-dynamic/openai/v1',
+  'deepcogito/cogito-671b-v2.1-fp8':
+    'https://api.runpod.ai/v2/cogito-671b-v2-1-fp8-dynamic/openai/v1',
+  'deepcogito/cogito-671b-v2.1-FP8':
+    'https://api.runpod.ai/v2/cogito-671b-v2-1-fp8-dynamic/openai/v1',
 };
 
 // Mapping of Runpod image model IDs to their endpoint URLs
@@ -96,7 +99,8 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   // Nano Banana (edit only)
   'nano-banana-edit': 'https://api.runpod.ai/v2/nano-banana-edit',
   // Nano Banana Pro (edit only)
-  'google/nano-banana-pro-edit': 'https://api.runpod.ai/v2/nano-banana-pro-edit',
+  'google/nano-banana-pro-edit':
+    'https://api.runpod.ai/v2/nano-banana-pro-edit',
   // Pruna (t2i and edit)
   'pruna/p-image-t2i': 'https://api.runpod.ai/v2/p-image-t2i',
   'pruna/p-image-edit': 'https://api.runpod.ai/v2/p-image-edit',

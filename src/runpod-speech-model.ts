@@ -1,4 +1,8 @@
-import { SpeechModelV3, SpeechModelV3CallWarning } from '@ai-sdk/provider';
+import {
+  JSONValue,
+  SpeechModelV2,
+  SpeechModelV2CallWarning,
+} from '@ai-sdk/provider';
 import { FetchFunction, withoutTrailingSlash } from '@ai-sdk/provider-utils';
 
 export interface RunpodSpeechModelConfig {
@@ -15,8 +19,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-export class RunpodSpeechModel implements SpeechModelV3 {
-  readonly specificationVersion = 'v3';
+export class RunpodSpeechModel implements SpeechModelV2 {
+  readonly specificationVersion = 'v2';
 
   get provider(): string {
     return this.config.provider;
@@ -39,11 +43,11 @@ export class RunpodSpeechModel implements SpeechModelV3 {
   }
 
   async doGenerate(
-    options: Parameters<SpeechModelV3['doGenerate']>[0]
-  ): Promise<Awaited<ReturnType<SpeechModelV3['doGenerate']>>> {
+    options: Parameters<SpeechModelV2['doGenerate']>[0]
+  ): Promise<Awaited<ReturnType<SpeechModelV2['doGenerate']>>> {
     const currentDate = this.config._internal?.currentDate?.() ?? new Date();
 
-    const warnings: SpeechModelV3CallWarning[] = [];
+    const warnings: SpeechModelV2CallWarning[] = [];
 
     const {
       text,
@@ -99,8 +103,8 @@ export class RunpodSpeechModel implements SpeechModelV3 {
       (typeof runpodProviderOptions.voice_url === 'string' ||
         typeof runpodProviderOptions.voiceUrl === 'string')
         ? (runpodProviderOptions.voice_url ??
-            runpodProviderOptions.voiceUrl ??
-            undefined)
+          runpodProviderOptions.voiceUrl ??
+          undefined)
         : undefined;
 
     const input: Record<string, unknown> = { prompt: text };
@@ -171,6 +175,13 @@ export class RunpodSpeechModel implements SpeechModelV3 {
 
     const audio = new Uint8Array(await audioResponse.arrayBuffer());
 
+    const providerMetadata: Record<string, Record<string, JSONValue>> = {
+      runpod: {
+        audioUrl,
+        ...(typeof output?.cost === 'number' ? { cost: output.cost } : {}),
+      },
+    };
+
     return {
       audio,
       warnings,
@@ -183,13 +194,7 @@ export class RunpodSpeechModel implements SpeechModelV3 {
         headers: responseHeaders as any,
         body: rawBodyText,
       },
-      providerMetadata: {
-        runpod: {
-          audioUrl,
-          ...(typeof output?.cost === 'number' ? { cost: output.cost } : {}),
-        },
-      },
+      providerMetadata,
     };
   }
 }
-
