@@ -38,13 +38,16 @@ describe('RunpodSpeechModel', () => {
       );
 
     const result = await model.doGenerate({
-      text: 'Hello',
+      text: 'Hello\nWorld',
       voice: 'lucy',
       outputFormat: 'wav',
       providerOptions: {},
       headers: {},
       abortSignal: undefined,
     });
+
+    const requestBody = JSON.parse(result.request!.body as string);
+    expect(requestBody.input.prompt).toBe('Hello World');
 
     expect(mockFetch).toHaveBeenCalledTimes(2);
     expect(mockFetch.mock.calls[0][0]).toBe(

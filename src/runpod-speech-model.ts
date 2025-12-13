@@ -19,6 +19,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+function replaceNewlinesWithSpaces(value: string): string {
+  return value.replace(/[\r\n]+/g, ' ');
+}
+
 export class RunpodSpeechModel implements SpeechModelV2 {
   readonly specificationVersion = 'v2';
 
@@ -103,11 +107,13 @@ export class RunpodSpeechModel implements SpeechModelV2 {
       (typeof runpodProviderOptions.voice_url === 'string' ||
         typeof runpodProviderOptions.voiceUrl === 'string')
         ? (runpodProviderOptions.voice_url ??
-          runpodProviderOptions.voiceUrl ??
-          undefined)
+            runpodProviderOptions.voiceUrl ??
+            undefined)
         : undefined;
 
-    const input: Record<string, unknown> = { prompt: text };
+    const input: Record<string, unknown> = {
+      prompt: replaceNewlinesWithSpaces(text),
+    };
 
     // The endpoint supports either a built-in voice name or a voice_url prompt.
     if (voiceUrl) {
