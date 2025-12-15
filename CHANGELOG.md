@@ -1,5 +1,18 @@
 # @runpod/ai-sdk-provider
 
+## 0.12.0
+
+### Minor Changes
+
+- dcc2cc5: Add support for speech generation with `resembleai/chatterbox-turbo` model:
+  - `speechModel()` and `speech()` methods for text-to-speech
+  - Voice cloning via URL (5-10 seconds of audio)
+  - 20 built-in voices
+
+### Patch Changes
+
+- ace58c2: Add comprehensive documentation for Pruna and Nano Banana Pro models, including all supported aspect ratios, resolutions, and output formats. Update examples to use standard AI SDK options where possible.
+
 ## 0.11.1
 
 ### Patch Changes
