@@ -426,8 +426,7 @@ export class RunpodImageModel implements ImageModelV2 {
         output_format: (runpodOptions?.output_format as string) ?? 'jpeg',
         enable_base64_output:
           (runpodOptions?.enable_base64_output as boolean) ?? false,
-        enable_sync_mode:
-          (runpodOptions?.enable_sync_mode as boolean) ?? false,
+        enable_sync_mode: (runpodOptions?.enable_sync_mode as boolean) ?? false,
       };
 
       // Add images array (required)

@@ -155,7 +155,7 @@ describe('RunpodProvider', () => {
         'resembleai/chatterbox-turbo'
       );
       expect((RunpodSpeechModel as any).mock.calls[0][1].baseURL).toBe(
-        'https://api.runpod.ai/v2/uhyz0hnkemrk6r'
+        'https://api.runpod.ai/v2/chatterbox-turbo/'
       );
     });
 

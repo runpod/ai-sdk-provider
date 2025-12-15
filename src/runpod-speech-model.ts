@@ -107,8 +107,8 @@ export class RunpodSpeechModel implements SpeechModelV2 {
       (typeof runpodProviderOptions.voice_url === 'string' ||
         typeof runpodProviderOptions.voiceUrl === 'string')
         ? (runpodProviderOptions.voice_url ??
-            runpodProviderOptions.voiceUrl ??
-            undefined)
+          runpodProviderOptions.voiceUrl ??
+          undefined)
         : undefined;
 
     const input: Record<string, unknown> = {

@@ -109,7 +109,7 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
 // Mapping of Runpod speech model IDs to their serverless endpoint URLs
 // Note: This is intentionally a temporary mapping for a stealth release.
 const SPEECH_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
-  'resembleai/chatterbox-turbo': 'https://api.runpod.ai/v2/uhyz0hnkemrk6r',
+  'resembleai/chatterbox-turbo': 'https://api.runpod.ai/v2/chatterbox-turbo/',
 };
 
 // Mapping of Runpod model IDs to their OpenAI model names

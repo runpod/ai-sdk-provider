@@ -79,12 +79,16 @@ describe('RunpodSpeechModel', () => {
           { status: 200 }
         )
       )
-      .mockResolvedValueOnce(new Response(new Uint8Array([9]), { status: 200 }));
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array([9]), { status: 200 })
+      );
 
     const result = await model.doGenerate({
       text: 'Hello',
       voice: 'lucy',
-      providerOptions: { runpod: { voice_url: 'https://example.com/voice.wav' } },
+      providerOptions: {
+        runpod: { voice_url: 'https://example.com/voice.wav' },
+      },
       headers: {},
       abortSignal: undefined,
     } as any);
@@ -115,7 +119,9 @@ describe('RunpodSpeechModel', () => {
           { status: 200 }
         )
       )
-      .mockResolvedValueOnce(new Response(new Uint8Array([9]), { status: 200 }));
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array([9]), { status: 200 })
+      );
 
     const result = await model.doGenerate({
       text: 'Hello',
@@ -133,4 +139,3 @@ describe('RunpodSpeechModel', () => {
     ]);
   });
 });
-
