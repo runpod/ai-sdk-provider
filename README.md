@@ -451,9 +451,9 @@ Supported model: `resembleai/chatterbox-turbo`
 
 ### Parameters
 
-| Parameter | Type     | Default | Description                              |
-| --------- | -------- | ------- | ---------------------------------------- |
-| `text`    | `string` | -       | Required. The text to convert to speech. |
+| Parameter | Type     | Default  | Description                              |
+| --------- | -------- | -------- | ---------------------------------------- |
+| `text`    | `string` | -        | Required. The text to convert to speech. |
 | `voice`   | `string` | `"lucy"` | Built-in voice name (see list below).    |
 
 ### Provider Options
