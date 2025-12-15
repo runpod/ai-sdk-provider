@@ -433,6 +433,16 @@ import { writeFileSync } from 'fs';
 writeFileSync('speech.wav', result.audio.uint8Array);
 ```
 
+### Input Parameters
+
+| Parameter                        | Type     | Default | Description                                       |
+| :------------------------------- | :------- | :------ | :------------------------------------------------ |
+| `text`                           | `string` | —       | Required. The text to convert to speech.          |
+| `voice`                          | `string` | `lucy`  | Built-in voice name (see list below).             |
+| `providerOptions.runpod.voice_url` | `string` | —       | URL to audio file (5–10s) for voice cloning.      |
+
+> Note: If `voice_url` is provided, the built-in `voice` is ignored.
+
 ### Voices
 
 `voice` selects one of the built-in voices (default: `lucy`):
