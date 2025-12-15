@@ -130,7 +130,7 @@ describe('RunpodImageModel', () => {
 
       // Test the buildInputPayload method (accessing private method for testing)
       const payload = (qwenModel as any).buildInputPayload(
-        'Test\nprompt',
+        'Test prompt',
         '1024*768',
         42,
         { negative_prompt: 'bad quality', enable_safety_checker: false }

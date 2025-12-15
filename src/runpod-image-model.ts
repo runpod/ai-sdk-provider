@@ -48,10 +48,6 @@ const SUPPORTED_SIZES = new Set([
   '768*1024',
 ]);
 
-function replaceNewlinesWithSpaces(value: string): string {
-  return value.replace(/[\r\n]+/g, ' ');
-}
-
 export class RunpodImageModel implements ImageModelV2 {
   readonly specificationVersion = 'v2';
   readonly maxImagesPerCall = 1;
@@ -140,7 +136,7 @@ export class RunpodImageModel implements ImageModelV2 {
 
     // Runpod uses a different request format - /runsync endpoint with input wrapper
     const inputPayload = this.buildInputPayload(
-      replaceNewlinesWithSpaces(prompt),
+      prompt,
       runpodSize,
       seed,
       providerOptions.runpod,
@@ -305,8 +301,6 @@ export class RunpodImageModel implements ImageModelV2 {
     runpodOptions?: Record<string, unknown>,
     aspectRatio?: string
   ): Record<string, unknown> {
-    prompt = replaceNewlinesWithSpaces(prompt);
-
     // Check if this is a Flux model that uses different parameters
     const isFluxModel =
       this.modelId.includes('flux') ||
