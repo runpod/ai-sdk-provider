@@ -1,4 +1,4 @@
-import { LanguageModelV2, ImageModelV2 } from '@ai-sdk/provider';
+import { ImageModelV2, LanguageModelV2, SpeechModelV2 } from '@ai-sdk/provider';
 import {
   OpenAICompatibleChatLanguageModel,
   OpenAICompatibleCompletionLanguageModel,
@@ -9,6 +9,7 @@ import {
   withoutTrailingSlash,
 } from '@ai-sdk/provider-utils';
 import { RunpodImageModel } from './runpod-image-model';
+import { RunpodSpeechModel } from './runpod-speech-model';
 
 export interface RunpodProviderSettings {
   /**
@@ -56,16 +57,29 @@ Creates a completion model for text generation.
 Creates an image model for image generation.
 */
   imageModel(modelId: string): ImageModelV2;
+
+  /**
+Creates a speech model for speech generation.
+*/
+  speechModel(modelId: string): SpeechModelV2;
+
+  /**
+Creates a speech model for speech generation.
+*/
+  speech(modelId: string): SpeechModelV2;
 }
 
 // Mapping of Runpod model IDs to their endpoint URLs
 const MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   'qwen/qwen3-32b-awq': 'https://api.runpod.ai/v2/qwen3-32b-awq/openai/v1',
-  'ibm-granite/granite-4.0-h-small': 'https://api.runpod.ai/v2/granite-4-0-h-small/openai/v1',
+  'ibm-granite/granite-4.0-h-small':
+    'https://api.runpod.ai/v2/granite-4-0-h-small/openai/v1',
   'gpt-oss-120b': 'https://api.runpod.ai/v2/gpt-oss-120b/openai/v1',
   'openai/gpt-oss-120b': 'https://api.runpod.ai/v2/gpt-oss-120b/openai/v1',
-  'deepcogito/cogito-671b-v2.1-fp8': 'https://api.runpod.ai/v2/cogito-671b-v2-1-fp8-dynamic/openai/v1',
-  'deepcogito/cogito-671b-v2.1-FP8': 'https://api.runpod.ai/v2/cogito-671b-v2-1-fp8-dynamic/openai/v1',
+  'deepcogito/cogito-671b-v2.1-fp8':
+    'https://api.runpod.ai/v2/cogito-671b-v2-1-fp8-dynamic/openai/v1',
+  'deepcogito/cogito-671b-v2.1-FP8':
+    'https://api.runpod.ai/v2/cogito-671b-v2-1-fp8-dynamic/openai/v1',
 };
 
 // Mapping of Runpod image model IDs to their endpoint URLs
@@ -85,10 +99,17 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   // Nano Banana (edit only)
   'nano-banana-edit': 'https://api.runpod.ai/v2/nano-banana-edit',
   // Nano Banana Pro (edit only)
-  'google/nano-banana-pro-edit': 'https://api.runpod.ai/v2/nano-banana-pro-edit',
+  'google/nano-banana-pro-edit':
+    'https://api.runpod.ai/v2/nano-banana-pro-edit',
   // Pruna (t2i and edit)
   'pruna/p-image-t2i': 'https://api.runpod.ai/v2/p-image-t2i',
   'pruna/p-image-edit': 'https://api.runpod.ai/v2/p-image-edit',
+};
+
+// Mapping of Runpod speech model IDs to their serverless endpoint URLs
+// Note: This is intentionally a temporary mapping for a stealth release.
+const SPEECH_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
+  'resembleai/chatterbox-turbo': 'https://api.runpod.ai/v2/chatterbox-turbo/',
 };
 
 // Mapping of Runpod model IDs to their OpenAI model names
@@ -105,6 +126,29 @@ const MODEL_ID_TO_OPENAI_NAME: Record<string, string> = {
 function deriveEndpointURL(modelId: string): string {
   const normalized = modelId.replace(/\//g, '-');
   return `https://api.runpod.ai/v2/${normalized}/openai/v1`;
+}
+
+function parseRunpodConsoleEndpointId(modelIdOrUrl: string): string | null {
+  if (!modelIdOrUrl.startsWith('http')) {
+    return null;
+  }
+
+  try {
+    const url = new URL(modelIdOrUrl);
+    if (url.hostname !== 'console.runpod.io') {
+      return null;
+    }
+
+    // Example:
+    // https://console.runpod.io/serverless/user/endpoint/<ENDPOINT_ID>
+    const parts = url.pathname.split('/').filter(Boolean);
+    const idx = parts.lastIndexOf('endpoint');
+    const endpointId = idx !== -1 ? parts[idx + 1] : undefined;
+
+    return endpointId || null;
+  } catch {
+    return null;
+  }
 }
 
 export function createRunpod(
@@ -196,12 +240,35 @@ export function createRunpod(
     });
   };
 
+  const createSpeechModel = (modelId: string) => {
+    const endpointIdFromConsole = parseRunpodConsoleEndpointId(modelId);
+    const normalizedModelId = endpointIdFromConsole ?? modelId;
+
+    // Prefer explicit mapping for known speech model IDs.
+    const mappedBaseURL = SPEECH_MODEL_ID_TO_ENDPOINT_URL[normalizedModelId];
+
+    const baseURL =
+      mappedBaseURL ??
+      (normalizedModelId.startsWith('http')
+        ? normalizedModelId
+        : `https://api.runpod.ai/v2/${normalizedModelId}`);
+
+    return new RunpodSpeechModel(normalizedModelId, {
+      provider: 'runpod.speech',
+      baseURL,
+      headers: getHeaders,
+      fetch: runpodFetch,
+    });
+  };
+
   const provider = (modelId: string) => createChatModel(modelId);
 
   provider.completionModel = createCompletionModel;
   provider.languageModel = createChatModel;
   provider.chatModel = createChatModel;
   provider.imageModel = createImageModel;
+  provider.speechModel = createSpeechModel;
+  provider.speech = createSpeechModel;
 
   return provider;
 }

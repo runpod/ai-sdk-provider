@@ -245,12 +245,12 @@ For the full list of models, see the [Runpod Public Endpoint Reference](https://
 
 Supported models: `pruna/p-image-t2i`, `pruna/p-image-edit`
 
-| Parameter                       | Supported Values                                  | Notes                                                 |
-| :------------------------------ | :------------------------------------------------ | :---------------------------------------------------- |
-| `aspectRatio`                   | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3` | Standard AI SDK parameter                             |
-| `aspectRatio` (t2i only)        | `custom`                                          | Requires `width` & `height` in providerOptions        |
+| Parameter                                 | Supported Values                                  | Notes                                                 |
+| :---------------------------------------- | :------------------------------------------------ | :---------------------------------------------------- |
+| `aspectRatio`                             | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3` | Standard AI SDK parameter                             |
+| `aspectRatio` (t2i only)                  | `custom`                                          | Requires `width` & `height` in providerOptions        |
 | `providerOptions.runpod.width` / `height` | `256` - `1440`                                    | Custom dimensions (t2i only). Must be multiple of 16. |
-| `providerOptions.runpod.images` | `string[]`                                        | Required for `p-image-edit`. Supports 1-5 images.     |
+| `providerOptions.runpod.images`           | `string[]`                                        | Required for `p-image-edit`. Supports 1-5 images.     |
 
 **Example: Custom Resolution (t2i)**
 
@@ -413,6 +413,106 @@ Use `providerOptions.runpod` for model-specific parameters:
 | `output_format`          | `string`   | `"png"` | Output format: png, jpg, jpeg, webp             |
 | `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                            |
 | `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                           |
+
+## Speech
+
+You can generate speech using the AI SDK's `experimental_generateSpeech` and a Runpod speech model created via `runpod.speechModel()` (or the shorthand `runpod.speech()`).
+
+### Basic Usage
+
+```ts
+import { runpod } from '@runpod/ai-sdk-provider';
+import { experimental_generateSpeech as generateSpeech } from 'ai';
+
+const result = await generateSpeech({
+  model: runpod.speechModel('resembleai/chatterbox-turbo'),
+  text: 'Hello, this is Chatterbox Turbo running on Runpod.',
+  voice: 'lucy',
+});
+
+// Save to filesystem:
+import { writeFileSync } from 'fs';
+writeFileSync('speech.wav', result.audio.uint8Array);
+```
+
+**Returns:**
+
+- `result.audio.uint8Array` - Binary audio data (efficient for processing/saving)
+- `result.audio.base64` - Base64 encoded audio (useful for web embedding)
+- `result.audio.mediaType` - MIME type (e.g. `audio/wav`)
+- `result.audio.format` - Format (e.g. `wav`)
+- `result.warnings` - Array of any warnings about unsupported parameters
+- `result.providerMetadata.runpod.audioUrl` - Public URL to the generated audio
+- `result.providerMetadata.runpod.cost` - Cost information (if available)
+
+### Supported Models
+
+Supported model: `resembleai/chatterbox-turbo`
+
+### Parameters
+
+| Parameter | Type     | Default  | Description                              |
+| --------- | -------- | -------- | ---------------------------------------- |
+| `text`    | `string` | -        | Required. The text to convert to speech. |
+| `voice`   | `string` | `"lucy"` | Built-in voice name (see list below).    |
+
+### Provider Options
+
+Use `providerOptions.runpod` for model-specific parameters:
+
+| Option      | Type     | Default | Description                                 |
+| ----------- | -------- | ------- | ------------------------------------------- |
+| `voice_url` | `string` | -       | URL to audio file (5–10s) for voice cloning |
+| `voiceUrl`  | `string` | -       | Alias for `voice_url`                       |
+
+> Note: If `voice_url` is provided, the built-in `voice` is ignored.
+>
+> Note: This speech endpoint currently returns WAV only; `outputFormat` is ignored.
+
+### Voices
+
+`voice` selects one of the built-in voices (default: `lucy`):
+
+```ts
+[
+  'aaron',
+  'abigail',
+  'anaya',
+  'andy',
+  'archer',
+  'brian',
+  'chloe',
+  'dylan',
+  'emmanuel',
+  'ethan',
+  'evelyn',
+  'gavin',
+  'gordon',
+  'ivan',
+  'laura',
+  'lucy',
+  'madison',
+  'marisol',
+  'meera',
+  'walter',
+];
+```
+
+### Voice cloning (via URL)
+
+You can provide a `voice_url` (5–10s audio) through `providerOptions.runpod`:
+
+```ts
+const result = await generateSpeech({
+  model: runpod.speech('resembleai/chatterbox-turbo'),
+  text: 'Hello!',
+  providerOptions: {
+    runpod: {
+      voice_url: 'https://example.com/voice.wav',
+    },
+  },
+});
+```
 
 ## About Runpod
 
