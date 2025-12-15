@@ -418,6 +418,8 @@ Use `providerOptions.runpod` for model-specific parameters:
 
 You can generate speech using the AI SDK's `experimental_generateSpeech` and a Runpod speech model created via `runpod.speechModel()` (or the shorthand `runpod.speech()`).
 
+### Basic Usage
+
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
 import { experimental_generateSpeech as generateSpeech } from 'ai';
@@ -433,15 +435,39 @@ import { writeFileSync } from 'fs';
 writeFileSync('speech.wav', result.audio.uint8Array);
 ```
 
-### Input Parameters
+**Returns:**
 
-| Parameter                        | Type     | Default | Description                                       |
-| :------------------------------- | :------- | :------ | :------------------------------------------------ |
-| `text`                           | `string` | —       | Required. The text to convert to speech.          |
-| `voice`                          | `string` | `lucy`  | Built-in voice name (see list below).             |
-| `providerOptions.runpod.voice_url` | `string` | —       | URL to audio file (5–10s) for voice cloning.      |
+- `result.audio.uint8Array` - Binary audio data (efficient for processing/saving)
+- `result.audio.base64` - Base64 encoded audio (useful for web embedding)
+- `result.audio.mediaType` - MIME type (e.g. `audio/wav`)
+- `result.audio.format` - Format (e.g. `wav`)
+- `result.warnings` - Array of any warnings about unsupported parameters
+- `result.providerMetadata.runpod.audioUrl` - Public URL to the generated audio
+- `result.providerMetadata.runpod.cost` - Cost information (if available)
+
+### Supported Models
+
+Supported model: `resembleai/chatterbox-turbo`
+
+### Parameters
+
+| Parameter | Type     | Default | Description                              |
+| --------- | -------- | ------- | ---------------------------------------- |
+| `text`    | `string` | -       | Required. The text to convert to speech. |
+| `voice`   | `string` | `"lucy"` | Built-in voice name (see list below).    |
+
+### Provider Options
+
+Use `providerOptions.runpod` for model-specific parameters:
+
+| Option      | Type     | Default | Description                                 |
+| ----------- | -------- | ------- | ------------------------------------------- |
+| `voice_url` | `string` | -       | URL to audio file (5–10s) for voice cloning |
+| `voiceUrl`  | `string` | -       | Alias for `voice_url`                       |
 
 > Note: If `voice_url` is provided, the built-in `voice` is ignored.
+>
+> Note: This speech endpoint currently returns WAV only; `outputFormat` is ignored.
 
 ### Voices
 
@@ -487,23 +513,6 @@ const result = await generateSpeech({
   },
 });
 ```
-
-> Note: This speech endpoint currently returns WAV only; `outputFormat` is ignored.
-
-### What you receive
-
-`experimental_generateSpeech` returns:
-
-- `result.audio` (`GeneratedAudioFile`)
-  - `result.audio.uint8Array` (binary audio)
-  - `result.audio.base64` (base64-encoded audio)
-  - `result.audio.mediaType` (e.g. `audio/wav`)
-  - `result.audio.format` (e.g. `wav`)
-- `result.warnings` (e.g. unsupported parameters)
-- `result.responses` (telemetry/debug metadata)
-- `result.providerMetadata.runpod`
-  - `audioUrl` (public URL to the generated audio)
-  - `cost` (if available)
 
 ## About Runpod
 
