@@ -38,7 +38,8 @@ export class RunpodSpeechModel implements SpeechModelV2 {
   private getRunpodRunSyncUrl(): string {
     // `withoutTrailingSlash` is typed to potentially return undefined, but in our
     // case `config.baseURL` is always a string.
-    const baseURL = withoutTrailingSlash(this.config.baseURL) ?? this.config.baseURL;
+    const baseURL =
+      withoutTrailingSlash(this.config.baseURL) ?? this.config.baseURL;
 
     // Allow users to pass /run or /runsync directly.
     if (baseURL.endsWith('/run') || baseURL.endsWith('/runsync')) {
