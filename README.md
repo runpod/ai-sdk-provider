@@ -434,9 +434,7 @@ import { writeFileSync } from 'fs';
 writeFileSync('speech.wav', result.audio.uint8Array);
 ```
 
-### What you receive
-
-`experimental_generateSpeech` returns:
+**Returns:**
 
 - `result.audio` (`GeneratedAudioFile`)
   - `result.audio.uint8Array` (binary audio)
