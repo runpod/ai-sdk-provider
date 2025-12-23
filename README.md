@@ -254,6 +254,8 @@ const { image } = await generateImage({
 
 #### Multiple reference images (4 input images)
 
+Note: Prior to v1.0.0, images were passed via `providerOptions.runpod.image` / `providerOptions.runpod.images`. This still works but `prompt.images` is now recommended.
+
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
 import { experimental_generateImage as generateImage } from 'ai';
@@ -271,8 +273,6 @@ const { image } = await generateImage({
   },
 });
 ```
-
-Note: Prior to v1.0.0, images were passed via `providerOptions.runpod.image` / `providerOptions.runpod.images`. This still works but `prompt.images` is now recommended.
 
 ### Examples
 
@@ -392,10 +392,6 @@ import { writeFileSync } from 'fs';
 writeFileSync('speech.wav', result.audio.uint8Array);
 ```
 
-### Examples
-
-Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
-
 **Returns:**
 
 - `result.audio` (`GeneratedAudioFile`)
@@ -408,6 +404,10 @@ Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/get
 - `result.providerMetadata.runpod`
   - `audioUrl` (public URL to the generated audio)
   - `cost` (if available)
+
+### Examples
+
+Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
 
 ### Supported Models
 
