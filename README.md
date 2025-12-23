@@ -276,13 +276,14 @@ const { image } = await generateImage({
 
 Supported model: `google/nano-banana-pro-edit`
 
-| Parameter                       | Supported Values                                                  | Notes                             |
-| :------------------------------ | :---------------------------------------------------------------- | :-------------------------------- |
-| `aspectRatio`                   | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `9:21` | Standard AI SDK parameter         |
-| `resolution`                    | `1k`, `2k`, `4k`                                                  | Output resolution quality         |
-| `output_format`                 | `jpeg`, `png`, `webp`                                             | Output image format               |
+| Parameter                       | Supported Values                                                  | Notes                                |
+| :------------------------------ | :---------------------------------------------------------------- | :----------------------------------- |
+| `aspectRatio`                   | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `9:21` | Standard AI SDK parameter            |
+| `resolution`                    | `1k`, `2k`, `4k`                                                  | Output resolution quality            |
+| `output_format`                 | `jpeg`, `png`, `webp`                                             | Output image format                  |
+| `prompt.images`                 | `string[]`                                                       | Recommended. Input image(s) to edit. |
 | `files`                         | `ImageModelV3File[]`                                              | Recommended. Input image(s) to edit. |
-| `providerOptions.runpod.images` | `string[]`                                                        | Legacy. Input image(s) to edit.       |
+| `providerOptions.runpod.images` | `string[]`                                                        | Legacy. Input image(s) to edit.      |
 
 ### Other Models
 
@@ -310,55 +311,49 @@ const { image } = await generateImage({
 
 #### Modify Image
 
-Transform existing images using text prompts. Use the standard `files` parameter (recommended) or `providerOptions.runpod.images`.
+Transform existing images using text prompts. Use `prompt.images` (recommended) or `files`. The AI SDK normalizes `prompt.images` to `files` internally.
 
 ```ts
-// Recommended: Using files with URL
+// Recommended: prompt.images (AI SDK v6)
 const { image } = await generateImage({
   model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
-  prompt: 'Transform this into a cyberpunk style with neon lights',
-  files: [{ type: 'url', url: 'https://example.com/input-image.jpg' }],
+  prompt: {
+    text: 'Transform this into a cyberpunk style with neon lights',
+    images: ['https://example.com/input-image.jpg'],
+  },
   aspectRatio: '1:1',
 });
 
-// Using files with base64 data
+// prompt.images with base64 data URL
+const { image } = await generateImage({
+  model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
+  prompt: {
+    text: 'Make this image look like a painting',
+    images: ['data:image/png;base64,iVBORw0KGgoAAAANS...'],
+  },
+});
+
+// Alternative: using files directly
 const { image } = await generateImage({
   model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
   prompt: 'Make this image look like a painting',
-  files: [
-    {
-      type: 'file',
-      mediaType: 'image/png',
-      data: 'iVBORw0KGgoAAAANS...', // base64 string or Uint8Array
-    },
-  ],
+  files: [{ type: 'url', url: 'https://example.com/input-image.jpg' }],
 });
 ```
 
 ```ts
-// Combine multiple images using files
+// Combine multiple images using prompt.images
 const { image } = await generateImage({
   model: runpod.imageModel('nano-banana-edit'),
-  prompt:
-    'Combine these four images into a single realistic 3D character scene.',
-  files: [
-    {
-      type: 'url',
-      url: 'https://image.runpod.ai/uploads/0bz_xzhuLq/a2166199-5bd5-496b-b9ab-a8bae3f73bdc.jpg',
-    },
-    {
-      type: 'url',
-      url: 'https://image.runpod.ai/uploads/Yw86rhY6xi/2ff8435f-f416-4096-9a4d-2f8c838b2d53.jpg',
-    },
-    {
-      type: 'url',
-      url: 'https://image.runpod.ai/uploads/bpCCX9zLY8/3bc27605-6f9a-40ad-83e9-c29bed45fed9.jpg',
-    },
-    {
-      type: 'url',
-      url: 'https://image.runpod.ai/uploads/LPHEY6pyHp/f950ceb8-fafa-4800-bdf1-fd3fd684d843.jpg',
-    },
-  ],
+  prompt: {
+    text: 'Combine these four images into a single realistic 3D character scene.',
+    images: [
+      'https://image.runpod.ai/uploads/0bz_xzhuLq/a2166199-5bd5-496b-b9ab-a8bae3f73bdc.jpg',
+      'https://image.runpod.ai/uploads/Yw86rhY6xi/2ff8435f-f416-4096-9a4d-2f8c838b2d53.jpg',
+      'https://image.runpod.ai/uploads/bpCCX9zLY8/3bc27605-6f9a-40ad-83e9-c29bed45fed9.jpg',
+      'https://image.runpod.ai/uploads/LPHEY6pyHp/f950ceb8-fafa-4800-bdf1-fd3fd684d843.jpg',
+    ],
+  },
 });
 
 // Legacy approach (still supported): Using providerOptions
@@ -416,7 +411,19 @@ const { image } = await generateImage({
 
 ### Standard Image Input
 
-For image editing, use the standard AI SDK `files` parameter (recommended):
+For image editing, use the standard AI SDK `prompt.images` syntax (recommended):
+
+```ts
+const { image } = await generateImage({
+  model: runpod.imageModel('model-id'),
+  prompt: {
+    text: 'Your editing instruction',
+    images: ['https://example.com/image.jpg'],
+  },
+});
+```
+
+The AI SDK normalizes `prompt.images` into `files` for the provider call. If you prefer the lower-level format, you can pass `files` directly:
 
 ```ts
 const { image } = await generateImage({
@@ -426,29 +433,24 @@ const { image } = await generateImage({
 });
 ```
 
-**Supported file formats in `files`:**
-
-- **URL**: `{ type: 'url', url: 'https://example.com/image.jpg' }`
-- **File**: `{ type: 'file', mediaType: 'image/png', data: '...' }` where `data` can be a base64 string or `Uint8Array`
-
 ### Provider Options
 
 Additional options through `providerOptions.runpod`:
 
-| Option                   | Type       | Default | Description                                             |
-| ------------------------ | ---------- | ------- | ------------------------------------------------------- |
-| `negative_prompt`        | `string`   | `""`    | What to avoid in the image                              |
-| `enable_safety_checker`  | `boolean`  | `true`  | Content safety filtering                                |
-| `disable_safety_checker` | `boolean`  | `false` | Disable safety checker (Pruna)                          |
-| `image`                  | `string`   | -       | Legacy: Input image URL or base64 (use `files`)         |
-| `images`                 | `string[]` | -       | Legacy: Multiple input images (use `files`)             |
-| `resolution`             | `string`   | `"1k"`  | Output resolution: 1k, 2k, 4k (Nano Banana Pro)         |
-| `width` / `height`       | `number`   | -       | Custom dimensions (Pruna t2i, 256-1440)                 |
-| `num_inference_steps`    | `number`   | Auto    | Denoising steps                                         |
-| `guidance`               | `number`   | Auto    | Prompt adherence strength                               |
-| `output_format`          | `string`   | `"png"` | Output format: png, jpg, jpeg, webp                     |
-| `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                                    |
-| `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                                   |
+| Option                   | Type       | Default | Description                                     |
+| ------------------------ | ---------- | ------- | ----------------------------------------------- |
+| `negative_prompt`        | `string`   | `""`    | What to avoid in the image                      |
+| `enable_safety_checker`  | `boolean`  | `true`  | Content safety filtering                        |
+| `disable_safety_checker` | `boolean`  | `false` | Disable safety checker (Pruna)                  |
+| `image`                  | `string`   | -       | Legacy: Input image URL or base64 (use `prompt.images`) |
+| `images`                 | `string[]` | -       | Legacy: Multiple input images (use `prompt.images`)     |
+| `resolution`             | `string`   | `"1k"`  | Output resolution: 1k, 2k, 4k (Nano Banana Pro) |
+| `width` / `height`       | `number`   | -       | Custom dimensions (Pruna t2i, 256-1440)         |
+| `num_inference_steps`    | `number`   | Auto    | Denoising steps                                 |
+| `guidance`               | `number`   | Auto    | Prompt adherence strength                       |
+| `output_format`          | `string`   | `"png"` | Output format: png, jpg, jpeg, webp             |
+| `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                            |
+| `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                           |
 
 ## Speech
 
