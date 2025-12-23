@@ -319,7 +319,7 @@ Transform existing images using text prompts. Use `prompt.images` (recommended) 
 ```ts
 // Recommended: prompt.images (AI SDK v6)
 const { image } = await generateImage({
-  model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
+  model: runpod.imageModel('pruna/p-image-edit'),
   prompt: {
     text: 'Transform this into a cyberpunk style with neon lights',
     images: ['https://image.runpod.ai/demo/brandenburg-gate.png'],
@@ -327,19 +327,19 @@ const { image } = await generateImage({
   aspectRatio: '1:1',
 });
 
-// prompt.images with base64 data URL
+// Virtual staging: furnish an empty room
 const { image } = await generateImage({
-  model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
+  model: runpod.imageModel('google/nano-banana-pro-edit'),
   prompt: {
-    text: 'Make this image look like a painting',
-    images: ['data:image/png;base64,iVBORw0KGgoAAAANS...'],
+    text: 'Add modern Scandinavian furniture: a gray sofa, wooden coffee table, potted plants, and warm lighting',
+    images: ['https://image.runpod.ai/demo/empty-room.png'],
   },
 });
 
-// Alternative: using files directly
+// Alternative: using files directly (lower-level API)
 const { image } = await generateImage({
-  model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
-  prompt: 'Make this image look like a painting',
+  model: runpod.imageModel('pruna/p-image-edit'),
+  prompt: 'Add a cozy reading nook with bookshelves',
   files: [{ type: 'url', url: 'https://image.runpod.ai/demo/empty-room.png' }],
 });
 ```
@@ -369,34 +369,18 @@ Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/get
 ```ts
 // Full control over generation parameters
 const { image } = await generateImage({
-  model: runpod.imageModel('black-forest-labs/flux-1-dev'),
+  model: runpod.imageModel('pruna/p-image-t2i'),
   prompt: 'A majestic dragon breathing fire in a medieval castle',
-  size: '1328x1328',
+  size: '1024x1024',
   seed: 42, // For reproducible results
   providerOptions: {
     runpod: {
       negative_prompt: 'blurry, low quality, distorted, ugly, bad anatomy',
-      enable_safety_checker: true,
-      num_inference_steps: 50, // Higher quality (default: 28)
-      guidance: 3.5, // Stronger prompt adherence (default: 2)
-      output_format: 'png', // High quality format
-      // Polling settings for long generations
+      disable_safety_checker: false,
+      num_inference_steps: 4, // Default for p-image
+      output_format: 'png',
       maxPollAttempts: 30,
       pollIntervalMillis: 4000,
-    },
-  },
-});
-
-// Fast generation with minimal steps
-const { image } = await generateImage({
-  model: runpod.imageModel('black-forest-labs/flux-1-schnell'),
-  prompt: 'A simple red apple',
-  aspectRatio: '1:1',
-  providerOptions: {
-    runpod: {
-      num_inference_steps: 2, // Even faster (default: 4)
-      guidance: 10, // Higher guidance for simple prompts
-      output_format: 'jpg', // Smaller file size
     },
   },
 });
