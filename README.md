@@ -236,11 +236,12 @@ writeFileSync('image.png', image.uint8Array);
 
 For editing, pass reference images via `prompt.images` (recommended). The AI SDK normalizes `prompt.images` into `files` for the provider call.
 
+#### Single image edit
+
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
 import { experimental_generateImage as generateImage } from 'ai';
 
-// Single image edit (prompt.images)
 const { image } = await generateImage({
   model: runpod.image('pruna/p-image-edit'),
   prompt: {
@@ -249,8 +250,14 @@ const { image } = await generateImage({
   },
   aspectRatio: '1:1',
 });
+```
 
-// Virtual staging: furnish an empty room
+#### Virtual staging (empty room)
+
+```ts
+import { runpod } from '@runpod/ai-sdk-provider';
+import { experimental_generateImage as generateImage } from 'ai';
+
 const { image: staged } = await generateImage({
   model: runpod.image('google/nano-banana-pro-edit'),
   prompt: {
@@ -258,8 +265,14 @@ const { image: staged } = await generateImage({
     images: ['https://image.runpod.ai/demo/empty-room.png'],
   },
 });
+```
 
-// Alternative: using files directly (lower-level API)
+#### Alternative: `files` (lower-level API)
+
+```ts
+import { runpod } from '@runpod/ai-sdk-provider';
+import { experimental_generateImage as generateImage } from 'ai';
+
 const { image: filesImage } = await generateImage({
   model: runpod.image('pruna/p-image-edit'),
   prompt: 'Add a cozy reading nook with bookshelves',
@@ -267,8 +280,9 @@ const { image: filesImage } = await generateImage({
 });
 ```
 
+#### Multi-image edit (robot band)
+
 ```ts
-// Multi-image edit: create a robot band group photo
 const { image } = await generateImage({
   model: runpod.image('google/nano-banana-pro-edit'),
   prompt: {
