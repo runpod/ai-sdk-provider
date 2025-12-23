@@ -345,34 +345,21 @@ const { image } = await generateImage({
 ```
 
 ```ts
-// Combine multiple images using prompt.images
+// Combine multiple images: create a robot band group photo
 const { image } = await generateImage({
   model: runpod.imageModel('google/nano-banana-pro-edit'),
   prompt: {
-    text: 'Combine these four images into a single creative collage.',
+    text: 'Combine these four robot musicians into a epic band photo on a concert stage with dramatic lighting',
     images: [
-      'https://image.runpod.ai/demo/brandenburg-gate.png',
-      'https://image.runpod.ai/demo/empty-room.png',
-      'https://image.runpod.ai/demo/runpod-logo.png',
-      'https://image.runpod.ai/demo/nvidia-5090.png',
+      'https://image.runpod.ai/demo/robot-drummer.png',
+      'https://image.runpod.ai/demo/robot-guitarist.png',
+      'https://image.runpod.ai/demo/robot-bassist.png',
+      'https://image.runpod.ai/demo/robot-singer.png',
     ],
   },
 });
-
-// Legacy approach (still supported): Using providerOptions
-const { image } = await generateImage({
-  model: runpod.imageModel('google/nano-banana-pro-edit'),
-  prompt: 'Combine these images',
-  providerOptions: {
-    runpod: {
-      images: [
-        'https://image.runpod.ai/demo/runpod-logo.png',
-        'https://image.runpod.ai/demo/nvidia-5090.png',
-      ],
-      enable_safety_checker: true,
-    },
-  },
-});
+// Note: Prior to v1.0.0, images were passed via providerOptions.runpod.images.
+// This still works but prompt.images is now recommended.
 ```
 
 Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
