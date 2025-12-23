@@ -218,6 +218,12 @@ When updating documentation, ensure BOTH files have:
 - ✅ Same advanced features list
 - ✅ Consistent custom endpoint support (vLLM/SGLang)
 
+### Public Assets (R2)
+
+- ✅ Host README/docs images in public R2 (not in the npm package).
+- ✅ Prefer **stable keys** (e.g. `runpod/ai-sdk-provider/banner.jpg`) so URLs don’t churn.
+- ✅ Use the permanent public URL (`r2 url <key>`) and reference that in **both** `README.md` and the synced AI docs page.
+
 ## 🚀 Release Management
 
 - ✅ **Use Changesets** for all releases - see [CONTRIBUTING.md](../.github/CONTRIBUTING.md) for detailed process

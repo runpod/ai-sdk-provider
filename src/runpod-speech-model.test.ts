@@ -133,8 +133,8 @@ describe('RunpodSpeechModel', () => {
 
     expect(result.warnings).toEqual([
       expect.objectContaining({
-        type: 'unsupported-setting',
-        setting: 'outputFormat',
+        type: 'unsupported',
+        feature: 'outputFormat',
       }),
     ]);
   });

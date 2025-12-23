@@ -1,4 +1,9 @@
-import { ImageModelV2, ImageModelV2CallWarning } from '@ai-sdk/provider';
+import {
+  ImageModelV3,
+  ImageModelV3CallOptions,
+  ImageModelV3File,
+  SharedV3Warning,
+} from '@ai-sdk/provider';
 import {
   combineHeaders,
   createJsonResponseHandler,
@@ -48,8 +53,8 @@ const SUPPORTED_SIZES = new Set([
   '768*1024',
 ]);
 
-export class RunpodImageModel implements ImageModelV2 {
-  readonly specificationVersion = 'v2';
+export class RunpodImageModel implements ImageModelV3 {
+  readonly specificationVersion = 'v3';
   readonly maxImagesPerCall = 1;
 
   get provider(): string {
@@ -63,17 +68,30 @@ export class RunpodImageModel implements ImageModelV2 {
 
   async doGenerate({
     prompt,
-    n = 1,
+    n,
     size,
     aspectRatio,
     seed,
+    files,
+    mask,
     providerOptions,
     headers,
     abortSignal,
-  }: Parameters<ImageModelV2['doGenerate']>[0]): Promise<
-    Awaited<ReturnType<ImageModelV2['doGenerate']>>
+  }: ImageModelV3CallOptions): Promise<
+    Awaited<ReturnType<ImageModelV3['doGenerate']>>
   > {
-    const warnings: Array<ImageModelV2CallWarning> = [];
+    const warnings: Array<SharedV3Warning> = [];
+
+    // Convert standardized files to Runpod format (base64 data URLs or raw base64)
+    const standardizedImages = this.convertFilesToRunpodFormat(files);
+
+    if (mask) {
+      warnings.push({
+        type: 'unsupported',
+        feature: 'mask',
+        details: 'Mask input for inpainting is not yet supported.',
+      });
+    }
 
     // Check if this is a Pruna model (skip standard size/aspectRatio validation)
     const isPrunaModel =
@@ -125,8 +143,8 @@ export class RunpodImageModel implements ImageModelV2 {
     // Handle multiple images warning
     if (n > 1) {
       warnings.push({
-        type: 'unsupported-setting',
-        setting: 'n',
+        type: 'unsupported',
+        feature: 'multiple images (n > 1)',
         details:
           'Runpod image models only support generating 1 image at a time. Using n=1.',
       });
@@ -136,11 +154,12 @@ export class RunpodImageModel implements ImageModelV2 {
 
     // Runpod uses a different request format - /runsync endpoint with input wrapper
     const inputPayload = this.buildInputPayload(
-      prompt,
+      prompt ?? '',
       runpodSize,
       seed,
-      providerOptions.runpod,
-      aspectRatio
+      providerOptions.runpod as Record<string, unknown> | undefined,
+      aspectRatio,
+      standardizedImages
     );
 
     const { value: response, responseHeaders } = await postJsonToApi({
@@ -294,12 +313,57 @@ export class RunpodImageModel implements ImageModelV2 {
     );
   }
 
+  /**
+   * Converts standardized ImageModelV3File[] to Runpod-compatible format.
+   * Returns URLs or base64 data URLs that Runpod API accepts.
+   */
+  private convertFilesToRunpodFormat(
+    files: ImageModelV3File[] | undefined
+  ): string[] | undefined {
+    if (!files || files.length === 0) {
+      return undefined;
+    }
+
+    return files.map((file) => {
+      // Handle URL type - return URL directly
+      if (file.type === 'url') {
+        return file.url;
+      }
+
+      // Handle file type with data
+      if (typeof file.data === 'string') {
+        // If it's already a data URL, return as-is
+        if (file.data.startsWith('data:')) {
+          return file.data;
+        }
+        // Otherwise, wrap as data URL with media type
+        return `data:${file.mediaType};base64,${file.data}`;
+      }
+
+      // Convert Uint8Array to base64 data URL
+      const base64 = this.uint8ArrayToBase64(file.data);
+      return `data:${file.mediaType};base64,${base64}`;
+    });
+  }
+
+  /**
+   * Converts Uint8Array to base64 string.
+   */
+  private uint8ArrayToBase64(data: Uint8Array): string {
+    let binary = '';
+    for (let i = 0; i < data.length; i++) {
+      binary += String.fromCharCode(data[i]);
+    }
+    return btoa(binary);
+  }
+
   private buildInputPayload(
     prompt: string,
     runpodSize: string,
     seed?: number,
     runpodOptions?: Record<string, unknown>,
-    aspectRatio?: string
+    aspectRatio?: string,
+    standardizedImages?: string[]
   ): Record<string, unknown> {
     // Check if this is a Flux model that uses different parameters
     const isFluxModel =
@@ -312,7 +376,8 @@ export class RunpodImageModel implements ImageModelV2 {
 
       if (isKontext) {
         // Flux Kontext uses size format and has image input
-        return {
+        // Prioritize standardized files over providerOptions
+        const kontextPayload: Record<string, unknown> = {
           prompt,
           negative_prompt: runpodOptions?.negative_prompt ?? '',
           seed: seed ?? -1,
@@ -321,8 +386,15 @@ export class RunpodImageModel implements ImageModelV2 {
           size: runpodSize,
           output_format: 'png',
           enable_safety_checker: runpodOptions?.enable_safety_checker ?? true,
-          ...runpodOptions, // This will include the 'image' parameter if provided
+          ...runpodOptions,
         };
+
+        // Use standardized files if provided (first image), otherwise use providerOptions.image
+        if (standardizedImages && standardizedImages.length > 0) {
+          kontextPayload.image = standardizedImages[0];
+        }
+
+        return kontextPayload;
       } else {
         // Regular Flux models use width/height
         const [width, height] = runpodSize.split('*').map(Number);
@@ -366,8 +438,10 @@ export class RunpodImageModel implements ImageModelV2 {
           editPayload.seed = runpodOptions.seed;
         }
 
-        // Add images array (required, 1-5 images)
-        if (runpodOptions?.images) {
+        // Use standardized files if provided, otherwise use providerOptions.images
+        if (standardizedImages && standardizedImages.length > 0) {
+          editPayload.images = standardizedImages;
+        } else if (runpodOptions?.images) {
           editPayload.images = runpodOptions.images;
         }
 
@@ -424,8 +498,10 @@ export class RunpodImageModel implements ImageModelV2 {
           (runpodOptions?.enable_sync_mode as boolean) ?? false,
       };
 
-      // Add images array (required)
-      if (runpodOptions?.images) {
+      // Use standardized files if provided, otherwise use providerOptions.images
+      if (standardizedImages && standardizedImages.length > 0) {
+        nanoBananaPayload.images = standardizedImages;
+      } else if (runpodOptions?.images) {
         nanoBananaPayload.images = runpodOptions.images;
       }
 
@@ -433,7 +509,7 @@ export class RunpodImageModel implements ImageModelV2 {
     }
 
     // Default format for Qwen and other models
-    return {
+    const defaultPayload: Record<string, unknown> = {
       prompt,
       negative_prompt: runpodOptions?.negative_prompt ?? '',
       size: runpodSize,
@@ -441,6 +517,18 @@ export class RunpodImageModel implements ImageModelV2 {
       enable_safety_checker: runpodOptions?.enable_safety_checker ?? true,
       ...runpodOptions,
     };
+
+    // For edit models, use standardized files if provided
+    if (standardizedImages && standardizedImages.length > 0) {
+      // Single image models use 'image', multi-image models use 'images'
+      if (standardizedImages.length === 1) {
+        defaultPayload.image = standardizedImages[0];
+      } else {
+        defaultPayload.images = standardizedImages;
+      }
+    }
+
+    return defaultPayload;
   }
 }
 

@@ -1,4 +1,4 @@
-import { ImageModelV2, LanguageModelV2, SpeechModelV2 } from '@ai-sdk/provider';
+import { ImageModelV3, LanguageModelV3, SpeechModelV3 } from '@ai-sdk/provider';
 import {
   OpenAICompatibleChatLanguageModel,
   OpenAICompatibleCompletionLanguageModel,
@@ -36,37 +36,37 @@ export interface RunpodProvider {
   /**
 Creates a model for text generation.
 */
-  (modelId: string): LanguageModelV2;
+  (modelId: string): LanguageModelV3;
 
   /**
 Creates a chat model for text generation.
 */
-  chatModel(modelId: string): LanguageModelV2;
+  chatModel(modelId: string): LanguageModelV3;
 
   /**
 Creates a chat model for text generation.
 */
-  languageModel(modelId: string): LanguageModelV2;
+  languageModel(modelId: string): LanguageModelV3;
 
   /**
 Creates a completion model for text generation.
 */
-  completionModel(modelId: string): LanguageModelV2;
+  completionModel(modelId: string): LanguageModelV3;
 
   /**
 Creates an image model for image generation.
 */
-  imageModel(modelId: string): ImageModelV2;
+  imageModel(modelId: string): ImageModelV3;
 
   /**
 Creates a speech model for speech generation.
 */
-  speechModel(modelId: string): SpeechModelV2;
+  speechModel(modelId: string): SpeechModelV3;
 
   /**
 Creates a speech model for speech generation.
 */
-  speech(modelId: string): SpeechModelV2;
+  speech(modelId: string): SpeechModelV3;
 }
 
 // Mapping of Runpod model IDs to their endpoint URLs
