@@ -281,7 +281,7 @@ Supported model: `google/nano-banana-pro-edit`
 | `aspectRatio`                   | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `9:21` | Standard AI SDK parameter            |
 | `resolution`                    | `1k`, `2k`, `4k`                                                  | Output resolution quality            |
 | `output_format`                 | `jpeg`, `png`, `webp`                                             | Output image format                  |
-| `prompt.images`                 | `string[]`                                                       | Recommended. Input image(s) to edit. |
+| `prompt.images`                 | `string[]`                                                        | Recommended. Input image(s) to edit. |
 | `files`                         | `ImageModelV3File[]`                                              | Recommended. Input image(s) to edit. |
 | `providerOptions.runpod.images` | `string[]`                                                        | Legacy. Input image(s) to edit.      |
 
@@ -437,20 +437,20 @@ const { image } = await generateImage({
 
 Additional options through `providerOptions.runpod`:
 
-| Option                   | Type       | Default | Description                                     |
-| ------------------------ | ---------- | ------- | ----------------------------------------------- |
-| `negative_prompt`        | `string`   | `""`    | What to avoid in the image                      |
-| `enable_safety_checker`  | `boolean`  | `true`  | Content safety filtering                        |
-| `disable_safety_checker` | `boolean`  | `false` | Disable safety checker (Pruna)                  |
+| Option                   | Type       | Default | Description                                             |
+| ------------------------ | ---------- | ------- | ------------------------------------------------------- |
+| `negative_prompt`        | `string`   | `""`    | What to avoid in the image                              |
+| `enable_safety_checker`  | `boolean`  | `true`  | Content safety filtering                                |
+| `disable_safety_checker` | `boolean`  | `false` | Disable safety checker (Pruna)                          |
 | `image`                  | `string`   | -       | Legacy: Input image URL or base64 (use `prompt.images`) |
 | `images`                 | `string[]` | -       | Legacy: Multiple input images (use `prompt.images`)     |
-| `resolution`             | `string`   | `"1k"`  | Output resolution: 1k, 2k, 4k (Nano Banana Pro) |
-| `width` / `height`       | `number`   | -       | Custom dimensions (Pruna t2i, 256-1440)         |
-| `num_inference_steps`    | `number`   | Auto    | Denoising steps                                 |
-| `guidance`               | `number`   | Auto    | Prompt adherence strength                       |
-| `output_format`          | `string`   | `"png"` | Output format: png, jpg, jpeg, webp             |
-| `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                            |
-| `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                           |
+| `resolution`             | `string`   | `"1k"`  | Output resolution: 1k, 2k, 4k (Nano Banana Pro)         |
+| `width` / `height`       | `number`   | -       | Custom dimensions (Pruna t2i, 256-1440)                 |
+| `num_inference_steps`    | `number`   | Auto    | Denoising steps                                         |
+| `guidance`               | `number`   | Auto    | Prompt adherence strength                               |
+| `output_format`          | `string`   | `"png"` | Output format: png, jpg, jpeg, webp                     |
+| `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                                    |
+| `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                                   |
 
 ## Speech
 
