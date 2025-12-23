@@ -297,7 +297,7 @@ Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/get
 
 For the full list of models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
 
-### Provider Options (Runpod)
+### Provider Options
 
 Additional options through `providerOptions.runpod` (supported options depend on the model):
 
