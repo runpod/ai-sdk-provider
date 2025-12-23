@@ -236,7 +236,7 @@ writeFileSync('image.png', image.uint8Array);
 
 For editing, pass reference images via `prompt.images` (recommended). The AI SDK normalizes `prompt.images` into `files` for the provider call.
 
-#### Single image edit
+#### Single reference image (1 input image)
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
@@ -245,44 +245,19 @@ import { experimental_generateImage as generateImage } from 'ai';
 const { image } = await generateImage({
   model: runpod.image('pruna/p-image-edit'),
   prompt: {
-    text: 'Transform this into a cyberpunk style with neon lights',
-    images: ['https://image.runpod.ai/demo/brandenburg-gate.png'],
-  },
-  aspectRatio: '1:1',
-});
-```
-
-#### Virtual staging (empty room)
-
-```ts
-import { runpod } from '@runpod/ai-sdk-provider';
-import { experimental_generateImage as generateImage } from 'ai';
-
-const { image: staged } = await generateImage({
-  model: runpod.image('google/nano-banana-pro-edit'),
-  prompt: {
-    text: 'Add modern Scandinavian furniture: a gray sofa, wooden coffee table, potted plants, and warm lighting',
+    text: 'Virtual staging: add modern Scandinavian furniture: a gray sofa, wooden coffee table, potted plants, and warm lighting',
     images: ['https://image.runpod.ai/demo/empty-room.png'],
   },
+  aspectRatio: '16:9',
 });
 ```
 
-#### Alternative: `files` (lower-level API)
+#### Multiple reference images (4 input images)
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
 import { experimental_generateImage as generateImage } from 'ai';
 
-const { image: filesImage } = await generateImage({
-  model: runpod.image('pruna/p-image-edit'),
-  prompt: 'Add a cozy reading nook with bookshelves',
-  files: [{ type: 'url', url: 'https://image.runpod.ai/demo/empty-room.png' }],
-});
-```
-
-#### Multi-image edit (robot band)
-
-```ts
 const { image } = await generateImage({
   model: runpod.image('google/nano-banana-pro-edit'),
   prompt: {
@@ -295,9 +270,9 @@ const { image } = await generateImage({
     ],
   },
 });
-// Note: Prior to v1.0.0, images were passed via providerOptions.runpod.image/images.
-// This still works but prompt.images is now recommended.
 ```
+
+Note: Prior to v1.0.0, images were passed via `providerOptions.runpod.image` / `providerOptions.runpod.images`. This still works but `prompt.images` is now recommended.
 
 ### Examples
 
