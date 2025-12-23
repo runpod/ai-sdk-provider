@@ -106,6 +106,8 @@ for await (const delta of textStream) {
 }
 ```
 
+Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
+
 ### Supported Models
 
 | Model ID                          | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes           |
@@ -281,6 +283,8 @@ const { image } = await generateImage({
 // This still works but prompt.images is now recommended.
 ```
 
+Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
+
 ### Supported Models
 
 Recommended:
@@ -309,21 +313,21 @@ For the full list of models, see the [Runpod Public Endpoint Reference](https://
 
 Additional options through `providerOptions.runpod` (supported options depend on the model):
 
-| Option                   | Type       | Default | Description                                               |
-| ------------------------ | ---------- | ------- | --------------------------------------------------------- |
-| `negative_prompt`        | `string`   | `""`    | What to avoid in the image (model-dependent)              |
-| `enable_safety_checker`  | `boolean`  | `true`  | Content safety filtering (model-dependent)                |
-| `disable_safety_checker` | `boolean`  | `false` | Disable safety checker (Pruna)                            |
-| `aspect_ratio`           | `string`   | -       | Model-specific aspect ratio (Pruna: supports `custom`)    |
+| Option                   | Type       | Default | Description                                                 |
+| ------------------------ | ---------- | ------- | ----------------------------------------------------------- |
+| `negative_prompt`        | `string`   | `""`    | What to avoid in the image (model-dependent)                |
+| `enable_safety_checker`  | `boolean`  | `true`  | Content safety filtering (model-dependent)                  |
+| `disable_safety_checker` | `boolean`  | `false` | Disable safety checker (Pruna)                              |
+| `aspect_ratio`           | `string`   | -       | Model-specific aspect ratio (Pruna: supports `custom`)      |
 | `image`                  | `string`   | -       | Legacy: Single input image URL/base64 (use `prompt.images`) |
-| `images`                 | `string[]` | -       | Legacy: Multiple input images (use `prompt.images`)       |
-| `resolution`             | `string`   | `"1k"`  | Output resolution: 1k, 2k, 4k (Nano Banana Pro)           |
-| `width` / `height`       | `number`   | -       | Custom dimensions (Pruna t2i, 256-1440; multiples of 16)  |
-| `num_inference_steps`    | `number`   | Auto    | Denoising steps (model-dependent)                         |
-| `guidance`               | `number`   | Auto    | Prompt adherence strength (model-dependent)               |
-| `output_format`          | `string`   | `"png"` | Output format: png, jpg, jpeg, webp (model-dependent)     |
-| `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                                      |
-| `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                                     |
+| `images`                 | `string[]` | -       | Legacy: Multiple input images (use `prompt.images`)         |
+| `resolution`             | `string`   | `"1k"`  | Output resolution: 1k, 2k, 4k (Nano Banana Pro)             |
+| `width` / `height`       | `number`   | -       | Custom dimensions (Pruna t2i, 256-1440; multiples of 16)    |
+| `num_inference_steps`    | `number`   | Auto    | Denoising steps (model-dependent)                           |
+| `guidance`               | `number`   | Auto    | Prompt adherence strength (model-dependent)                 |
+| `output_format`          | `string`   | `"png"` | Output format: png, jpg, jpeg, webp (model-dependent)       |
+| `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                                        |
+| `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                                       |
 
 **Example (providerOptions):**
 
@@ -373,16 +377,14 @@ const { image } = await generateImage({
 
 Supported model: `google/nano-banana-pro-edit`
 
-| Parameter                       | Supported Values                                                  | Notes                                  |
-| :------------------------------ | :---------------------------------------------------------------- | :------------------------------------- |
-| `aspectRatio`                   | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `9:21` | Standard AI SDK parameter              |
-| `resolution`                    | `1k`, `2k`, `4k`                                                  | Output resolution quality              |
-| `output_format`                 | `jpeg`, `png`, `webp`                                             | Output image format                    |
-| `prompt.images`                 | `string[]`                                                        | Recommended. Input image(s) to edit.  |
-| `files`                         | `ImageModelV3File[]`                                              | Alternative (lower-level).             |
-| `providerOptions.runpod.images` | `string[]`                                                        | Legacy. Input image(s) to edit.        |
-
-Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
+| Parameter                       | Supported Values                                                  | Notes                                |
+| :------------------------------ | :---------------------------------------------------------------- | :----------------------------------- |
+| `aspectRatio`                   | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `9:21` | Standard AI SDK parameter            |
+| `resolution`                    | `1k`, `2k`, `4k`                                                  | Output resolution quality            |
+| `output_format`                 | `jpeg`, `png`, `webp`                                             | Output image format                  |
+| `prompt.images`                 | `string[]`                                                        | Recommended. Input image(s) to edit. |
+| `files`                         | `ImageModelV3File[]`                                              | Alternative (lower-level).           |
+| `providerOptions.runpod.images` | `string[]`                                                        | Legacy. Input image(s) to edit.      |
 
 ## Speech Models
 
@@ -403,6 +405,8 @@ const result = await generateSpeech({
 import { writeFileSync } from 'fs';
 writeFileSync('speech.wav', result.audio.uint8Array);
 ```
+
+Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
 
 **Returns:**
 
