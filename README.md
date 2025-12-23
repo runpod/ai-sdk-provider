@@ -210,9 +210,7 @@ const { image } = await generateImage({
   model: runpod.imageModel('google/nano-banana-pro-edit'),
   prompt: {
     text: 'A serene mountain landscape at sunset',
-    images: [
-      'https://image.runpod.ai/uploads/0bz_xzhuLq/a2166199-5bd5-496b-b9ab-a8bae3f73bdc.jpg',
-    ],
+    images: ['https://image.runpod.ai/demo/empty-room.png'],
   },
   aspectRatio: '4:3',
 });
@@ -324,7 +322,7 @@ const { image } = await generateImage({
   model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
   prompt: {
     text: 'Transform this into a cyberpunk style with neon lights',
-    images: ['https://example.com/input-image.jpg'],
+    images: ['https://image.runpod.ai/demo/brandenburg-gate.png'],
   },
   aspectRatio: '1:1',
 });
@@ -342,7 +340,7 @@ const { image } = await generateImage({
 const { image } = await generateImage({
   model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
   prompt: 'Make this image look like a painting',
-  files: [{ type: 'url', url: 'https://example.com/input-image.jpg' }],
+  files: [{ type: 'url', url: 'https://image.runpod.ai/demo/empty-room.png' }],
 });
 ```
 
@@ -351,12 +349,12 @@ const { image } = await generateImage({
 const { image } = await generateImage({
   model: runpod.imageModel('google/nano-banana-pro-edit'),
   prompt: {
-    text: 'Combine these four images into a single realistic 3D character scene.',
+    text: 'Combine these four images into a single creative collage.',
     images: [
-      'https://image.runpod.ai/uploads/0bz_xzhuLq/a2166199-5bd5-496b-b9ab-a8bae3f73bdc.jpg',
-      'https://image.runpod.ai/uploads/Yw86rhY6xi/2ff8435f-f416-4096-9a4d-2f8c838b2d53.jpg',
-      'https://image.runpod.ai/uploads/bpCCX9zLY8/3bc27605-6f9a-40ad-83e9-c29bed45fed9.jpg',
-      'https://image.runpod.ai/uploads/LPHEY6pyHp/f950ceb8-fafa-4800-bdf1-fd3fd684d843.jpg',
+      'https://image.runpod.ai/demo/brandenburg-gate.png',
+      'https://image.runpod.ai/demo/empty-room.png',
+      'https://image.runpod.ai/demo/runpod-logo.png',
+      'https://image.runpod.ai/demo/nvidia-5090.png',
     ],
   },
 });
@@ -367,7 +365,10 @@ const { image } = await generateImage({
   prompt: 'Combine these images',
   providerOptions: {
     runpod: {
-      images: ['https://example.com/img1.jpg', 'https://example.com/img2.jpg'],
+      images: [
+        'https://image.runpod.ai/demo/runpod-logo.png',
+        'https://image.runpod.ai/demo/nvidia-5090.png',
+      ],
       enable_safety_checker: true,
     },
   },
@@ -423,9 +424,7 @@ const { image } = await generateImage({
   model: runpod.imageModel('google/nano-banana-pro-edit'),
   prompt: {
     text: 'Transform this into a watercolor painting',
-    images: [
-      'https://image.runpod.ai/uploads/0bz_xzhuLq/a2166199-5bd5-496b-b9ab-a8bae3f73bdc.jpg',
-    ],
+    images: ['https://image.runpod.ai/demo/brandenburg-gate.png'],
   },
 });
 ```
@@ -437,10 +436,7 @@ const { image } = await generateImage({
   model: runpod.imageModel('google/nano-banana-pro-edit'),
   prompt: 'Transform this into a watercolor painting',
   files: [
-    {
-      type: 'url',
-      url: 'https://image.runpod.ai/uploads/0bz_xzhuLq/a2166199-5bd5-496b-b9ab-a8bae3f73bdc.jpg',
-    },
+    { type: 'url', url: 'https://image.runpod.ai/demo/brandenburg-gate.png' },
   ],
 });
 ```
