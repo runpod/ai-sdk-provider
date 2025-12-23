@@ -59,6 +59,11 @@ Creates an image model for image generation.
   imageModel(modelId: string): ImageModelV3;
 
   /**
+Creates an image model for image generation.
+*/
+  image(modelId: string): ImageModelV3;
+
+  /**
 Creates a speech model for speech generation.
 */
   speechModel(modelId: string): SpeechModelV3;
@@ -267,6 +272,7 @@ export function createRunpod(
   provider.languageModel = createChatModel;
   provider.chatModel = createChatModel;
   provider.imageModel = createImageModel;
+  provider.image = createImageModel;
   provider.speechModel = createSpeechModel;
   provider.speech = createSpeechModel;
 

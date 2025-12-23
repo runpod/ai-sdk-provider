@@ -198,7 +198,7 @@ console.log(result.success ? result.data : parsed);
 
 ## Image Models
 
-You can create Runpod image models using the `.imageModel()` factory method.
+Generate or edit images using the AI SDK's `experimental_generateImage` and `runpod.image(...)`:
 
 ### Basic Usage
 
@@ -207,17 +207,14 @@ import { runpod } from '@runpod/ai-sdk-provider';
 import { experimental_generateImage as generateImage } from 'ai';
 
 const { image } = await generateImage({
-  model: runpod.imageModel('google/nano-banana-pro-edit'),
-  prompt: {
-    text: 'A serene mountain landscape at sunset',
-    images: ['https://image.runpod.ai/demo/empty-room.png'],
-  },
+  model: runpod.image('pruna/p-image-t2i'),
+  prompt: 'A serene mountain landscape at sunset',
   aspectRatio: '4:3',
 });
 
 // Save to filesystem
 import { writeFileSync } from 'fs';
-writeFileSync('landscape.jpg', image.uint8Array);
+writeFileSync('image.png', image.uint8Array);
 ```
 
 **Returns:**
@@ -261,7 +258,7 @@ Supported models: `pruna/p-image-t2i`, `pruna/p-image-edit`
 
 ```ts
 const { image } = await generateImage({
-  model: runpod.imageModel('pruna/p-image-t2i'),
+  model: runpod.image('pruna/p-image-t2i'),
   prompt: 'A robot',
   providerOptions: {
     runpod: {
@@ -299,7 +296,7 @@ Most other models (Flux, Seedream, Qwen, etc.) support standard `1:1`, `4:3`, an
 
 ```ts
 const { image } = await generateImage({
-  model: runpod.imageModel('bytedance/seedream-3.0'),
+  model: runpod.image('bytedance/seedream-3.0'),
   prompt: 'A sunset over mountains',
   size: '1328x1328',
   seed: 42,
@@ -319,7 +316,7 @@ Transform existing images using text prompts. Use `prompt.images` (recommended) 
 ```ts
 // Recommended: prompt.images (AI SDK v6)
 const { image } = await generateImage({
-  model: runpod.imageModel('pruna/p-image-edit'),
+  model: runpod.image('pruna/p-image-edit'),
   prompt: {
     text: 'Transform this into a cyberpunk style with neon lights',
     images: ['https://image.runpod.ai/demo/brandenburg-gate.png'],
@@ -329,7 +326,7 @@ const { image } = await generateImage({
 
 // Virtual staging: furnish an empty room
 const { image } = await generateImage({
-  model: runpod.imageModel('google/nano-banana-pro-edit'),
+  model: runpod.image('google/nano-banana-pro-edit'),
   prompt: {
     text: 'Add modern Scandinavian furniture: a gray sofa, wooden coffee table, potted plants, and warm lighting',
     images: ['https://image.runpod.ai/demo/empty-room.png'],
@@ -338,7 +335,7 @@ const { image } = await generateImage({
 
 // Alternative: using files directly (lower-level API)
 const { image } = await generateImage({
-  model: runpod.imageModel('pruna/p-image-edit'),
+  model: runpod.image('pruna/p-image-edit'),
   prompt: 'Add a cozy reading nook with bookshelves',
   files: [{ type: 'url', url: 'https://image.runpod.ai/demo/empty-room.png' }],
 });
@@ -347,7 +344,7 @@ const { image } = await generateImage({
 ```ts
 // Combine multiple images: create a robot band group photo
 const { image } = await generateImage({
-  model: runpod.imageModel('google/nano-banana-pro-edit'),
+  model: runpod.image('google/nano-banana-pro-edit'),
   prompt: {
     text: 'Combine these four robot musicians into a epic band photo on a concert stage with dramatic lighting',
     images: [
@@ -369,7 +366,7 @@ Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/get
 ```ts
 // Full control over generation parameters
 const { image } = await generateImage({
-  model: runpod.imageModel('pruna/p-image-t2i'),
+  model: runpod.image('pruna/p-image-t2i'),
   prompt: 'A majestic dragon breathing fire in a medieval castle',
   size: '1024x1024',
   seed: 42, // For reproducible results
@@ -392,7 +389,7 @@ For image editing, use the standard AI SDK `prompt.images` syntax (recommended):
 
 ```ts
 const { image } = await generateImage({
-  model: runpod.imageModel('google/nano-banana-pro-edit'),
+  model: runpod.image('google/nano-banana-pro-edit'),
   prompt: {
     text: 'Transform this into a watercolor painting',
     images: ['https://image.runpod.ai/demo/brandenburg-gate.png'],
@@ -404,7 +401,7 @@ The AI SDK normalizes `prompt.images` into `files` for the provider call. If you
 
 ```ts
 const { image } = await generateImage({
-  model: runpod.imageModel('google/nano-banana-pro-edit'),
+  model: runpod.image('google/nano-banana-pro-edit'),
   prompt: 'Transform this into a watercolor painting',
   files: [
     { type: 'url', url: 'https://image.runpod.ai/demo/brandenburg-gate.png' },
@@ -431,9 +428,9 @@ Additional options through `providerOptions.runpod`:
 | `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                                    |
 | `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                                   |
 
-## Speech
+## Speech Models
 
-You can generate speech using the AI SDK's `experimental_generateSpeech` and a Runpod speech model created via `runpod.speechModel()` (or the shorthand `runpod.speech()`).
+Generate speech using the AI SDK's `experimental_generateSpeech` and `runpod.speech(...)`:
 
 ### Basic Usage
 
@@ -442,7 +439,7 @@ import { runpod } from '@runpod/ai-sdk-provider';
 import { experimental_generateSpeech as generateSpeech } from 'ai';
 
 const result = await generateSpeech({
-  model: runpod.speechModel('resembleai/chatterbox-turbo'),
+  model: runpod.speech('resembleai/chatterbox-turbo'),
   text: 'Hello from Runpod.',
 });
 

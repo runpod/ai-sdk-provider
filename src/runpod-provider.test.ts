@@ -145,6 +145,17 @@ describe('RunpodProvider', () => {
     });
   });
 
+  describe('image', () => {
+    it('should be an alias for imageModel', () => {
+      const provider = createRunpod();
+      const modelId = 'qwen/qwen-image';
+
+      const model = provider.image(modelId);
+
+      expect(model).toBeInstanceOf(RunpodImageModel);
+    });
+  });
+
   describe('speechModel', () => {
     it('should use mapping for known speech model IDs', () => {
       const provider = createRunpod();
