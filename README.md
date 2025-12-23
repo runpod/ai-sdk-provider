@@ -198,13 +198,19 @@ console.log(result.success ? result.data : parsed);
 
 ## Image Models
 
-Generate or edit images using the AI SDK's `experimental_generateImage` and `runpod.image(...)`:
+With image models you can:
 
-### Basic Usage
+- **Text-to-image**: generate a new image from a text prompt.
+- **Edit image**: transform an existing image by providing reference image(s).
+
+All examples use the AI SDK's `experimental_generateImage` and `runpod.image(modelId)`.
+
+### Text-to-Image (Basic)
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
 import { experimental_generateImage as generateImage } from 'ai';
+import { writeFileSync } from 'fs';
 
 const { image } = await generateImage({
   model: runpod.image('pruna/p-image-t2i'),
@@ -212,8 +218,6 @@ const { image } = await generateImage({
   aspectRatio: '4:3',
 });
 
-// Save to filesystem
-import { writeFileSync } from 'fs';
 writeFileSync('image.png', image.uint8Array);
 ```
 
@@ -224,37 +228,132 @@ writeFileSync('image.png', image.uint8Array);
 - `image.mediaType` - MIME type ('image/jpeg' or 'image/png')
 - `warnings` - Array of any warnings about unsupported parameters
 
+### Edit Image (Basic)
+
+For editing, pass reference images via `prompt.images` (recommended). The AI SDK normalizes `prompt.images` into `files` for the provider call.
+
+```ts
+import { runpod } from '@runpod/ai-sdk-provider';
+import { experimental_generateImage as generateImage } from 'ai';
+
+// Single image edit (prompt.images)
+const { image } = await generateImage({
+  model: runpod.image('pruna/p-image-edit'),
+  prompt: {
+    text: 'Transform this into a cyberpunk style with neon lights',
+    images: ['https://image.runpod.ai/demo/brandenburg-gate.png'],
+  },
+  aspectRatio: '1:1',
+});
+
+// Virtual staging: furnish an empty room
+const { image: staged } = await generateImage({
+  model: runpod.image('google/nano-banana-pro-edit'),
+  prompt: {
+    text: 'Add modern Scandinavian furniture: a gray sofa, wooden coffee table, potted plants, and warm lighting',
+    images: ['https://image.runpod.ai/demo/empty-room.png'],
+  },
+});
+
+// Alternative: using files directly (lower-level API)
+const { image: filesImage } = await generateImage({
+  model: runpod.image('pruna/p-image-edit'),
+  prompt: 'Add a cozy reading nook with bookshelves',
+  files: [{ type: 'url', url: 'https://image.runpod.ai/demo/empty-room.png' }],
+});
+```
+
+```ts
+// Multi-image edit: create a robot band group photo
+const { image } = await generateImage({
+  model: runpod.image('google/nano-banana-pro-edit'),
+  prompt: {
+    text: 'Combine these four robot musicians into an epic band photo on a concert stage with dramatic lighting',
+    images: [
+      'https://image.runpod.ai/demo/robot-drummer.png',
+      'https://image.runpod.ai/demo/robot-guitarist.png',
+      'https://image.runpod.ai/demo/robot-bassist.png',
+      'https://image.runpod.ai/demo/robot-singer.png',
+    ],
+  },
+});
+// Note: Prior to v1.0.0, images were passed via providerOptions.runpod.image/images.
+// This still works but prompt.images is now recommended.
+```
+
 ### Supported Models
+
+Recommended:
+
+- Text-to-image: `pruna/p-image-t2i`
+- Edit image: `pruna/p-image-edit`, `google/nano-banana-pro-edit`
 
 | Model ID                               | Type |
 | -------------------------------------- | ---- |
+| `pruna/p-image-t2i`                    | t2i  |
+| `pruna/p-image-edit`                   | edit |
+| `google/nano-banana-pro-edit`          | edit |
 | `bytedance/seedream-3.0`               | t2i  |
 | `bytedance/seedream-4.0`               | t2i  |
 | `bytedance/seedream-4.0-edit`          | edit |
-| `black-forest-labs/flux-1-schnell`     | t2i  |
-| `black-forest-labs/flux-1-dev`         | t2i  |
-| `black-forest-labs/flux-1-kontext-dev` | edit |
 | `qwen/qwen-image`                      | t2i  |
 | `qwen/qwen-image-edit`                 | edit |
 | `nano-banana-edit`                     | edit |
-| `google/nano-banana-pro-edit`          | edit |
-| `pruna/p-image-t2i`                    | t2i  |
-| `pruna/p-image-edit`                   | edit |
+| `black-forest-labs/flux-1-schnell`     | t2i  |
+| `black-forest-labs/flux-1-dev`         | t2i  |
+| `black-forest-labs/flux-1-kontext-dev` | edit |
 
 For the full list of models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
 
-### Pruna Models
+### Provider Options (Runpod)
+
+Additional options through `providerOptions.runpod` (supported options depend on the model):
+
+| Option                   | Type       | Default | Description                                               |
+| ------------------------ | ---------- | ------- | --------------------------------------------------------- |
+| `negative_prompt`        | `string`   | `""`    | What to avoid in the image (model-dependent)              |
+| `enable_safety_checker`  | `boolean`  | `true`  | Content safety filtering (model-dependent)                |
+| `disable_safety_checker` | `boolean`  | `false` | Disable safety checker (Pruna)                            |
+| `aspect_ratio`           | `string`   | -       | Model-specific aspect ratio (Pruna: supports `custom`)    |
+| `image`                  | `string`   | -       | Legacy: Single input image URL/base64 (use `prompt.images`) |
+| `images`                 | `string[]` | -       | Legacy: Multiple input images (use `prompt.images`)       |
+| `resolution`             | `string`   | `"1k"`  | Output resolution: 1k, 2k, 4k (Nano Banana Pro)           |
+| `width` / `height`       | `number`   | -       | Custom dimensions (Pruna t2i, 256-1440; multiples of 16)  |
+| `num_inference_steps`    | `number`   | Auto    | Denoising steps (model-dependent)                         |
+| `guidance`               | `number`   | Auto    | Prompt adherence strength (model-dependent)               |
+| `output_format`          | `string`   | `"png"` | Output format: png, jpg, jpeg, webp (model-dependent)     |
+| `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                                      |
+| `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                                     |
+
+**Example (providerOptions):**
+
+```ts
+const { image } = await generateImage({
+  model: runpod.image('bytedance/seedream-3.0'),
+  prompt: 'A sunset over mountains',
+  size: '1328x1328',
+  seed: 42,
+  providerOptions: {
+    runpod: {
+      negative_prompt: 'blurry, low quality',
+      enable_safety_checker: true,
+      maxPollAttempts: 30,
+      pollIntervalMillis: 4000,
+    },
+  },
+});
+```
+
+### Model-specific Notes
+
+#### Pruna (p-image)
 
 Supported models: `pruna/p-image-t2i`, `pruna/p-image-edit`
 
-| Parameter                                 | Supported Values                                  | Notes                                                 |
-| :---------------------------------------- | :------------------------------------------------ | :---------------------------------------------------- |
-| `aspectRatio`                             | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3` | Standard AI SDK parameter                             |
-| `aspectRatio` (t2i only)                  | `custom`                                          | Requires `width` & `height` in providerOptions        |
-| `providerOptions.runpod.width` / `height` | `256` - `1440`                                    | Custom dimensions (t2i only). Must be multiple of 16. |
-| `providerOptions.runpod.images`           | `string[]`                                        | Required for `p-image-edit`. Supports 1-5 images.     |
+- **Text-to-image**: supports standard `aspectRatio` values; for custom dimensions, set `providerOptions.runpod.aspect_ratio = 'custom'` and provide `width`/`height`.
+- **Edit image**: supports 1–5 input images via `prompt.images` (recommended) or `files`.
 
-**Example: Custom Resolution (t2i)**
+**Example: Custom Dimensions (t2i)**
 
 ```ts
 const { image } = await generateImage({
@@ -270,163 +369,20 @@ const { image } = await generateImage({
 });
 ```
 
-### Google Models
-
-#### Nano Banana Pro
+#### Google (Nano Banana Pro)
 
 Supported model: `google/nano-banana-pro-edit`
 
-| Parameter                       | Supported Values                                                  | Notes                                |
-| :------------------------------ | :---------------------------------------------------------------- | :----------------------------------- |
-| `aspectRatio`                   | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `9:21` | Standard AI SDK parameter            |
-| `resolution`                    | `1k`, `2k`, `4k`                                                  | Output resolution quality            |
-| `output_format`                 | `jpeg`, `png`, `webp`                                             | Output image format                  |
-| `prompt.images`                 | `string[]`                                                        | Recommended. Input image(s) to edit. |
-| `files`                         | `ImageModelV3File[]`                                              | Recommended. Input image(s) to edit. |
-| `providerOptions.runpod.images` | `string[]`                                                        | Legacy. Input image(s) to edit.      |
-
-### Other Models
-
-Most other models (Flux, Seedream, Qwen, etc.) support standard `1:1`, `4:3`, and `3:4` aspect ratios.
-
-- **Flux models**: Support `num_inference_steps` and `guidance` settings.
-- **Edit models**: Require an input image via `providerOptions.runpod.image` (single) or `images` (multiple).
-
-### Advanced Parameters
-
-```ts
-const { image } = await generateImage({
-  model: runpod.image('bytedance/seedream-3.0'),
-  prompt: 'A sunset over mountains',
-  size: '1328x1328',
-  seed: 42,
-  providerOptions: {
-    runpod: {
-      negative_prompt: 'blurry, low quality',
-      enable_safety_checker: true,
-    },
-  },
-});
-```
-
-#### Edit Image
-
-Transform existing images using text prompts. Use `prompt.images` (recommended) or `files`. The AI SDK normalizes `prompt.images` to `files` internally.
-
-```ts
-// Recommended: prompt.images (AI SDK v6)
-const { image } = await generateImage({
-  model: runpod.image('pruna/p-image-edit'),
-  prompt: {
-    text: 'Transform this into a cyberpunk style with neon lights',
-    images: ['https://image.runpod.ai/demo/brandenburg-gate.png'],
-  },
-  aspectRatio: '1:1',
-});
-
-// Virtual staging: furnish an empty room
-const { image } = await generateImage({
-  model: runpod.image('google/nano-banana-pro-edit'),
-  prompt: {
-    text: 'Add modern Scandinavian furniture: a gray sofa, wooden coffee table, potted plants, and warm lighting',
-    images: ['https://image.runpod.ai/demo/empty-room.png'],
-  },
-});
-
-// Alternative: using files directly (lower-level API)
-const { image } = await generateImage({
-  model: runpod.image('pruna/p-image-edit'),
-  prompt: 'Add a cozy reading nook with bookshelves',
-  files: [{ type: 'url', url: 'https://image.runpod.ai/demo/empty-room.png' }],
-});
-```
-
-```ts
-// Combine multiple images: create a robot band group photo
-const { image } = await generateImage({
-  model: runpod.image('google/nano-banana-pro-edit'),
-  prompt: {
-    text: 'Combine these four robot musicians into a epic band photo on a concert stage with dramatic lighting',
-    images: [
-      'https://image.runpod.ai/demo/robot-drummer.png',
-      'https://image.runpod.ai/demo/robot-guitarist.png',
-      'https://image.runpod.ai/demo/robot-bassist.png',
-      'https://image.runpod.ai/demo/robot-singer.png',
-    ],
-  },
-});
-// Note: Prior to v1.0.0, images were passed via providerOptions.runpod.images.
-// This still works but prompt.images is now recommended.
-```
+| Parameter                       | Supported Values                                                  | Notes                                  |
+| :------------------------------ | :---------------------------------------------------------------- | :------------------------------------- |
+| `aspectRatio`                   | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `9:21` | Standard AI SDK parameter              |
+| `resolution`                    | `1k`, `2k`, `4k`                                                  | Output resolution quality              |
+| `output_format`                 | `jpeg`, `png`, `webp`                                             | Output image format                    |
+| `prompt.images`                 | `string[]`                                                        | Recommended. Input image(s) to edit.  |
+| `files`                         | `ImageModelV3File[]`                                              | Alternative (lower-level).             |
+| `providerOptions.runpod.images` | `string[]`                                                        | Legacy. Input image(s) to edit.        |
 
 Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
-
-### Advanced Configuration
-
-```ts
-// Full control over generation parameters
-const { image } = await generateImage({
-  model: runpod.image('pruna/p-image-t2i'),
-  prompt: 'A majestic dragon breathing fire in a medieval castle',
-  size: '1024x1024',
-  seed: 42, // For reproducible results
-  providerOptions: {
-    runpod: {
-      negative_prompt: 'blurry, low quality, distorted, ugly, bad anatomy',
-      disable_safety_checker: false,
-      num_inference_steps: 4, // Default for p-image
-      output_format: 'png',
-      maxPollAttempts: 30,
-      pollIntervalMillis: 4000,
-    },
-  },
-});
-```
-
-### Standard Image Input
-
-For image editing, use the standard AI SDK `prompt.images` syntax (recommended):
-
-```ts
-const { image } = await generateImage({
-  model: runpod.image('google/nano-banana-pro-edit'),
-  prompt: {
-    text: 'Transform this into a watercolor painting',
-    images: ['https://image.runpod.ai/demo/brandenburg-gate.png'],
-  },
-});
-```
-
-The AI SDK normalizes `prompt.images` into `files` for the provider call. If you prefer the lower-level format, you can pass `files` directly:
-
-```ts
-const { image } = await generateImage({
-  model: runpod.image('google/nano-banana-pro-edit'),
-  prompt: 'Transform this into a watercolor painting',
-  files: [
-    { type: 'url', url: 'https://image.runpod.ai/demo/brandenburg-gate.png' },
-  ],
-});
-```
-
-### Provider Options
-
-Additional options through `providerOptions.runpod`:
-
-| Option                   | Type       | Default | Description                                             |
-| ------------------------ | ---------- | ------- | ------------------------------------------------------- |
-| `negative_prompt`        | `string`   | `""`    | What to avoid in the image                              |
-| `enable_safety_checker`  | `boolean`  | `true`  | Content safety filtering                                |
-| `disable_safety_checker` | `boolean`  | `false` | Disable safety checker (Pruna)                          |
-| `image`                  | `string`   | -       | Legacy: Input image URL or base64 (use `prompt.images`) |
-| `images`                 | `string[]` | -       | Legacy: Multiple input images (use `prompt.images`)     |
-| `resolution`             | `string`   | `"1k"`  | Output resolution: 1k, 2k, 4k (Nano Banana Pro)         |
-| `width` / `height`       | `number`   | -       | Custom dimensions (Pruna t2i, 256-1440)                 |
-| `num_inference_steps`    | `number`   | Auto    | Denoising steps                                         |
-| `guidance`               | `number`   | Auto    | Prompt adherence strength                               |
-| `output_format`          | `string`   | `"png"` | Output format: png, jpg, jpeg, webp                     |
-| `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                                    |
-| `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                                   |
 
 ## Speech Models
 
