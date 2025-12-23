@@ -207,8 +207,13 @@ import { runpod } from '@runpod/ai-sdk-provider';
 import { experimental_generateImage as generateImage } from 'ai';
 
 const { image } = await generateImage({
-  model: runpod.imageModel('qwen/qwen-image'),
-  prompt: 'A serene mountain landscape at sunset',
+  model: runpod.imageModel('google/nano-banana-pro-edit'),
+  prompt: {
+    text: 'A serene mountain landscape at sunset',
+    images: [
+      'https://image.runpod.ai/uploads/0bz_xzhuLq/a2166199-5bd5-496b-b9ab-a8bae3f73bdc.jpg',
+    ],
+  },
   aspectRatio: '4:3',
 });
 
@@ -344,7 +349,7 @@ const { image } = await generateImage({
 ```ts
 // Combine multiple images using prompt.images
 const { image } = await generateImage({
-  model: runpod.imageModel('nano-banana-edit'),
+  model: runpod.imageModel('google/nano-banana-pro-edit'),
   prompt: {
     text: 'Combine these four images into a single realistic 3D character scene.',
     images: [
@@ -358,7 +363,7 @@ const { image } = await generateImage({
 
 // Legacy approach (still supported): Using providerOptions
 const { image } = await generateImage({
-  model: runpod.imageModel('nano-banana-edit'),
+  model: runpod.imageModel('google/nano-banana-pro-edit'),
   prompt: 'Combine these images',
   providerOptions: {
     runpod: {
@@ -415,10 +420,12 @@ For image editing, use the standard AI SDK `prompt.images` syntax (recommended):
 
 ```ts
 const { image } = await generateImage({
-  model: runpod.imageModel('model-id'),
+  model: runpod.imageModel('google/nano-banana-pro-edit'),
   prompt: {
-    text: 'Your editing instruction',
-    images: ['https://example.com/image.jpg'],
+    text: 'Transform this into a watercolor painting',
+    images: [
+      'https://image.runpod.ai/uploads/0bz_xzhuLq/a2166199-5bd5-496b-b9ab-a8bae3f73bdc.jpg',
+    ],
   },
 });
 ```
@@ -427,9 +434,14 @@ The AI SDK normalizes `prompt.images` into `files` for the provider call. If you
 
 ```ts
 const { image } = await generateImage({
-  model: runpod.imageModel('model-id'),
-  prompt: 'Your editing instruction',
-  files: [{ type: 'url', url: 'https://example.com/image.jpg' }],
+  model: runpod.imageModel('google/nano-banana-pro-edit'),
+  prompt: 'Transform this into a watercolor painting',
+  files: [
+    {
+      type: 'url',
+      url: 'https://image.runpod.ai/uploads/0bz_xzhuLq/a2166199-5bd5-496b-b9ab-a8bae3f73bdc.jpg',
+    },
+  ],
 });
 ```
 
