@@ -312,7 +312,7 @@ const { image } = await generateImage({
 });
 ```
 
-#### Modify Image
+#### Edit Image
 
 Transform existing images using text prompts. Use `prompt.images` (recommended) or `files`. The AI SDK normalizes `prompt.images` to `files` internally.
 
