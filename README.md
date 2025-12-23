@@ -243,12 +243,18 @@ import { runpod } from '@runpod/ai-sdk-provider';
 import { experimental_generateImage as generateImage } from 'ai';
 
 const { image } = await generateImage({
-  model: runpod.image('pruna/p-image-edit'),
+  model: runpod.image('google/nano-banana-pro-edit'),
   prompt: {
     text: 'Virtual staging: add modern Scandinavian furniture: a gray sofa, wooden coffee table, potted plants, and warm lighting',
     images: ['https://image.runpod.ai/demo/empty-room.png'],
   },
   aspectRatio: '16:9',
+  providerOptions: {
+    runpod: {
+      resolution: '1k',
+      output_format: 'jpeg',
+    },
+  },
 });
 ```
 
