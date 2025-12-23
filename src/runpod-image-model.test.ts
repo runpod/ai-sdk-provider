@@ -2,8 +2,47 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { RunpodImageModel } from './runpod-image-model';
 import { InvalidArgumentError } from '@ai-sdk/provider';
+import type { ImageModelV3File } from '@ai-sdk/provider';
 
 const mockFetch = vi.fn();
+
+/**
+ * Simulates the AI SDK v6 `prompt.images` normalization into `files`
+ * (see `ai/src/generate-image/generate-image.ts` in the AI SDK repo).
+ */
+function promptImagesToFiles(images: string[]): ImageModelV3File[] {
+  return images.map((image) => {
+    if (image.startsWith('http')) {
+      return { type: 'url', url: image };
+    }
+
+    // data URL (data:<mediaType>;base64,<base64>)
+    if (image.startsWith('data:')) {
+      const [header, base64] = image.split(',');
+      const mediaType = header?.split(';')?.[0]?.slice('data:'.length);
+      const binary = atob(base64 ?? '');
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+
+      return {
+        type: 'file',
+        mediaType: mediaType || 'image/png',
+        data: bytes,
+      };
+    }
+
+    // Fallback: treat as base64 string (assume png)
+    const binary = atob(image);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+
+    return { type: 'file', mediaType: 'image/png', data: bytes };
+  });
+}
 
 describe('RunpodImageModel', () => {
   let model: RunpodImageModel;
@@ -271,6 +310,130 @@ describe('RunpodImageModel', () => {
 
       const isKontext = kontextModel.modelId.includes('kontext');
       expect(isKontext).toBe(true);
+    });
+  });
+
+  describe('doGenerate image inputs (files, as produced from prompt.images)', () => {
+    it('should send Flux Kontext image from files (overriding providerOptions.runpod.image)', async () => {
+      let capturedBody: any | undefined;
+
+      mockFetch.mockImplementation(async (input: any, init?: any) => {
+        const url = typeof input === 'string' ? input : input?.url;
+
+        if (url?.includes('/runsync')) {
+          capturedBody = JSON.parse(init?.body ?? '{}');
+          return new Response(
+            JSON.stringify({
+              id: 'job-1',
+              status: 'COMPLETED',
+              output: { image_url: 'https://cdn.test/output.png' },
+            }),
+            { headers: { 'content-type': 'application/json' } }
+          );
+        }
+
+        if (url === 'https://cdn.test/output.png') {
+          return new Response(new Uint8Array([1, 2, 3]), {
+            headers: { 'content-type': 'image/png' },
+          });
+        }
+
+        throw new Error(`Unexpected fetch url: ${String(url)}`);
+      });
+
+      const kontextModel = new RunpodImageModel(
+        'black-forest-labs/flux-1-kontext-dev',
+        {
+          provider: 'runpod',
+          baseURL:
+            'https://api.runpod.ai/v2/black-forest-labs-flux-1-kontext-dev',
+          headers: () => ({ Authorization: 'Bearer test-key' }),
+          fetch: mockFetch,
+        }
+      );
+
+      const result = await kontextModel.doGenerate({
+        prompt: 'Transform this into a cyberpunk style with neon lights',
+        n: 1,
+        size: undefined,
+        aspectRatio: '1:1',
+        seed: 42,
+        files: promptImagesToFiles(['https://example.com/input-image.jpg']),
+        mask: undefined,
+        providerOptions: {
+          runpod: {
+            image: 'https://legacy.example.com/legacy-image.jpg',
+          },
+        } as any,
+        headers: {},
+        abortSignal: undefined,
+      });
+
+      expect(capturedBody?.input?.image).toBe(
+        'https://example.com/input-image.jpg'
+      );
+      expect(result.images[0]).toEqual(new Uint8Array([1, 2, 3]));
+    });
+
+    it('should send multi-image edit payload from files (overriding providerOptions.runpod.images)', async () => {
+      let capturedBody: any | undefined;
+
+      mockFetch.mockImplementation(async (input: any, init?: any) => {
+        const url = typeof input === 'string' ? input : input?.url;
+
+        if (url?.includes('/runsync')) {
+          capturedBody = JSON.parse(init?.body ?? '{}');
+          return new Response(
+            JSON.stringify({
+              id: 'job-2',
+              status: 'COMPLETED',
+              output: { result: 'https://cdn.test/out.jpg' },
+            }),
+            { headers: { 'content-type': 'application/json' } }
+          );
+        }
+
+        if (url === 'https://cdn.test/out.jpg') {
+          return new Response(new Uint8Array([9, 8, 7]), {
+            headers: { 'content-type': 'image/jpeg' },
+          });
+        }
+
+        throw new Error(`Unexpected fetch url: ${String(url)}`);
+      });
+
+      const editModel = new RunpodImageModel('google/nano-banana-pro-edit', {
+        provider: 'runpod',
+        baseURL: 'https://api.runpod.ai/v2/nano-banana-edit',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+
+      const inputImages = [
+        'https://example.com/img1.jpg',
+        'https://example.com/img2.jpg',
+      ];
+
+      const result = await editModel.doGenerate({
+        prompt: 'Combine these',
+        n: 1,
+        size: undefined,
+        aspectRatio: '1:1',
+        seed: undefined,
+        files: promptImagesToFiles(inputImages),
+        mask: undefined,
+        providerOptions: {
+          runpod: {
+            images: ['https://legacy.example.com/legacy1.jpg'],
+            enable_safety_checker: true,
+          },
+        } as any,
+        headers: {},
+        abortSignal: undefined,
+      });
+
+      expect(capturedBody?.input?.images).toEqual(inputImages);
+      expect(result.images[0]).toEqual(new Uint8Array([9, 8, 7]));
     });
   });
 
