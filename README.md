@@ -106,7 +106,7 @@ for await (const delta of textStream) {
 }
 ```
 
-### Model Capabilities
+### Supported Models
 
 | Model ID                          | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes           |
 | --------------------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- | ------------------------- |
@@ -227,7 +227,7 @@ writeFileSync('landscape.jpg', image.uint8Array);
 - `image.mediaType` - MIME type ('image/jpeg' or 'image/png')
 - `warnings` - Array of any warnings about unsupported parameters
 
-### Model Capabilities
+### Supported Models
 
 | Model ID                               | Type |
 | -------------------------------------- | ---- |
