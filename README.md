@@ -106,6 +106,8 @@ for await (const delta of textStream) {
 }
 ```
 
+### Examples
+
 Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
 
 ### Supported Models
@@ -283,6 +285,8 @@ const { image } = await generateImage({
 // This still works but prompt.images is now recommended.
 ```
 
+### Examples
+
 Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
 
 ### Supported Models
@@ -405,6 +409,8 @@ const result = await generateSpeech({
 import { writeFileSync } from 'fs';
 writeFileSync('speech.wav', result.audio.uint8Array);
 ```
+
+### Examples
 
 Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
 
