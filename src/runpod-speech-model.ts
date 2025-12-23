@@ -1,7 +1,8 @@
 import {
   JSONValue,
-  SpeechModelV2,
-  SpeechModelV2CallWarning,
+  SpeechModelV3,
+  SpeechModelV3CallOptions,
+  SharedV3Warning,
 } from '@ai-sdk/provider';
 import { FetchFunction, withoutTrailingSlash } from '@ai-sdk/provider-utils';
 
@@ -23,8 +24,8 @@ function replaceNewlinesWithSpaces(value: string): string {
   return value.replace(/[\r\n]+/g, ' ');
 }
 
-export class RunpodSpeechModel implements SpeechModelV2 {
-  readonly specificationVersion = 'v2';
+export class RunpodSpeechModel implements SpeechModelV3 {
+  readonly specificationVersion = 'v3';
 
   get provider(): string {
     return this.config.provider;
@@ -50,11 +51,11 @@ export class RunpodSpeechModel implements SpeechModelV2 {
   }
 
   async doGenerate(
-    options: Parameters<SpeechModelV2['doGenerate']>[0]
-  ): Promise<Awaited<ReturnType<SpeechModelV2['doGenerate']>>> {
+    options: SpeechModelV3CallOptions
+  ): Promise<Awaited<ReturnType<SpeechModelV3['doGenerate']>>> {
     const currentDate = this.config._internal?.currentDate?.() ?? new Date();
 
-    const warnings: SpeechModelV2CallWarning[] = [];
+    const warnings: SharedV3Warning[] = [];
 
     const {
       text,
@@ -71,32 +72,32 @@ export class RunpodSpeechModel implements SpeechModelV2 {
     // This endpoint currently returns wav. Warn and ignore other formats.
     if (outputFormat != null && outputFormat !== 'wav') {
       warnings.push({
-        type: 'unsupported-setting',
-        setting: 'outputFormat',
+        type: 'unsupported',
+        feature: 'outputFormat',
         details: `Unsupported outputFormat: ${outputFormat}. This endpoint returns 'wav'.`,
       });
     }
 
     if (instructions != null) {
       warnings.push({
-        type: 'unsupported-setting',
-        setting: 'instructions',
+        type: 'unsupported',
+        feature: 'instructions',
         details: `Instructions are not supported by this speech endpoint.`,
       });
     }
 
     if (speed != null) {
       warnings.push({
-        type: 'unsupported-setting',
-        setting: 'speed',
+        type: 'unsupported',
+        feature: 'speed',
         details: `Speed is not supported by this speech endpoint.`,
       });
     }
 
     if (language != null) {
       warnings.push({
-        type: 'unsupported-setting',
-        setting: 'language',
+        type: 'unsupported',
+        feature: 'language',
         details: `Language selection is not supported by this speech endpoint.`,
       });
     }

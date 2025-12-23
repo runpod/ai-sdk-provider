@@ -1,5 +1,7 @@
 # Runpod AI SDK Provider
 
+![Runpod AI SDK Provider banner](https://image.runpod.ai/runpod/ai-sdk-provider/banner.jpg)
+
 The **Runpod provider** for the [AI SDK](https://ai-sdk.dev/docs) contains language model and image generation support for [Runpod's](https://runpod.io) public endpoints.
 
 ## Setup
@@ -104,7 +106,11 @@ for await (const delta of textStream) {
 }
 ```
 
-### Model Capabilities
+### Examples
+
+Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
+
+### Supported Models
 
 | Model ID                          | Description                                                         | Streaming | Object Generation | Tool Usage | Reasoning Notes           |
 | --------------------------------- | ------------------------------------------------------------------- | --------- | ----------------- | ---------- | ------------------------- |
@@ -196,23 +202,27 @@ console.log(result.success ? result.data : parsed);
 
 ## Image Models
 
-You can create Runpod image models using the `.imageModel()` factory method.
+With image models you can:
 
-### Basic Usage
+- **Text-to-image**: generate a new image from a text prompt.
+- **Edit image**: transform an existing image by providing reference image(s).
+
+All examples use the AI SDK's `experimental_generateImage` and `runpod.image(modelId)`.
+
+### Text-to-Image
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
 import { experimental_generateImage as generateImage } from 'ai';
+import { writeFileSync } from 'fs';
 
 const { image } = await generateImage({
-  model: runpod.imageModel('qwen/qwen-image'),
+  model: runpod.image('pruna/p-image-t2i'),
   prompt: 'A serene mountain landscape at sunset',
   aspectRatio: '4:3',
 });
 
-// Save to filesystem
-import { writeFileSync } from 'fs';
-writeFileSync('landscape.jpg', image.uint8Array);
+writeFileSync('image.png', image.uint8Array);
 ```
 
 **Returns:**
@@ -222,41 +232,124 @@ writeFileSync('landscape.jpg', image.uint8Array);
 - `image.mediaType` - MIME type ('image/jpeg' or 'image/png')
 - `warnings` - Array of any warnings about unsupported parameters
 
-### Model Capabilities
+### Edit Image
+
+For editing, pass reference images via `prompt.images` (recommended). The AI SDK normalizes `prompt.images` into `files` for the provider call.
+
+#### Single reference image (1 input image)
+
+```ts
+import { runpod } from '@runpod/ai-sdk-provider';
+import { experimental_generateImage as generateImage } from 'ai';
+
+const { image } = await generateImage({
+  model: runpod.image('pruna/p-image-edit'),
+  prompt: {
+    text: 'Virtual staging: add modern Scandinavian furniture: a gray sofa, wooden coffee table, potted plants, and warm lighting',
+    images: ['https://image.runpod.ai/demo/empty-room.png'],
+  },
+  aspectRatio: '16:9',
+});
+```
+
+#### Multiple reference images (4 input images)
+
+Note: Prior to v1.0.0, images were passed via `providerOptions.runpod.image` / `providerOptions.runpod.images`. This still works but `prompt.images` is now recommended.
+
+```ts
+import { runpod } from '@runpod/ai-sdk-provider';
+import { experimental_generateImage as generateImage } from 'ai';
+
+const { image } = await generateImage({
+  model: runpod.image('google/nano-banana-pro-edit'),
+  prompt: {
+    text: 'Combine these four robot musicians into an epic band photo on a concert stage with dramatic lighting',
+    images: [
+      'https://image.runpod.ai/demo/robot-drummer.png',
+      'https://image.runpod.ai/demo/robot-guitarist.png',
+      'https://image.runpod.ai/demo/robot-bassist.png',
+      'https://image.runpod.ai/demo/robot-singer.png',
+    ],
+  },
+});
+```
+
+### Examples
+
+Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
+
+### Supported Models
 
 | Model ID                               | Type |
 | -------------------------------------- | ---- |
+| `pruna/p-image-t2i`                    | t2i  |
+| `pruna/p-image-edit`                   | edit |
+| `google/nano-banana-pro-edit`          | edit |
 | `bytedance/seedream-3.0`               | t2i  |
 | `bytedance/seedream-4.0`               | t2i  |
 | `bytedance/seedream-4.0-edit`          | edit |
-| `black-forest-labs/flux-1-schnell`     | t2i  |
-| `black-forest-labs/flux-1-dev`         | t2i  |
-| `black-forest-labs/flux-1-kontext-dev` | edit |
 | `qwen/qwen-image`                      | t2i  |
 | `qwen/qwen-image-edit`                 | edit |
 | `nano-banana-edit`                     | edit |
-| `google/nano-banana-pro-edit`          | edit |
-| `pruna/p-image-t2i`                    | t2i  |
-| `pruna/p-image-edit`                   | edit |
+| `black-forest-labs/flux-1-schnell`     | t2i  |
+| `black-forest-labs/flux-1-dev`         | t2i  |
+| `black-forest-labs/flux-1-kontext-dev` | edit |
 
 For the full list of models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
 
-### Pruna Models
+### Provider Options
 
-Supported models: `pruna/p-image-t2i`, `pruna/p-image-edit`
+Additional options through `providerOptions.runpod` (supported options depend on the model):
 
-| Parameter                                 | Supported Values                                  | Notes                                                 |
-| :---------------------------------------- | :------------------------------------------------ | :---------------------------------------------------- |
-| `aspectRatio`                             | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3` | Standard AI SDK parameter                             |
-| `aspectRatio` (t2i only)                  | `custom`                                          | Requires `width` & `height` in providerOptions        |
-| `providerOptions.runpod.width` / `height` | `256` - `1440`                                    | Custom dimensions (t2i only). Must be multiple of 16. |
-| `providerOptions.runpod.images`           | `string[]`                                        | Required for `p-image-edit`. Supports 1-5 images.     |
+| Option                   | Type       | Default | Description                                                 |
+| ------------------------ | ---------- | ------- | ----------------------------------------------------------- |
+| `negative_prompt`        | `string`   | `""`    | What to avoid in the image (model-dependent)                |
+| `enable_safety_checker`  | `boolean`  | `true`  | Content safety filtering (model-dependent)                  |
+| `disable_safety_checker` | `boolean`  | `false` | Disable safety checker (Pruna)                              |
+| `aspect_ratio`           | `string`   | -       | Model-specific aspect ratio (Pruna: supports `custom`)      |
+| `image`                  | `string`   | -       | Legacy: Single input image URL/base64 (use `prompt.images`) |
+| `images`                 | `string[]` | -       | Legacy: Multiple input images (use `prompt.images`)         |
+| `resolution`             | `string`   | `"1k"`  | Output resolution: 1k, 2k, 4k (Nano Banana Pro)             |
+| `width` / `height`       | `number`   | -       | Custom dimensions (Pruna t2i, 256-1440; multiples of 16)    |
+| `num_inference_steps`    | `number`   | Auto    | Denoising steps (model-dependent)                           |
+| `guidance`               | `number`   | Auto    | Prompt adherence strength (model-dependent)                 |
+| `output_format`          | `string`   | `"png"` | Output format: png, jpg, jpeg, webp (model-dependent)       |
+| `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                                        |
+| `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                                       |
 
-**Example: Custom Resolution (t2i)**
+**Example (providerOptions):**
 
 ```ts
 const { image } = await generateImage({
-  model: runpod.imageModel('pruna/p-image-t2i'),
+  model: runpod.image('bytedance/seedream-3.0'),
+  prompt: 'A sunset over mountains',
+  size: '1328x1328',
+  seed: 42,
+  providerOptions: {
+    runpod: {
+      negative_prompt: 'blurry, low quality',
+      enable_safety_checker: true,
+      maxPollAttempts: 30,
+      pollIntervalMillis: 4000,
+    },
+  },
+});
+```
+
+### Model-specific Notes
+
+#### Pruna (p-image)
+
+Supported models: `pruna/p-image-t2i`, `pruna/p-image-edit`
+
+- **Text-to-image**: supports standard `aspectRatio` values; for custom dimensions, set `providerOptions.runpod.aspect_ratio = 'custom'` and provide `width`/`height`.
+- **Edit image**: supports 1–5 input images via `prompt.images` (recommended) or `files`.
+
+**Example: Custom Dimensions (t2i)**
+
+```ts
+const { image } = await generateImage({
+  model: runpod.image('pruna/p-image-t2i'),
   prompt: 'A robot',
   providerOptions: {
     runpod: {
@@ -268,166 +361,30 @@ const { image } = await generateImage({
 });
 ```
 
-### Google Models
-
-#### Nano Banana Pro
+#### Google (Nano Banana Pro)
 
 Supported model: `google/nano-banana-pro-edit`
 
-| Parameter                       | Supported Values                                                  | Notes                             |
-| :------------------------------ | :---------------------------------------------------------------- | :-------------------------------- |
-| `aspectRatio`                   | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `9:21` | Standard AI SDK parameter         |
-| `resolution`                    | `1k`, `2k`, `4k`                                                  | Output resolution quality         |
-| `output_format`                 | `jpeg`, `png`, `webp`                                             | Output image format               |
-| `providerOptions.runpod.images` | `string[]`                                                        | Required. Input image(s) to edit. |
+| Parameter                       | Supported Values                                                  | Notes                                |
+| :------------------------------ | :---------------------------------------------------------------- | :----------------------------------- |
+| `aspectRatio`                   | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `9:21` | Standard AI SDK parameter            |
+| `resolution`                    | `1k`, `2k`, `4k`                                                  | Output resolution quality            |
+| `output_format`                 | `jpeg`, `png`, `webp`                                             | Output image format                  |
+| `prompt.images`                 | `string[]`                                                        | Recommended. Input image(s) to edit. |
+| `files`                         | `ImageModelV3File[]`                                              | Alternative (lower-level).           |
+| `providerOptions.runpod.images` | `string[]`                                                        | Legacy. Input image(s) to edit.      |
 
-### Other Models
+## Speech Models
 
-Most other models (Flux, Seedream, Qwen, etc.) support standard `1:1`, `4:3`, and `3:4` aspect ratios.
-
-- **Flux models**: Support `num_inference_steps` and `guidance` settings.
-- **Edit models**: Require an input image via `providerOptions.runpod.image` (single) or `images` (multiple).
-
-### Advanced Parameters
-
-```ts
-const { image } = await generateImage({
-  model: runpod.imageModel('bytedance/seedream-3.0'),
-  prompt: 'A sunset over mountains',
-  size: '1328x1328',
-  seed: 42,
-  providerOptions: {
-    runpod: {
-      negative_prompt: 'blurry, low quality',
-      enable_safety_checker: true,
-    },
-  },
-});
-```
-
-#### Modify Image
-
-Transform existing images using text prompts.
-
-```ts
-// Example: Transform existing image
-const { image } = await generateImage({
-  model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
-  prompt: 'Transform this into a cyberpunk style with neon lights',
-  aspectRatio: '1:1',
-  providerOptions: {
-    runpod: {
-      image: 'https://example.com/input-image.jpg',
-    },
-  },
-});
-
-// Example: Using base64 encoded image
-const { image } = await generateImage({
-  model: runpod.imageModel('black-forest-labs/flux-1-kontext-dev'),
-  prompt: 'Make this image look like a painting',
-  providerOptions: {
-    runpod: {
-      image: 'data:image/png;base64,iVBORw0KGgoAAAANS...',
-    },
-  },
-});
-```
-
-```ts
-// Example: Combine multiple images using Nano Banana edit
-const { image } = await generateImage({
-  model: runpod.imageModel('nano-banana-edit'),
-  prompt:
-    'Combine these four images into a single realistic 3D character scene.',
-  // Defaults to 1:1; you can also set size: '1328x1328' or aspectRatio: '4:3'
-  providerOptions: {
-    runpod: {
-      images: [
-        'https://image.runpod.ai/uploads/0bz_xzhuLq/a2166199-5bd5-496b-b9ab-a8bae3f73bdc.jpg',
-        'https://image.runpod.ai/uploads/Yw86rhY6xi/2ff8435f-f416-4096-9a4d-2f8c838b2d53.jpg',
-        'https://image.runpod.ai/uploads/bpCCX9zLY8/3bc27605-6f9a-40ad-83e9-c29bed45fed9.jpg',
-        'https://image.runpod.ai/uploads/LPHEY6pyHp/f950ceb8-fafa-4800-bdf1-fd3fd684d843.jpg',
-      ],
-      enable_safety_checker: true,
-    },
-  },
-});
-```
-
-Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
-
-### Advanced Configuration
-
-```ts
-// Full control over generation parameters
-const { image } = await generateImage({
-  model: runpod.imageModel('black-forest-labs/flux-1-dev'),
-  prompt: 'A majestic dragon breathing fire in a medieval castle',
-  size: '1328x1328',
-  seed: 42, // For reproducible results
-  providerOptions: {
-    runpod: {
-      negative_prompt: 'blurry, low quality, distorted, ugly, bad anatomy',
-      enable_safety_checker: true,
-      num_inference_steps: 50, // Higher quality (default: 28)
-      guidance: 3.5, // Stronger prompt adherence (default: 2)
-      output_format: 'png', // High quality format
-      // Polling settings for long generations
-      maxPollAttempts: 30,
-      pollIntervalMillis: 4000,
-    },
-  },
-});
-
-// Fast generation with minimal steps
-const { image } = await generateImage({
-  model: runpod.imageModel('black-forest-labs/flux-1-schnell'),
-  prompt: 'A simple red apple',
-  aspectRatio: '1:1',
-  providerOptions: {
-    runpod: {
-      num_inference_steps: 2, // Even faster (default: 4)
-      guidance: 10, // Higher guidance for simple prompts
-      output_format: 'jpg', // Smaller file size
-    },
-  },
-});
-```
-
-### Provider Options
-
-Use `providerOptions.runpod` for model-specific parameters:
-
-| Option                   | Type       | Default | Description                                     |
-| ------------------------ | ---------- | ------- | ----------------------------------------------- |
-| `negative_prompt`        | `string`   | `""`    | What to avoid in the image                      |
-| `enable_safety_checker`  | `boolean`  | `true`  | Content safety filtering                        |
-| `disable_safety_checker` | `boolean`  | `false` | Disable safety checker (Pruna)                  |
-| `image`                  | `string`   | -       | Input image URL or base64 (Flux Kontext)        |
-| `images`                 | `string[]` | -       | Multiple input images (edit models)             |
-| `resolution`             | `string`   | `"1k"`  | Output resolution: 1k, 2k, 4k (Nano Banana Pro) |
-| `width` / `height`       | `number`   | -       | Custom dimensions (Pruna t2i, 256-1440)         |
-| `num_inference_steps`    | `number`   | Auto    | Denoising steps                                 |
-| `guidance`               | `number`   | Auto    | Prompt adherence strength                       |
-| `output_format`          | `string`   | `"png"` | Output format: png, jpg, jpeg, webp             |
-| `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                            |
-| `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                           |
-
-## Speech
-
-You can generate speech using the AI SDK's `experimental_generateSpeech` and a Runpod speech model created via `runpod.speechModel()` (or the shorthand `runpod.speech()`).
-
-### Basic Usage
+Generate speech using the AI SDK's `experimental_generateSpeech` and `runpod.speech(...)`:
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
 import { experimental_generateSpeech as generateSpeech } from 'ai';
 
 const result = await generateSpeech({
-  model: runpod.speechModel('resembleai/chatterbox-turbo'),
-  text: 'Hello, this is Chatterbox Turbo running on Runpod.',
-  voice: 'lucy',
+  model: runpod.speech('resembleai/chatterbox-turbo'),
+  text: 'Hello from Runpod.',
 });
 
 // Save to filesystem:
@@ -437,26 +394,35 @@ writeFileSync('speech.wav', result.audio.uint8Array);
 
 **Returns:**
 
-- `result.audio.uint8Array` - Binary audio data (efficient for processing/saving)
-- `result.audio.base64` - Base64 encoded audio (useful for web embedding)
-- `result.audio.mediaType` - MIME type (e.g. `audio/wav`)
-- `result.audio.format` - Format (e.g. `wav`)
-- `result.warnings` - Array of any warnings about unsupported parameters
-- `result.providerMetadata.runpod.audioUrl` - Public URL to the generated audio
-- `result.providerMetadata.runpod.cost` - Cost information (if available)
+- `result.audio` (`GeneratedAudioFile`)
+  - `result.audio.uint8Array` (binary audio)
+  - `result.audio.base64` (base64-encoded audio)
+  - `result.audio.mediaType` (e.g. `audio/wav`)
+  - `result.audio.format` (e.g. `wav`)
+- `result.warnings` (e.g. unsupported parameters)
+- `result.responses` (telemetry/debug metadata)
+- `result.providerMetadata.runpod`
+  - `audioUrl` (public URL to the generated audio)
+  - `cost` (if available)
+
+### Examples
+
+Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
 
 ### Supported Models
 
-Supported model: `resembleai/chatterbox-turbo`
+- `resembleai/chatterbox-turbo`
 
-### Parameters
+### `resembleai/chatterbox-turbo`
+
+#### Parameters
 
 | Parameter | Type     | Default  | Description                              |
 | --------- | -------- | -------- | ---------------------------------------- |
 | `text`    | `string` | -        | Required. The text to convert to speech. |
 | `voice`   | `string` | `"lucy"` | Built-in voice name (see list below).    |
 
-### Provider Options
+#### Provider Options
 
 Use `providerOptions.runpod` for model-specific parameters:
 
@@ -469,7 +435,7 @@ Use `providerOptions.runpod` for model-specific parameters:
 >
 > Note: This speech endpoint currently returns WAV only; `outputFormat` is ignored.
 
-### Voices
+#### Voices
 
 `voice` selects one of the built-in voices (default: `lucy`):
 
@@ -498,9 +464,9 @@ Use `providerOptions.runpod` for model-specific parameters:
 ];
 ```
 
-### Voice cloning (via URL)
+#### Voice cloning (via URL)
 
-You can provide a `voice_url` (5–10s audio) through `providerOptions.runpod`:
+Use `providerOptions.runpod.voice_url` (or `voiceUrl`) to clone a voice from a short reference audio (5–10s):
 
 ```ts
 const result = await generateSpeech({
@@ -511,6 +477,30 @@ const result = await generateSpeech({
       voice_url: 'https://example.com/voice.wav',
     },
   },
+});
+```
+
+#### Paralinguistic Tags
+
+Include these tags inline with your text to trigger realistic vocal expressions:
+
+| Tag              | Effect          |
+| ---------------- | --------------- |
+| `[clear throat]` | Throat clearing |
+| `[sigh]`         | Sighing         |
+| `[sush]`         | Shushing        |
+| `[cough]`        | Coughing        |
+| `[groan]`        | Groaning        |
+| `[sniff]`        | Sniffing        |
+| `[gasp]`         | Gasping         |
+| `[chuckle]`      | Chuckling       |
+| `[laugh]`        | Laughing        |
+
+```ts
+const result = await generateSpeech({
+  model: runpod.speech('resembleai/chatterbox-turbo'),
+  text: `[sigh] I can't believe it worked! [laugh] This is amazing.`,
+  voice: 'lucy',
 });
 ```
 

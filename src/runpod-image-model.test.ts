@@ -2,8 +2,47 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { RunpodImageModel } from './runpod-image-model';
 import { InvalidArgumentError } from '@ai-sdk/provider';
+import type { ImageModelV3File } from '@ai-sdk/provider';
 
 const mockFetch = vi.fn();
+
+/**
+ * Simulates the AI SDK v6 `prompt.images` normalization into `files`
+ * (see `ai/src/generate-image/generate-image.ts` in the AI SDK repo).
+ */
+function promptImagesToFiles(images: string[]): ImageModelV3File[] {
+  return images.map((image) => {
+    if (image.startsWith('http')) {
+      return { type: 'url', url: image };
+    }
+
+    // data URL (data:<mediaType>;base64,<base64>)
+    if (image.startsWith('data:')) {
+      const [header, base64] = image.split(',');
+      const mediaType = header?.split(';')?.[0]?.slice('data:'.length);
+      const binary = atob(base64 ?? '');
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+
+      return {
+        type: 'file',
+        mediaType: mediaType || 'image/png',
+        data: bytes,
+      };
+    }
+
+    // Fallback: treat as base64 string (assume png)
+    const binary = atob(image);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+
+    return { type: 'file', mediaType: 'image/png', data: bytes };
+  });
+}
 
 describe('RunpodImageModel', () => {
   let model: RunpodImageModel;
@@ -20,7 +59,7 @@ describe('RunpodImageModel', () => {
 
   describe('model properties', () => {
     it('should have correct specification version', () => {
-      expect(model.specificationVersion).toBe('v2');
+      expect(model.specificationVersion).toBe('v3');
     });
 
     it('should have correct provider', () => {
@@ -271,6 +310,345 @@ describe('RunpodImageModel', () => {
 
       const isKontext = kontextModel.modelId.includes('kontext');
       expect(isKontext).toBe(true);
+    });
+  });
+
+  describe('doGenerate image inputs (files, as produced from prompt.images)', () => {
+    it('should send Flux Kontext image from files (overriding providerOptions.runpod.image)', async () => {
+      let capturedBody: any | undefined;
+
+      mockFetch.mockImplementation(async (input: any, init?: any) => {
+        const url = typeof input === 'string' ? input : input?.url;
+
+        if (url?.includes('/runsync')) {
+          capturedBody = JSON.parse(init?.body ?? '{}');
+          return new Response(
+            JSON.stringify({
+              id: 'job-1',
+              status: 'COMPLETED',
+              output: { image_url: 'https://cdn.test/output.png' },
+            }),
+            { headers: { 'content-type': 'application/json' } }
+          );
+        }
+
+        if (url === 'https://cdn.test/output.png') {
+          return new Response(new Uint8Array([1, 2, 3]), {
+            headers: { 'content-type': 'image/png' },
+          });
+        }
+
+        throw new Error(`Unexpected fetch url: ${String(url)}`);
+      });
+
+      const kontextModel = new RunpodImageModel(
+        'black-forest-labs/flux-1-kontext-dev',
+        {
+          provider: 'runpod',
+          baseURL:
+            'https://api.runpod.ai/v2/black-forest-labs-flux-1-kontext-dev',
+          headers: () => ({ Authorization: 'Bearer test-key' }),
+          fetch: mockFetch,
+        }
+      );
+
+      const result = await kontextModel.doGenerate({
+        prompt: 'Transform this into a cyberpunk style with neon lights',
+        n: 1,
+        size: undefined,
+        aspectRatio: '1:1',
+        seed: 42,
+        files: promptImagesToFiles(['https://example.com/input-image.jpg']),
+        mask: undefined,
+        providerOptions: {
+          runpod: {
+            image: 'https://legacy.example.com/legacy-image.jpg',
+          },
+        } as any,
+        headers: {},
+        abortSignal: undefined,
+      });
+
+      expect(capturedBody?.input?.image).toBe(
+        'https://example.com/input-image.jpg'
+      );
+      expect(result.images[0]).toEqual(new Uint8Array([1, 2, 3]));
+    });
+
+    it('should send multi-image edit payload from files (overriding providerOptions.runpod.images)', async () => {
+      let capturedBody: any | undefined;
+
+      mockFetch.mockImplementation(async (input: any, init?: any) => {
+        const url = typeof input === 'string' ? input : input?.url;
+
+        if (url?.includes('/runsync')) {
+          capturedBody = JSON.parse(init?.body ?? '{}');
+          return new Response(
+            JSON.stringify({
+              id: 'job-2',
+              status: 'COMPLETED',
+              output: { result: 'https://cdn.test/out.jpg' },
+            }),
+            { headers: { 'content-type': 'application/json' } }
+          );
+        }
+
+        if (url === 'https://cdn.test/out.jpg') {
+          return new Response(new Uint8Array([9, 8, 7]), {
+            headers: { 'content-type': 'image/jpeg' },
+          });
+        }
+
+        throw new Error(`Unexpected fetch url: ${String(url)}`);
+      });
+
+      const editModel = new RunpodImageModel('google/nano-banana-pro-edit', {
+        provider: 'runpod',
+        baseURL: 'https://api.runpod.ai/v2/nano-banana-edit',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+
+      const inputImages = [
+        'https://example.com/img1.jpg',
+        'https://example.com/img2.jpg',
+      ];
+
+      const result = await editModel.doGenerate({
+        prompt: 'Combine these',
+        n: 1,
+        size: undefined,
+        aspectRatio: '1:1',
+        seed: undefined,
+        files: promptImagesToFiles(inputImages),
+        mask: undefined,
+        providerOptions: {
+          runpod: {
+            images: ['https://legacy.example.com/legacy1.jpg'],
+            enable_safety_checker: true,
+          },
+        } as any,
+        headers: {},
+        abortSignal: undefined,
+      });
+
+      expect(capturedBody?.input?.images).toEqual(inputImages);
+      expect(result.images[0]).toEqual(new Uint8Array([9, 8, 7]));
+    });
+  });
+
+  describe('files parameter (from prompt.images)', () => {
+    it('should convert URL type files to Runpod format', () => {
+      const kontextModel = new RunpodImageModel(
+        'black-forest-labs/flux-1-kontext-dev',
+        {
+          provider: 'runpod',
+          baseURL:
+            'https://api.runpod.ai/v2/black-forest-labs-flux-1-kontext-dev',
+          headers: () => ({ Authorization: 'Bearer test-key' }),
+          fetch: mockFetch,
+        }
+      );
+
+      const files = [
+        { type: 'url' as const, url: 'https://example.com/image.jpg' },
+      ];
+
+      const result = (kontextModel as any).convertFilesToRunpodFormat(files);
+      expect(result).toEqual(['https://example.com/image.jpg']);
+    });
+
+    it('should convert file type with base64 string to data URL', () => {
+      const kontextModel = new RunpodImageModel(
+        'black-forest-labs/flux-1-kontext-dev',
+        {
+          provider: 'runpod',
+          baseURL:
+            'https://api.runpod.ai/v2/black-forest-labs-flux-1-kontext-dev',
+          headers: () => ({ Authorization: 'Bearer test-key' }),
+          fetch: mockFetch,
+        }
+      );
+
+      const files = [
+        {
+          type: 'file' as const,
+          mediaType: 'image/png',
+          data: 'iVBORw0KGgoAAAANS',
+        },
+      ];
+
+      const result = (kontextModel as any).convertFilesToRunpodFormat(files);
+      expect(result).toEqual(['data:image/png;base64,iVBORw0KGgoAAAANS']);
+    });
+
+    it('should pass through data URLs as-is', () => {
+      const kontextModel = new RunpodImageModel(
+        'black-forest-labs/flux-1-kontext-dev',
+        {
+          provider: 'runpod',
+          baseURL:
+            'https://api.runpod.ai/v2/black-forest-labs-flux-1-kontext-dev',
+          headers: () => ({ Authorization: 'Bearer test-key' }),
+          fetch: mockFetch,
+        }
+      );
+
+      const files = [
+        {
+          type: 'file' as const,
+          mediaType: 'image/png',
+          data: 'data:image/png;base64,iVBORw0KGgoAAAANS',
+        },
+      ];
+
+      const result = (kontextModel as any).convertFilesToRunpodFormat(files);
+      expect(result).toEqual(['data:image/png;base64,iVBORw0KGgoAAAANS']);
+    });
+
+    it('should convert file type with Uint8Array to base64 data URL', () => {
+      const kontextModel = new RunpodImageModel(
+        'black-forest-labs/flux-1-kontext-dev',
+        {
+          provider: 'runpod',
+          baseURL:
+            'https://api.runpod.ai/v2/black-forest-labs-flux-1-kontext-dev',
+          headers: () => ({ Authorization: 'Bearer test-key' }),
+          fetch: mockFetch,
+        }
+      );
+
+      // Simple test data
+      const testData = new Uint8Array([72, 101, 108, 108, 111]); // "Hello"
+      const files = [
+        {
+          type: 'file' as const,
+          mediaType: 'image/png',
+          data: testData,
+        },
+      ];
+
+      const result = (kontextModel as any).convertFilesToRunpodFormat(files);
+      expect(result).toEqual(['data:image/png;base64,SGVsbG8=']);
+    });
+
+    it('should handle multiple files', () => {
+      const nanoBananaModel = new RunpodImageModel('nano-banana-edit', {
+        provider: 'runpod',
+        baseURL: 'https://api.runpod.ai/v2/nano-banana-edit',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+
+      const files = [
+        { type: 'url' as const, url: 'https://example.com/img1.jpg' },
+        { type: 'url' as const, url: 'https://example.com/img2.jpg' },
+        { type: 'url' as const, url: 'https://example.com/img3.jpg' },
+      ];
+
+      const result = (nanoBananaModel as any).convertFilesToRunpodFormat(files);
+      expect(result).toEqual([
+        'https://example.com/img1.jpg',
+        'https://example.com/img2.jpg',
+        'https://example.com/img3.jpg',
+      ]);
+    });
+
+    it('should return undefined for empty or undefined files', () => {
+      const result1 = (model as any).convertFilesToRunpodFormat(undefined);
+      const result2 = (model as any).convertFilesToRunpodFormat([]);
+
+      expect(result1).toBeUndefined();
+      expect(result2).toBeUndefined();
+    });
+
+    it('should use standardized files over providerOptions.image for Kontext', () => {
+      const kontextModel = new RunpodImageModel(
+        'black-forest-labs/flux-1-kontext-dev',
+        {
+          provider: 'runpod',
+          baseURL:
+            'https://api.runpod.ai/v2/black-forest-labs-flux-1-kontext-dev',
+          headers: () => ({ Authorization: 'Bearer test-key' }),
+          fetch: mockFetch,
+        }
+      );
+
+      const standardizedImages = ['https://standard.com/image.jpg'];
+      const runpodOptions = { image: 'https://legacy.com/image.jpg' };
+
+      const payload = (kontextModel as any).buildInputPayload(
+        'Transform this',
+        '1328*1328',
+        42,
+        runpodOptions,
+        '1:1',
+        standardizedImages
+      );
+
+      // Standard files should take precedence
+      expect(payload.image).toBe('https://standard.com/image.jpg');
+    });
+
+    it('should use standardized files over providerOptions.images for multi-image models', () => {
+      const nanoBananaModel = new RunpodImageModel(
+        'google/nano-banana-pro-edit',
+        {
+          provider: 'runpod',
+          baseURL: 'https://api.runpod.ai/v2/nano-banana-edit',
+          headers: () => ({ Authorization: 'Bearer test-key' }),
+          fetch: mockFetch,
+        }
+      );
+
+      const standardizedImages = [
+        'https://standard.com/img1.jpg',
+        'https://standard.com/img2.jpg',
+      ];
+      const runpodOptions = {
+        images: ['https://legacy.com/img1.jpg', 'https://legacy.com/img2.jpg'],
+      };
+
+      const payload = (nanoBananaModel as any).buildInputPayload(
+        'Combine these',
+        '1:1',
+        undefined,
+        runpodOptions,
+        '1:1',
+        standardizedImages
+      );
+
+      // Standard files should take precedence
+      expect(payload.images).toEqual(standardizedImages);
+    });
+  });
+
+  describe('warnings', () => {
+    it('should generate proper unsupported warning format for n > 1', async () => {
+      // Test that multiple images warning has the correct V3 format
+      const warning = {
+        type: 'unsupported' as const,
+        feature: 'multiple images (n > 1)',
+        details:
+          'Runpod image models only support generating 1 image at a time. Using n=1.',
+      };
+
+      expect(warning.type).toBe('unsupported');
+      expect(warning.feature).toBe('multiple images (n > 1)');
+      expect(warning.details).toContain('Runpod image models');
+    });
+
+    it('should generate proper unsupported warning format for mask', () => {
+      // Test that mask warning has the correct V3 format
+      const warning = {
+        type: 'unsupported' as const,
+        feature: 'mask',
+        details: 'Mask input for inpainting is not yet supported.',
+      };
+
+      expect(warning.type).toBe('unsupported');
+      expect(warning.feature).toBe('mask');
+      expect(warning.details).toContain('not yet supported');
     });
   });
 });
