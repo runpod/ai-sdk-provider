@@ -209,7 +209,7 @@ With image models you can:
 
 All examples use the AI SDK's `experimental_generateImage` and `runpod.image(modelId)`.
 
-### Text-to-Image (Basic)
+### Text-to-Image
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
@@ -232,7 +232,7 @@ writeFileSync('image.png', image.uint8Array);
 - `image.mediaType` - MIME type ('image/jpeg' or 'image/png')
 - `warnings` - Array of any warnings about unsupported parameters
 
-### Edit Image (Basic)
+### Edit Image
 
 For editing, pass reference images via `prompt.images` (recommended). The AI SDK normalizes `prompt.images` into `files` for the provider call.
 
@@ -290,11 +290,6 @@ const { image } = await generateImage({
 Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
 
 ### Supported Models
-
-Recommended:
-
-- Text-to-image: `pruna/p-image-t2i`
-- Edit image: `pruna/p-image-edit`, `google/nano-banana-pro-edit`
 
 | Model ID                               | Type |
 | -------------------------------------- | ---- |
@@ -393,8 +388,6 @@ Supported model: `google/nano-banana-pro-edit`
 ## Speech Models
 
 Generate speech using the AI SDK's `experimental_generateSpeech` and `runpod.speech(...)`:
-
-### Basic Usage
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
