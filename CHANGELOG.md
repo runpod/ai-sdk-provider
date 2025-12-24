@@ -1,5 +1,11 @@
 # @runpod/ai-sdk-provider
 
+## 1.0.1
+
+### Patch Changes
+
+- f13758a: docs: update generateImage and generateSpeech imports to non-experimental
+
 ## 1.0.0
 
 ### Major Changes
