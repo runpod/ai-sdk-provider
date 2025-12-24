@@ -20,7 +20,7 @@ This document lists supported Runpod image models and their capabilities. Follow
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
-import { experimental_generateImage as generateImage } from 'ai';
+import { generateImage } from 'ai';
 
 const { image } = await generateImage({
   model: runpod.imageModel('nano-banana-edit'),

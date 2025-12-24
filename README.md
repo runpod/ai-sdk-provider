@@ -207,13 +207,13 @@ With image models you can:
 - **Text-to-image**: generate a new image from a text prompt.
 - **Edit image**: transform an existing image by providing reference image(s).
 
-All examples use the AI SDK's `experimental_generateImage` and `runpod.image(modelId)`.
+All examples use the AI SDK's `generateImage` and `runpod.image(modelId)`.
 
 ### Text-to-Image
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
-import { experimental_generateImage as generateImage } from 'ai';
+import { generateImage } from 'ai';
 import { writeFileSync } from 'fs';
 
 const { image } = await generateImage({
@@ -240,7 +240,7 @@ For editing, pass reference images via `prompt.images` (recommended). The AI SDK
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
-import { experimental_generateImage as generateImage } from 'ai';
+import { generateImage } from 'ai';
 
 const { image } = await generateImage({
   model: runpod.image('pruna/p-image-edit'),
@@ -258,7 +258,7 @@ Note: Prior to v1.0.0, images were passed via `providerOptions.runpod.image` / `
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
-import { experimental_generateImage as generateImage } from 'ai';
+import { generateImage } from 'ai';
 
 const { image } = await generateImage({
   model: runpod.image('google/nano-banana-pro-edit'),
@@ -376,11 +376,11 @@ Supported model: `google/nano-banana-pro-edit`
 
 ## Speech Models
 
-Generate speech using the AI SDK's `experimental_generateSpeech` and `runpod.speech(...)`:
+Generate speech using the AI SDK's `generateSpeech` and `runpod.speech(...)`:
 
 ```ts
 import { runpod } from '@runpod/ai-sdk-provider';
-import { experimental_generateSpeech as generateSpeech } from 'ai';
+import { generateSpeech } from 'ai';
 
 const result = await generateSpeech({
   model: runpod.speech('resembleai/chatterbox-turbo'),

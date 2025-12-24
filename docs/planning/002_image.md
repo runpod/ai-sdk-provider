@@ -65,7 +65,7 @@ Extend the Runpod AI SDK Provider to support image generation using Runpod's tex
 
   ```typescript
   import { runpod } from '@runpod/ai-sdk-provider';
-  import { experimental_generateImage as generateImage } from 'ai';
+  import { generateImage } from 'ai';
 
   const { image } = await generateImage({
     model: runpod.image('qwen/qwen-image'),
@@ -100,7 +100,7 @@ The final implementation should support these usage patterns:
 
 ```typescript
 import { runpod } from '@runpod/ai-sdk-provider';
-import { experimental_generateImage as generateImage } from 'ai';
+import { generateImage } from 'ai';
 
 // Basic image generation
 const { image } = await generateImage({
@@ -173,7 +173,7 @@ const { image } = await generateImage({
 ## Success Metrics
 
 - [ ] Package supports both text and image generation seamlessly
-- [ ] `experimental_generateImage()` function works with Runpod models
+- [ ] `generateImage()` function works with Runpod models
 - [ ] Image generation parameters are properly validated and passed through
 - [ ] Generated images are returned in correct base64 format
 - [ ] All existing functionality remains unaffected
@@ -195,7 +195,7 @@ const { image } = await generateImage({
 
 ## Definition of Done
 
-- Developer can generate images using `experimental_generateImage()` with Runpod models
+- Developer can generate images using `generateImage()` with Runpod models
 - All image generation parameters work correctly
 - Tests pass and documentation includes image generation examples
 - Package maintains backward compatibility with existing text generation features
