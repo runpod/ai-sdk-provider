@@ -162,8 +162,27 @@ export class RunpodImageModel implements ImageModelV3 {
       standardizedImages
     );
 
+    // Determine the effective baseURL (may switch for LoRA models)
+    let effectiveBaseURL = this.config.baseURL;
+    const runpodOptions = providerOptions.runpod as
+      | Record<string, unknown>
+      | undefined;
+    if (
+      this.modelId.includes('qwen-image-edit-2511') &&
+      !this.modelId.includes('lora') &&
+      runpodOptions?.loras &&
+      Array.isArray(runpodOptions.loras) &&
+      runpodOptions.loras.length > 0
+    ) {
+      // Switch to LoRA endpoint when loras are provided
+      effectiveBaseURL = this.config.baseURL.replace(
+        'qwen-image-edit-2511',
+        'qwen-image-edit-2511-lora'
+      );
+    }
+
     const { value: response, responseHeaders } = await postJsonToApi({
-      url: `${this.config.baseURL}/runsync`,
+      url: `${effectiveBaseURL}/runsync`,
       headers: combineHeaders(this.config.headers(), headers),
       body: {
         input: inputPayload,
@@ -220,7 +239,8 @@ export class RunpodImageModel implements ImageModelV3 {
       const imageUrl = await this.pollForCompletion(
         typedResponse.id,
         abortSignal,
-        pollOptions
+        pollOptions,
+        effectiveBaseURL
       );
       const imageData = await this.downloadImage(imageUrl, abortSignal);
 
@@ -265,10 +285,12 @@ export class RunpodImageModel implements ImageModelV3 {
   private async pollForCompletion(
     jobId: string,
     abortSignal?: AbortSignal,
-    pollOptions?: { maxAttempts?: number; pollIntervalMillis?: number }
+    pollOptions?: { maxAttempts?: number; pollIntervalMillis?: number },
+    effectiveBaseURL?: string
   ): Promise<string> {
     const maxAttempts = pollOptions?.maxAttempts ?? 60; // 5 minutes with 5-second intervals
     const pollInterval = pollOptions?.pollIntervalMillis ?? 5000; // 5 seconds
+    const baseURL = effectiveBaseURL ?? this.config.baseURL;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       if (abortSignal?.aborted) {
@@ -276,7 +298,7 @@ export class RunpodImageModel implements ImageModelV3 {
       }
 
       const { value: statusResponse } = await getFromApi({
-        url: `${this.config.baseURL}/status/${jobId}`,
+        url: `${baseURL}/status/${jobId}`,
         headers: this.config.headers(),
         successfulResponseHandler: createJsonResponseHandler(
           runpodImageStatusSchema as any
@@ -506,6 +528,45 @@ export class RunpodImageModel implements ImageModelV3 {
       }
 
       return nanoBananaPayload;
+    }
+
+    // Check if this is a Qwen Image Edit 2511 model (uses images array format)
+    const isQwenImageEdit2511 = this.modelId.includes('qwen-image-edit-2511');
+    if (isQwenImageEdit2511) {
+      // Qwen Image Edit 2511 uses images array, output_format, and sync options
+      const qwenEdit2511Payload: Record<string, unknown> = {
+        prompt,
+        size: runpodSize,
+        seed: seed ?? -1,
+        output_format: (runpodOptions?.output_format as string) ?? 'jpeg',
+        enable_base64_output:
+          (runpodOptions?.enable_base64_output as boolean) ?? false,
+        enable_sync_mode:
+          (runpodOptions?.enable_sync_mode as boolean) ?? false,
+        ...runpodOptions,
+      };
+
+      // Always use images array format for this model
+      if (standardizedImages && standardizedImages.length > 0) {
+        qwenEdit2511Payload.images = standardizedImages;
+      } else if (runpodOptions?.images) {
+        qwenEdit2511Payload.images = runpodOptions.images;
+      }
+
+      return qwenEdit2511Payload;
+    }
+
+    // Check if this is an Alibaba Wan model
+    const isWanModel = this.modelId.includes('wan-2');
+    if (isWanModel) {
+      // Alibaba Wan 2.6 uses standard t2i format with negative prompt in prompt string
+      return {
+        prompt,
+        size: runpodSize,
+        seed: seed ?? -1,
+        enable_safety_checker: runpodOptions?.enable_safety_checker ?? true,
+        ...runpodOptions,
+      };
     }
 
     // Default format for Qwen and other models

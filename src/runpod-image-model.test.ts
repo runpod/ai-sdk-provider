@@ -279,6 +279,100 @@ describe('RunpodImageModel', () => {
         enable_safety_checker: true,
       });
     });
+
+    it('should build correct payload for Qwen Image Edit 2511', () => {
+      const qwenEdit2511Model = new RunpodImageModel(
+        'qwen/qwen-image-edit-2511',
+        {
+          provider: 'runpod',
+          baseURL: 'https://api.runpod.ai/v2/qwen-image-edit-2511',
+          headers: () => ({ Authorization: 'Bearer test-key' }),
+          fetch: mockFetch,
+        }
+      );
+
+      const images = ['https://example.com/input.jpg'];
+
+      const payload = (qwenEdit2511Model as any).buildInputPayload(
+        'Transform this into a futuristic city',
+        '1024*1024',
+        42,
+        { output_format: 'png' },
+        '1:1',
+        images
+      );
+
+      expect(payload).toMatchObject({
+        prompt: 'Transform this into a futuristic city',
+        size: '1024*1024',
+        seed: 42,
+        output_format: 'png',
+        enable_base64_output: false,
+        enable_sync_mode: false,
+        images: ['https://example.com/input.jpg'],
+      });
+    });
+
+    it('should build correct payload for Alibaba Wan 2.6', () => {
+      const wanModel = new RunpodImageModel('alibaba/wan-2.6', {
+        provider: 'runpod',
+        baseURL: 'https://api.runpod.ai/v2/wan-2-6-t2i',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+
+      const payload = (wanModel as any).buildInputPayload(
+        'A modern tea shop interior, warm afternoon light',
+        '1024*1024',
+        42,
+        { enable_safety_checker: true }
+      );
+
+      expect(payload).toMatchObject({
+        prompt: 'A modern tea shop interior, warm afternoon light',
+        size: '1024*1024',
+        seed: 42,
+        enable_safety_checker: true,
+      });
+      // Should not have negative_prompt in the payload (Wan uses inline negative prompt)
+      expect(payload.negative_prompt).toBeUndefined();
+    });
+
+    it('should build correct payload for Qwen Image Edit 2511 with LoRA', () => {
+      const qwenEdit2511Model = new RunpodImageModel(
+        'qwen/qwen-image-edit-2511',
+        {
+          provider: 'runpod',
+          baseURL: 'https://api.runpod.ai/v2/qwen-image-edit-2511',
+          headers: () => ({ Authorization: 'Bearer test-key' }),
+          fetch: mockFetch,
+        }
+      );
+
+      const loras = [
+        {
+          path: 'https://huggingface.co/flymy-ai/qwen-image-anime-irl-lora/resolve/main/flymy_anime_irl.safetensors',
+          scale: 1,
+        },
+      ];
+
+      const payload = (qwenEdit2511Model as any).buildInputPayload(
+        'Transform into anime style',
+        '1024*1024',
+        42,
+        { loras },
+        '1:1',
+        ['https://example.com/input.jpg']
+      );
+
+      expect(payload).toMatchObject({
+        prompt: 'Transform into anime style',
+        size: '1024*1024',
+        seed: 42,
+        loras,
+        images: ['https://example.com/input.jpg'],
+      });
+    });
   });
 
   describe('model detection', () => {

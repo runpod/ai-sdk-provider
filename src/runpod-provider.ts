@@ -91,6 +91,9 @@ const MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
 const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   'qwen/qwen-image': 'https://api.runpod.ai/v2/qwen-image-t2i',
   'qwen/qwen-image-edit': 'https://api.runpod.ai/v2/qwen-image-edit',
+  'qwen/qwen-image-edit-2511': 'https://api.runpod.ai/v2/qwen-image-edit-2511',
+  'qwen/qwen-image-edit-2511-lora':
+    'https://api.runpod.ai/v2/qwen-image-edit-2511-lora',
   'bytedance/seedream-3.0': 'https://api.runpod.ai/v2/seedream-3-0-t2i',
   // Seadream v4 (t2i and edit)
   'bytedance/seedream-4.0': 'https://api.runpod.ai/v2/seedream-v4-t2i',
@@ -101,6 +104,8 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
     'https://api.runpod.ai/v2/black-forest-labs-flux-1-schnell',
   'black-forest-labs/flux-1-dev':
     'https://api.runpod.ai/v2/black-forest-labs-flux-1-dev',
+  // Alibaba Wan 2.6 (t2i)
+  'alibaba/wan-2.6': 'https://api.runpod.ai/v2/wan-2-6-t2i',
   // Nano Banana (edit only)
   'nano-banana-edit': 'https://api.runpod.ai/v2/nano-banana-edit',
   // Nano Banana Pro (edit only)

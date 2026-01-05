@@ -280,20 +280,22 @@ Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/get
 
 ### Supported Models
 
-| Model ID                               | Type |
-| -------------------------------------- | ---- |
-| `pruna/p-image-t2i`                    | t2i  |
-| `pruna/p-image-edit`                   | edit |
-| `google/nano-banana-pro-edit`          | edit |
-| `bytedance/seedream-3.0`               | t2i  |
-| `bytedance/seedream-4.0`               | t2i  |
-| `bytedance/seedream-4.0-edit`          | edit |
-| `qwen/qwen-image`                      | t2i  |
-| `qwen/qwen-image-edit`                 | edit |
-| `nano-banana-edit`                     | edit |
-| `black-forest-labs/flux-1-schnell`     | t2i  |
-| `black-forest-labs/flux-1-dev`         | t2i  |
-| `black-forest-labs/flux-1-kontext-dev` | edit |
+| Model ID                               | Type | Max Resolution |
+| -------------------------------------- | ---- | -------------- |
+| `alibaba/wan-2.6`                      | t2i  | 1024x1024      |
+| `pruna/p-image-t2i`                    | t2i  | 1440x1440      |
+| `pruna/p-image-edit`                   | edit | 1440x1440      |
+| `google/nano-banana-pro-edit`          | edit | 4k             |
+| `bytedance/seedream-3.0`               | t2i  | 4096x4096      |
+| `bytedance/seedream-4.0`               | t2i  | 4096x4096      |
+| `bytedance/seedream-4.0-edit`          | edit | 4096x4096      |
+| `qwen/qwen-image`                      | t2i  | 4096x4096      |
+| `qwen/qwen-image-edit`                 | edit | 4096x4096      |
+| `qwen/qwen-image-edit-2511`            | edit | 1536x1536      |
+| `nano-banana-edit`                     | edit | -              |
+| `black-forest-labs/flux-1-schnell`     | t2i  | 2048x2048      |
+| `black-forest-labs/flux-1-dev`         | t2i  | 2048x2048      |
+| `black-forest-labs/flux-1-kontext-dev` | edit | 2048x2048      |
 
 For the full list of models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
 
@@ -373,6 +375,70 @@ Supported model: `google/nano-banana-pro-edit`
 | `prompt.images`                 | `string[]`                                                        | Recommended. Input image(s) to edit. |
 | `files`                         | `ImageModelV3File[]`                                              | Alternative (lower-level).           |
 | `providerOptions.runpod.images` | `string[]`                                                        | Legacy. Input image(s) to edit.      |
+
+#### Alibaba (Wan 2.6)
+
+Supported model: `alibaba/wan-2.6`
+
+| Parameter     | Supported Values                               | Notes                     |
+| :------------ | :--------------------------------------------- | :------------------------ |
+| `size`        | `768x768`, `1024x1024`, `1024x768`, `768x1024` | Max 1024x1024             |
+| `aspectRatio` | `1:1`, `4:3`, `3:4`                            | Standard AI SDK parameter |
+| `seed`        | `number`                                       | For reproducibility       |
+
+Note: Negative prompts should be included inline in the prompt text (e.g., "A sunset. Negative prompt: blurry, low quality").
+
+#### Qwen (Image Edit 2511)
+
+Supported model: `qwen/qwen-image-edit-2511`
+
+| Parameter         | Supported Values       | Notes                       |
+| :---------------- | :--------------------- | :-------------------------- |
+| `size`            | Up to `1536x1536`      | Max 1536x1536               |
+| `aspectRatio`     | `1:1`, `4:3`, `3:4`    | Standard AI SDK parameter   |
+| `seed`            | `number`               | For reproducibility         |
+| `prompt.images`   | `string[]`             | 1-3 input images            |
+| `output_format`   | `jpeg`, `png`, `webp`  | Default: `jpeg`             |
+| `negative_prompt` | `string`               | What to avoid in the output |
+| `loras`           | `Array<{path, scale}>` | LoRA adapters (see below)   |
+
+**Example:**
+
+```ts
+const { image } = await generateImage({
+  model: runpod.image('qwen/qwen-image-edit-2511'),
+  prompt: {
+    text: 'Transform this into a futuristic neon city scene',
+    images: ['https://example.com/input.jpg'],
+  },
+  size: '1024x1024',
+});
+```
+
+**Example with LoRA:**
+
+When `loras` is provided, the provider automatically uses the LoRA-enabled endpoint.
+
+```ts
+const { image } = await generateImage({
+  model: runpod.image('qwen/qwen-image-edit-2511'),
+  prompt: {
+    text: 'Transform into anime style',
+    images: ['https://example.com/input.jpg'],
+  },
+  size: '1024x1024',
+  providerOptions: {
+    runpod: {
+      loras: [
+        {
+          path: 'https://huggingface.co/flymy-ai/qwen-image-anime-irl-lora/resolve/main/flymy_anime_irl.safetensors',
+          scale: 1,
+        },
+      ],
+    },
+  },
+});
+```
 
 ## Speech Models
 
