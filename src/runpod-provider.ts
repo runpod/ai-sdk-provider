@@ -107,7 +107,8 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   // Alibaba Wan 2.6 (t2i)
   'alibaba/wan-2.6': 'https://api.runpod.ai/v2/wan-2-6-t2i',
   // Nano Banana (edit only)
-  'nano-banana-edit': 'https://api.runpod.ai/v2/nano-banana-edit',
+  'google/nano-banana-edit': 'https://api.runpod.ai/v2/nano-banana-edit',
+  'nano-banana-edit': 'https://api.runpod.ai/v2/nano-banana-edit', // backwards compatibility
   // Nano Banana Pro (edit only)
   'google/nano-banana-pro-edit':
     'https://api.runpod.ai/v2/nano-banana-pro-edit',

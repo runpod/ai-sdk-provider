@@ -11,4 +11,5 @@ export type RunpodImageModelId =
   // Alibaba Wan 2.6 (t2i)
   | 'alibaba/wan-2.6'
   // Nano Banana (edit only)
-  | 'nano-banana-edit';
+  | 'google/nano-banana-edit'
+  | 'nano-banana-edit'; // backwards compatibility

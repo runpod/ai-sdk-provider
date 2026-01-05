@@ -278,22 +278,22 @@ Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/get
 
 ### Supported Models
 
-| Model ID                               | Type | Max Resolution |
-| -------------------------------------- | ---- | -------------- |
-| `alibaba/wan-2.6`                      | t2i  | 1024x1024      |
-| `pruna/p-image-t2i`                    | t2i  | 1440x1440      |
-| `pruna/p-image-edit`                   | edit | 1440x1440      |
-| `google/nano-banana-pro-edit`          | edit | 4k             |
-| `bytedance/seedream-3.0`               | t2i  | 4096x4096      |
-| `bytedance/seedream-4.0`               | t2i  | 4096x4096      |
-| `bytedance/seedream-4.0-edit`          | edit | 4096x4096      |
-| `qwen/qwen-image`                      | t2i  | 4096x4096      |
-| `qwen/qwen-image-edit`                 | edit | 4096x4096      |
-| `qwen/qwen-image-edit-2511`            | edit | 1536x1536      |
-| `nano-banana-edit`                     | edit | -              |
-| `black-forest-labs/flux-1-schnell`     | t2i  | 2048x2048      |
-| `black-forest-labs/flux-1-dev`         | t2i  | 2048x2048      |
-| `black-forest-labs/flux-1-kontext-dev` | edit | 2048x2048      |
+| Model ID                               | Type | Resolution      | Aspect Ratios                             |
+| -------------------------------------- | ---- | --------------- | ----------------------------------------- |
+| `alibaba/wan-2.6`                      | t2i  | 1024x1024       | 1:1, 4:3, 3:4                             |
+| `pruna/p-image-t2i`                    | t2i  | up to 1440x1440 | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3       |
+| `pruna/p-image-edit`                   | edit | up to 1440x1440 | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3       |
+| `google/nano-banana-edit`              | edit | up to 4096x4096 | 1:1, 4:3, 3:4                             |
+| `google/nano-banana-pro-edit`          | edit | 1k, 2k, 4k      | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, 21:9 |
+| `bytedance/seedream-3.0`               | t2i  | up to 4096x4096 | 1:1, 4:3, 3:4                             |
+| `bytedance/seedream-4.0`               | t2i  | up to 4096x4096 | 1:1, 4:3, 3:4                             |
+| `bytedance/seedream-4.0-edit`          | edit | up to 4096x4096 | uses size                                 |
+| `qwen/qwen-image`                      | t2i  | up to 4096x4096 | 1:1, 4:3, 3:4                             |
+| `qwen/qwen-image-edit`                 | edit | up to 4096x4096 | 1:1, 4:3, 3:4                             |
+| `qwen/qwen-image-edit-2511`            | edit | up to 1536x1536 | 1:1, 4:3, 3:4                             |
+| `black-forest-labs/flux-1-schnell`     | t2i  | up to 2048x2048 | 1:1, 4:3, 3:4                             |
+| `black-forest-labs/flux-1-dev`         | t2i  | up to 2048x2048 | 1:1, 4:3, 3:4                             |
+| `black-forest-labs/flux-1-kontext-dev` | edit | up to 2048x2048 | 1:1, 4:3, 3:4                             |
 
 For the full list of models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
 
@@ -301,21 +301,15 @@ For the full list of models, see the [Runpod Public Endpoint Reference](https://
 
 Additional options through `providerOptions.runpod` (supported options depend on the model):
 
-| Option                   | Type       | Default | Description                                                 |
-| ------------------------ | ---------- | ------- | ----------------------------------------------------------- |
-| `negative_prompt`        | `string`   | `""`    | What to avoid in the image (model-dependent)                |
-| `enable_safety_checker`  | `boolean`  | `true`  | Content safety filtering (model-dependent)                  |
-| `disable_safety_checker` | `boolean`  | `false` | Disable safety checker (Pruna)                              |
-| `aspect_ratio`           | `string`   | -       | Model-specific aspect ratio (Pruna: supports `custom`)      |
-| `image`                  | `string`   | -       | Legacy: Single input image URL/base64 (use `prompt.images`) |
-| `images`                 | `string[]` | -       | Legacy: Multiple input images (use `prompt.images`)         |
-| `resolution`             | `string`   | `"1k"`  | Output resolution: 1k, 2k, 4k (Nano Banana Pro)             |
-| `width` / `height`       | `number`   | -       | Custom dimensions (Pruna t2i, 256-1440; multiples of 16)    |
-| `num_inference_steps`    | `number`   | Auto    | Denoising steps (model-dependent)                           |
-| `guidance`               | `number`   | Auto    | Prompt adherence strength (model-dependent)                 |
-| `output_format`          | `string`   | `"png"` | Output format: png, jpg, jpeg, webp (model-dependent)       |
-| `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                                        |
-| `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                                       |
+| Option                  | Type      | Default | Description                                  |
+| ----------------------- | --------- | ------- | -------------------------------------------- |
+| `negative_prompt`       | `string`  | `""`    | What to avoid in the image (model-dependent) |
+| `enable_safety_checker` | `boolean` | `true`  | Content safety filtering (model-dependent)   |
+| `num_inference_steps`   | `number`  | Auto    | Denoising steps (model-dependent)            |
+| `guidance`              | `number`  | Auto    | Prompt adherence strength (model-dependent)  |
+| `output_format`         | `string`  | `"png"` | Output format: png, jpg, jpeg, webp          |
+| `maxPollAttempts`       | `number`  | `60`    | Max polling attempts                         |
+| `pollIntervalMillis`    | `number`  | `5000`  | Polling interval (ms)                        |
 
 **Example (providerOptions):**
 
@@ -363,66 +357,37 @@ const { image } = await generateImage({
 
 #### Google (Nano Banana Pro)
 
-Supported model: `google/nano-banana-pro-edit`
-
-| Parameter                       | Supported Values                                                  | Notes                                |
-| :------------------------------ | :---------------------------------------------------------------- | :----------------------------------- |
-| `aspectRatio`                   | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `9:21` | Standard AI SDK parameter            |
-| `resolution`                    | `1k`, `2k`, `4k`                                                  | Output resolution quality            |
-| `output_format`                 | `jpeg`, `png`, `webp`                                             | Output image format                  |
-| `prompt.images`                 | `string[]`                                                        | Recommended. Input image(s) to edit. |
-| `files`                         | `ImageModelV3File[]`                                              | Alternative (lower-level).           |
-| `providerOptions.runpod.images` | `string[]`                                                        | Legacy. Input image(s) to edit.      |
-
-#### Alibaba (Wan 2.6)
-
-Supported model: `alibaba/wan-2.6`
-
-| Parameter     | Supported Values                               | Notes                     |
-| :------------ | :--------------------------------------------- | :------------------------ |
-| `size`        | `768x768`, `1024x1024`, `1024x768`, `768x1024` | Max 1024x1024             |
-| `aspectRatio` | `1:1`, `4:3`, `3:4`                            | Standard AI SDK parameter |
-| `seed`        | `number`                                       | For reproducibility       |
-
-Note: Negative prompts should be included inline in the prompt text (e.g., "A sunset. Negative prompt: blurry, low quality").
-
-#### Qwen (Image Edit 2511)
-
-Supported model: `qwen/qwen-image-edit-2511`
-
-| Parameter         | Supported Values       | Notes                       |
-| :---------------- | :--------------------- | :-------------------------- |
-| `size`            | Up to `1536x1536`      | Max 1536x1536               |
-| `aspectRatio`     | `1:1`, `4:3`, `3:4`    | Standard AI SDK parameter   |
-| `seed`            | `number`               | For reproducibility         |
-| `prompt.images`   | `string[]`             | 1-3 input images            |
-| `output_format`   | `jpeg`, `png`, `webp`  | Default: `jpeg`             |
-| `negative_prompt` | `string`               | What to avoid in the output |
-| `loras`           | `Array<{path, scale}>` | LoRA adapters (see below)   |
-
-**Example:**
+| Option                              | Values           |
+| :---------------------------------- | :--------------- |
+| `providerOptions.runpod.resolution` | `1k`, `2k`, `4k` |
 
 ```ts
 const { image } = await generateImage({
-  model: runpod.image('qwen/qwen-image-edit-2511'),
-  prompt: {
-    text: 'Transform this into a futuristic neon city scene',
-    images: ['https://example.com/input.jpg'],
+  model: runpod.image('google/nano-banana-pro'),
+  prompt: 'A futuristic cityscape at sunset',
+  aspectRatio: '16:9',
+  providerOptions: {
+    runpod: {
+      resolution: '4k',
+    },
   },
-  size: '1024x1024',
 });
 ```
 
-**Example with LoRA:**
+#### Qwen (Image Edit 2511)
 
-When `loras` is provided, the provider automatically uses the LoRA-enabled endpoint.
+| Option                         | Values                 |
+| :----------------------------- | :--------------------- |
+| `providerOptions.runpod.loras` | `[{path, scale}, ...]` |
+
+Supports 1-3 input images.
 
 ```ts
 const { image } = await generateImage({
   model: runpod.image('qwen/qwen-image-edit-2511'),
   prompt: {
     text: 'Transform into anime style',
-    images: ['https://example.com/input.jpg'],
+    images: ['https://image.runpod.ai/asset/qwen/qwen-image-edit-2511.png'],
   },
   size: '1024x1024',
   providerOptions: {
@@ -538,7 +503,7 @@ const result = await generateSpeech({
   text: 'Hello!',
   providerOptions: {
     runpod: {
-      voice_url: 'https://example.com/voice.wav',
+      voice_url: 'https://your-audio-host.com/your-voice-sample.wav', // 5-10s audio sample
     },
   },
 });

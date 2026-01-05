@@ -530,6 +530,27 @@ export class RunpodImageModel implements ImageModelV3 {
       return nanoBananaPayload;
     }
 
+    // Check if this is a Nano Banana (non-pro) edit model
+    const isNanaBananaEditModel =
+      this.modelId.includes('nano-banana-edit') &&
+      !this.modelId.includes('nano-banana-pro');
+    if (isNanaBananaEditModel) {
+      // Nano Banana edit uses simple format: prompt, images array, enable_safety_checker
+      const nanoBananaEditPayload: Record<string, unknown> = {
+        prompt,
+        enable_safety_checker: runpodOptions?.enable_safety_checker ?? true,
+      };
+
+      // Always use images array format
+      if (standardizedImages && standardizedImages.length > 0) {
+        nanoBananaEditPayload.images = standardizedImages;
+      } else if (runpodOptions?.images) {
+        nanoBananaEditPayload.images = runpodOptions.images;
+      }
+
+      return nanoBananaEditPayload;
+    }
+
     // Check if this is a Qwen Image Edit 2511 model (uses images array format)
     const isQwenImageEdit2511 = this.modelId.includes('qwen-image-edit-2511');
     if (isQwenImageEdit2511) {

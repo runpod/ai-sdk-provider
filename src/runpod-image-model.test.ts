@@ -266,18 +266,19 @@ describe('RunpodImageModel', () => {
       const payload = (nanoBananaEditModel as any).buildInputPayload(
         'Combine these four source images into a single scene',
         '1328*1328',
-        // seed intentionally omitted to verify default assignment
         undefined,
         { images, enable_safety_checker: true }
       );
 
+      // Nano Banana edit uses simple format: prompt, images, enable_safety_checker
+      // No size or seed parameters
       expect(payload).toMatchObject({
         prompt: 'Combine these four source images into a single scene',
-        size: '1328*1328',
-        seed: -1,
         images,
         enable_safety_checker: true,
       });
+      expect(payload).not.toHaveProperty('size');
+      expect(payload).not.toHaveProperty('seed');
     });
 
     it('should build correct payload for Qwen Image Edit 2511', () => {
