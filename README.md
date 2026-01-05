@@ -1,7 +1,5 @@
 # Runpod AI SDK Provider
 
-![Runpod AI SDK Provider banner](https://image.runpod.ai/runpod/ai-sdk-provider/banner.jpg)
-
 The **Runpod provider** for the [AI SDK](https://ai-sdk.dev/docs) contains language model and image generation support for [Runpod's](https://runpod.io) public endpoints.
 
 ## Setup
