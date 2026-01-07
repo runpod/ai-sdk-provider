@@ -44,6 +44,7 @@ const SUPPORTED_SIZES = new Set([
   '512*512',
   '768*768',
   '1024*1024',
+  '1280*1280', // wan-2.6 max
   '1536*1536',
   '2048*2048',
   '4096*4096',
@@ -52,6 +53,63 @@ const SUPPORTED_SIZES = new Set([
   '1024*768',
   '768*1024',
 ]);
+
+// WAN 2.6 specific aspect ratio to size mappings
+// Total pixels must be between 768*768 (589,824) and 1280*1280 (1,638,400)
+// Aspect ratio must be between 1:4 and 4:1
+const WAN_ASPECT_RATIOS: Record<string, string> = {
+  '1:1': '1280*1280', // 1,638,400 pixels
+  '2:3': '800*1200', // 960,000 pixels
+  '3:2': '1200*800', // 960,000 pixels
+  '3:4': '960*1280', // 1,228,800 pixels
+  '4:3': '1280*960', // 1,228,800 pixels
+  '9:16': '720*1280', // 921,600 pixels
+  '16:9': '1280*720', // 921,600 pixels
+  '21:9': '1344*576', // 774,144 pixels
+  '9:21': '576*1344', // 774,144 pixels
+};
+
+// WAN 2.6 pixel constraints
+const WAN_MIN_PIXELS = 768 * 768; // 589,824
+const WAN_MAX_PIXELS = 1280 * 1280; // 1,638,400
+const WAN_MIN_ASPECT_RATIO = 1 / 4; // 1:4
+const WAN_MAX_ASPECT_RATIO = 4 / 1; // 4:1
+
+/**
+ * Validates a size string for WAN 2.6 constraints.
+ * Returns true if valid, throws InvalidArgumentError if not.
+ */
+function validateWanSize(size: string): boolean {
+  const [widthStr, heightStr] = size.split('*');
+  const width = parseInt(widthStr, 10);
+  const height = parseInt(heightStr, 10);
+
+  if (isNaN(width) || isNaN(height)) {
+    throw new InvalidArgumentError({
+      argument: 'size',
+      message: `Invalid size format: ${size}. Expected format: WIDTHxHEIGHT or WIDTH*HEIGHT`,
+    });
+  }
+
+  const totalPixels = width * height;
+  const aspectRatio = width / height;
+
+  if (totalPixels < WAN_MIN_PIXELS || totalPixels > WAN_MAX_PIXELS) {
+    throw new InvalidArgumentError({
+      argument: 'size',
+      message: `Size ${size} has ${totalPixels} pixels, which is outside the valid range for WAN 2.6 (${WAN_MIN_PIXELS} to ${WAN_MAX_PIXELS} pixels). Try 1280x1280 or 1024x1024.`,
+    });
+  }
+
+  if (aspectRatio < WAN_MIN_ASPECT_RATIO || aspectRatio > WAN_MAX_ASPECT_RATIO) {
+    throw new InvalidArgumentError({
+      argument: 'size',
+      message: `Size ${size} has aspect ratio ${aspectRatio.toFixed(2)}, which is outside the valid range for WAN 2.6 (1:4 to 4:1).`,
+    });
+  }
+
+  return true;
+}
 
 export class RunpodImageModel implements ImageModelV3 {
   readonly specificationVersion = 'v3';
@@ -100,6 +158,9 @@ export class RunpodImageModel implements ImageModelV3 {
     // Check if this is a Nano Banana Pro model (skip standard size/aspectRatio validation)
     const isNanoBananaProModel = this.modelId.includes('nano-banana-pro');
 
+    // Check if this is a WAN model (uses WAN-specific pixel/aspect ratio constraints)
+    const isWanModel = this.modelId.includes('wan-2');
+
     // Determine the size to use
     let runpodSize: string;
 
@@ -107,6 +168,26 @@ export class RunpodImageModel implements ImageModelV3 {
       // These models use aspect_ratio string directly, skip size validation
       // Pass through the aspectRatio or use default, validation happens at API level
       runpodSize = aspectRatio || '1:1';
+    } else if (isWanModel) {
+      // WAN 2.6 has specific pixel and aspect ratio constraints
+      // Total pixels: 768*768 (589,824) to 1280*1280 (1,638,400)
+      // Aspect ratio: 1:4 to 4:1
+      if (size) {
+        const runpodSizeCandidate = size.replace('x', '*');
+        validateWanSize(runpodSizeCandidate);
+        runpodSize = runpodSizeCandidate;
+      } else if (aspectRatio) {
+        if (!WAN_ASPECT_RATIOS[aspectRatio]) {
+          throw new InvalidArgumentError({
+            argument: 'aspectRatio',
+            message: `Aspect ratio ${aspectRatio} is not supported by WAN 2.6. Supported aspect ratios: ${Object.keys(WAN_ASPECT_RATIOS).join(', ')}`,
+          });
+        }
+        runpodSize = WAN_ASPECT_RATIOS[aspectRatio];
+      } else {
+        // Default to 1280*1280 for WAN models
+        runpodSize = '1280*1280';
+      }
     } else if (size) {
       // Convert AI SDK format "1328x1328" to Runpod format "1328*1328"
       const runpodSizeCandidate = size.replace('x', '*');
