@@ -1,5 +1,5 @@
 ---
-"@runpod/ai-sdk-provider": minor
+'@runpod/ai-sdk-provider': minor
 ---
 
 add image models and improvements
