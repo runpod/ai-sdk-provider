@@ -1,7 +1,5 @@
 # Runpod AI SDK Provider
 
-![Runpod AI SDK Provider banner](https://image.runpod.ai/runpod/ai-sdk-provider/banner.jpg)
-
 The **Runpod provider** for the [AI SDK](https://ai-sdk.dev/docs) contains language model and image generation support for [Runpod's](https://runpod.io) public endpoints.
 
 ## Setup
@@ -280,20 +278,22 @@ Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/get
 
 ### Supported Models
 
-| Model ID                               | Type |
-| -------------------------------------- | ---- |
-| `pruna/p-image-t2i`                    | t2i  |
-| `pruna/p-image-edit`                   | edit |
-| `google/nano-banana-pro-edit`          | edit |
-| `bytedance/seedream-3.0`               | t2i  |
-| `bytedance/seedream-4.0`               | t2i  |
-| `bytedance/seedream-4.0-edit`          | edit |
-| `qwen/qwen-image`                      | t2i  |
-| `qwen/qwen-image-edit`                 | edit |
-| `nano-banana-edit`                     | edit |
-| `black-forest-labs/flux-1-schnell`     | t2i  |
-| `black-forest-labs/flux-1-dev`         | t2i  |
-| `black-forest-labs/flux-1-kontext-dev` | edit |
+| Model ID                               | Type | Resolution      | Aspect Ratios                             |
+| -------------------------------------- | ---- | --------------- | ----------------------------------------- |
+| `alibaba/wan-2.6`                      | t2i  | 1024x1024       | 1:1, 4:3, 3:4                             |
+| `pruna/p-image-t2i`                    | t2i  | up to 1440x1440 | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3       |
+| `pruna/p-image-edit`                   | edit | up to 1440x1440 | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3       |
+| `google/nano-banana-edit`              | edit | up to 4096x4096 | 1:1, 4:3, 3:4                             |
+| `google/nano-banana-pro-edit`          | edit | 1k, 2k, 4k      | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, 21:9 |
+| `bytedance/seedream-3.0`               | t2i  | up to 4096x4096 | 1:1, 4:3, 3:4                             |
+| `bytedance/seedream-4.0`               | t2i  | up to 4096x4096 | 1:1, 4:3, 3:4                             |
+| `bytedance/seedream-4.0-edit`          | edit | up to 4096x4096 | uses size                                 |
+| `qwen/qwen-image`                      | t2i  | up to 4096x4096 | 1:1, 4:3, 3:4                             |
+| `qwen/qwen-image-edit`                 | edit | up to 4096x4096 | 1:1, 4:3, 3:4                             |
+| `qwen/qwen-image-edit-2511`            | edit | up to 1536x1536 | 1:1, 4:3, 3:4                             |
+| `black-forest-labs/flux-1-schnell`     | t2i  | up to 2048x2048 | 1:1, 4:3, 3:4                             |
+| `black-forest-labs/flux-1-dev`         | t2i  | up to 2048x2048 | 1:1, 4:3, 3:4                             |
+| `black-forest-labs/flux-1-kontext-dev` | edit | up to 2048x2048 | 1:1, 4:3, 3:4                             |
 
 For the full list of models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
 
@@ -301,21 +301,15 @@ For the full list of models, see the [Runpod Public Endpoint Reference](https://
 
 Additional options through `providerOptions.runpod` (supported options depend on the model):
 
-| Option                   | Type       | Default | Description                                                 |
-| ------------------------ | ---------- | ------- | ----------------------------------------------------------- |
-| `negative_prompt`        | `string`   | `""`    | What to avoid in the image (model-dependent)                |
-| `enable_safety_checker`  | `boolean`  | `true`  | Content safety filtering (model-dependent)                  |
-| `disable_safety_checker` | `boolean`  | `false` | Disable safety checker (Pruna)                              |
-| `aspect_ratio`           | `string`   | -       | Model-specific aspect ratio (Pruna: supports `custom`)      |
-| `image`                  | `string`   | -       | Legacy: Single input image URL/base64 (use `prompt.images`) |
-| `images`                 | `string[]` | -       | Legacy: Multiple input images (use `prompt.images`)         |
-| `resolution`             | `string`   | `"1k"`  | Output resolution: 1k, 2k, 4k (Nano Banana Pro)             |
-| `width` / `height`       | `number`   | -       | Custom dimensions (Pruna t2i, 256-1440; multiples of 16)    |
-| `num_inference_steps`    | `number`   | Auto    | Denoising steps (model-dependent)                           |
-| `guidance`               | `number`   | Auto    | Prompt adherence strength (model-dependent)                 |
-| `output_format`          | `string`   | `"png"` | Output format: png, jpg, jpeg, webp (model-dependent)       |
-| `maxPollAttempts`        | `number`   | `60`    | Max polling attempts                                        |
-| `pollIntervalMillis`     | `number`   | `5000`  | Polling interval (ms)                                       |
+| Option                  | Type      | Default | Description                                  |
+| ----------------------- | --------- | ------- | -------------------------------------------- |
+| `negative_prompt`       | `string`  | `""`    | What to avoid in the image (model-dependent) |
+| `enable_safety_checker` | `boolean` | `true`  | Content safety filtering (model-dependent)   |
+| `num_inference_steps`   | `number`  | Auto    | Denoising steps (model-dependent)            |
+| `guidance`              | `number`  | Auto    | Prompt adherence strength (model-dependent)  |
+| `output_format`         | `string`  | `"png"` | Output format: png, jpg, jpeg, webp          |
+| `maxPollAttempts`       | `number`  | `60`    | Max polling attempts                         |
+| `pollIntervalMillis`    | `number`  | `5000`  | Polling interval (ms)                        |
 
 **Example (providerOptions):**
 
@@ -363,16 +357,51 @@ const { image } = await generateImage({
 
 #### Google (Nano Banana Pro)
 
-Supported model: `google/nano-banana-pro-edit`
+| Option                              | Values           |
+| :---------------------------------- | :--------------- |
+| `providerOptions.runpod.resolution` | `1k`, `2k`, `4k` |
 
-| Parameter                       | Supported Values                                                  | Notes                                |
-| :------------------------------ | :---------------------------------------------------------------- | :----------------------------------- |
-| `aspectRatio`                   | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `9:21` | Standard AI SDK parameter            |
-| `resolution`                    | `1k`, `2k`, `4k`                                                  | Output resolution quality            |
-| `output_format`                 | `jpeg`, `png`, `webp`                                             | Output image format                  |
-| `prompt.images`                 | `string[]`                                                        | Recommended. Input image(s) to edit. |
-| `files`                         | `ImageModelV3File[]`                                              | Alternative (lower-level).           |
-| `providerOptions.runpod.images` | `string[]`                                                        | Legacy. Input image(s) to edit.      |
+```ts
+const { image } = await generateImage({
+  model: runpod.image('google/nano-banana-pro'),
+  prompt: 'A futuristic cityscape at sunset',
+  aspectRatio: '16:9',
+  providerOptions: {
+    runpod: {
+      resolution: '4k',
+    },
+  },
+});
+```
+
+#### Qwen (Image Edit 2511)
+
+| Option                         | Values                 |
+| :----------------------------- | :--------------------- |
+| `providerOptions.runpod.loras` | `[{path, scale}, ...]` |
+
+Supports 1-3 input images.
+
+```ts
+const { image } = await generateImage({
+  model: runpod.image('qwen/qwen-image-edit-2511'),
+  prompt: {
+    text: 'Transform into anime style',
+    images: ['https://image.runpod.ai/asset/qwen/qwen-image-edit-2511.png'],
+  },
+  size: '1024x1024',
+  providerOptions: {
+    runpod: {
+      loras: [
+        {
+          path: 'https://huggingface.co/flymy-ai/qwen-image-anime-irl-lora/resolve/main/flymy_anime_irl.safetensors',
+          scale: 1,
+        },
+      ],
+    },
+  },
+});
+```
 
 ## Speech Models
 
@@ -474,7 +503,7 @@ const result = await generateSpeech({
   text: 'Hello!',
   providerOptions: {
     runpod: {
-      voice_url: 'https://example.com/voice.wav',
+      voice_url: 'https://your-audio-host.com/your-voice-sample.wav', // 5-10s audio sample
     },
   },
 });
