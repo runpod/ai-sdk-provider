@@ -158,6 +158,197 @@ describe('RunpodImageModel', () => {
     });
   });
 
+  describe('WAN 2.6 parameter validation', () => {
+    let wanModel: RunpodImageModel;
+
+    beforeEach(() => {
+      wanModel = new RunpodImageModel('alibaba/wan-2.6', {
+        provider: 'runpod',
+        baseURL: 'https://api.runpod.ai/v2/wan-2-6-t2i',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+    });
+
+    it('should accept valid WAN 2.6 sizes within pixel constraints', async () => {
+      // Valid sizes within 768*768 to 1280*1280 pixel range
+      const validSizes = [
+        '1280x1280', // 1,638,400 pixels (max)
+        '1024x1024', // 1,048,576 pixels
+        '768x768', // 589,824 pixels (min)
+        '1280x720', // 921,600 pixels (16:9)
+        '720x1280', // 921,600 pixels (9:16)
+        '1200x800', // 960,000 pixels (3:2)
+        '800x1200', // 960,000 pixels (2:3)
+      ];
+
+      for (const size of validSizes) {
+        // Should not throw - we just verify the size is passed through
+        mockFetch.mockImplementationOnce(() =>
+          Promise.resolve(
+            new Response(
+              JSON.stringify({
+                id: 'test',
+                status: 'COMPLETED',
+                output: { result: 'https://test.com/img.png' },
+              }),
+              { headers: { 'content-type': 'application/json' } }
+            )
+          )
+        );
+        mockFetch.mockImplementationOnce(() =>
+          Promise.resolve(
+            new Response(new Uint8Array([1, 2, 3]), {
+              headers: { 'content-type': 'image/png' },
+            })
+          )
+        );
+
+        await expect(
+          wanModel.doGenerate({
+            prompt: 'Test',
+            n: 1,
+            size,
+            aspectRatio: undefined,
+            seed: undefined,
+            providerOptions: {},
+            headers: {},
+            abortSignal: undefined,
+          })
+        ).resolves.toBeDefined();
+      }
+    });
+
+    it('should throw error for WAN 2.6 size exceeding max pixels', async () => {
+      await expect(
+        wanModel.doGenerate({
+          prompt: 'Test',
+          n: 1,
+          size: '2048x2048', // 4,194,304 pixels - exceeds max
+          aspectRatio: undefined,
+          seed: undefined,
+          providerOptions: {},
+          headers: {},
+          abortSignal: undefined,
+        })
+      ).rejects.toThrow(InvalidArgumentError);
+    });
+
+    it('should throw error for WAN 2.6 size below min pixels', async () => {
+      await expect(
+        wanModel.doGenerate({
+          prompt: 'Test',
+          n: 1,
+          size: '512x512', // 262,144 pixels - below min
+          aspectRatio: undefined,
+          seed: undefined,
+          providerOptions: {},
+          headers: {},
+          abortSignal: undefined,
+        })
+      ).rejects.toThrow(InvalidArgumentError);
+    });
+
+    it('should accept all WAN 2.6 supported aspect ratios', async () => {
+      const supportedRatios = [
+        '1:1',
+        '2:3',
+        '3:2',
+        '3:4',
+        '4:3',
+        '9:16',
+        '16:9',
+        '21:9',
+        '9:21',
+      ];
+
+      for (const ratio of supportedRatios) {
+        mockFetch.mockImplementationOnce(() =>
+          Promise.resolve(
+            new Response(
+              JSON.stringify({
+                id: 'test',
+                status: 'COMPLETED',
+                output: { result: 'https://test.com/img.png' },
+              }),
+              { headers: { 'content-type': 'application/json' } }
+            )
+          )
+        );
+        mockFetch.mockImplementationOnce(() =>
+          Promise.resolve(
+            new Response(new Uint8Array([1, 2, 3]), {
+              headers: { 'content-type': 'image/png' },
+            })
+          )
+        );
+
+        await expect(
+          wanModel.doGenerate({
+            prompt: 'Test',
+            n: 1,
+            size: undefined,
+            aspectRatio: ratio,
+            seed: undefined,
+            providerOptions: {},
+            headers: {},
+            abortSignal: undefined,
+          })
+        ).resolves.toBeDefined();
+      }
+    });
+
+    it('should throw error for unsupported WAN 2.6 aspect ratio', async () => {
+      await expect(
+        wanModel.doGenerate({
+          prompt: 'Test',
+          n: 1,
+          size: undefined,
+          aspectRatio: '5:4', // Not in WAN supported list
+          seed: undefined,
+          providerOptions: {},
+          headers: {},
+          abortSignal: undefined,
+        })
+      ).rejects.toThrow(InvalidArgumentError);
+    });
+
+    it('should default to 1280x1280 for WAN 2.6 when no size or aspect ratio provided', async () => {
+      let capturedBody: any;
+      mockFetch.mockImplementationOnce(async (_input: any, init?: any) => {
+        capturedBody = JSON.parse(init?.body ?? '{}');
+        return new Response(
+          JSON.stringify({
+            id: 'test',
+            status: 'COMPLETED',
+            output: { result: 'https://test.com/img.png' },
+          }),
+          { headers: { 'content-type': 'application/json' } }
+        );
+      });
+      mockFetch.mockImplementationOnce(() =>
+        Promise.resolve(
+          new Response(new Uint8Array([1, 2, 3]), {
+            headers: { 'content-type': 'image/png' },
+          })
+        )
+      );
+
+      await wanModel.doGenerate({
+        prompt: 'Test',
+        n: 1,
+        size: undefined,
+        aspectRatio: undefined,
+        seed: undefined,
+        providerOptions: {},
+        headers: {},
+        abortSignal: undefined,
+      });
+
+      expect(capturedBody?.input?.size).toBe('1280*1280');
+    });
+  });
+
   describe('parameter conversion', () => {
     it('should build correct payload for Qwen models', () => {
       const qwenModel = new RunpodImageModel('qwen/qwen-image', {
@@ -324,19 +515,55 @@ describe('RunpodImageModel', () => {
 
       const payload = (wanModel as any).buildInputPayload(
         'A modern tea shop interior, warm afternoon light',
-        '1024*1024',
+        '1280*1280',
         42,
         { enable_safety_checker: true }
       );
 
       expect(payload).toMatchObject({
         prompt: 'A modern tea shop interior, warm afternoon light',
-        size: '1024*1024',
+        size: '1280*1280',
         seed: 42,
         enable_safety_checker: true,
       });
       // Should not have negative_prompt in the payload (Wan uses inline negative prompt)
       expect(payload.negative_prompt).toBeUndefined();
+    });
+
+    it('should build correct payload for Alibaba Wan 2.6 with various aspect ratios', () => {
+      const wanModel = new RunpodImageModel('alibaba/wan-2.6', {
+        provider: 'runpod',
+        baseURL: 'https://api.runpod.ai/v2/wan-2-6-t2i',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+
+      // Test 16:9 aspect ratio (1280*720)
+      const payload16x9 = (wanModel as any).buildInputPayload(
+        'Wide landscape',
+        '1280*720',
+        42,
+        {}
+      );
+      expect(payload16x9.size).toBe('1280*720');
+
+      // Test 9:16 aspect ratio (720*1280)
+      const payload9x16 = (wanModel as any).buildInputPayload(
+        'Portrait mode',
+        '720*1280',
+        42,
+        {}
+      );
+      expect(payload9x16.size).toBe('720*1280');
+
+      // Test 21:9 ultrawide (1344*576)
+      const payload21x9 = (wanModel as any).buildInputPayload(
+        'Ultrawide cinematic',
+        '1344*576',
+        42,
+        {}
+      );
+      expect(payload21x9.size).toBe('1344*576');
     });
 
     it('should build correct payload for Qwen Image Edit 2511 with LoRA', () => {

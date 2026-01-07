@@ -4,17 +4,34 @@ This document lists supported Runpod image models and their capabilities. Follow
 
 ## Models and Capabilities
 
-| Model ID                               | Description                     | Supported Aspect Ratios               |
-| -------------------------------------- | ------------------------------- | ------------------------------------- |
-| `bytedance/seedream-3.0`               | Advanced text-to-image model    | 1:1, 4:3, 3:4                         |
-| `bytedance/seedream-4.0`               | Text-to-image (v4)              | 1:1 (supports 1024, 2048, 4096)       |
-| `bytedance/seedream-4.0-edit`          | Image editing (v4, multi-image) | 1:1 (supports 1024, 1536, 2048, 4096) |
-| `black-forest-labs/flux-1-schnell`     | Fast image generation (4 steps) | 1:1, 4:3, 3:4                         |
-| `black-forest-labs/flux-1-dev`         | High-quality image generation   | 1:1, 4:3, 3:4                         |
-| `black-forest-labs/flux-1-kontext-dev` | Context-aware image generation  | 1:1, 4:3, 3:4                         |
-| `qwen/qwen-image`                      | Text-to-image generation        | 1:1, 4:3, 3:4                         |
-| `qwen/qwen-image-edit`                 | Image editing (prompt-guided)   | 1:1, 4:3, 3:4                         |
-| `nano-banana-edit`                     | Image editing (multi-image)     | 1:1, 4:3, 3:4                         |
+| Model ID                               | Description                     | Supported Aspect Ratios                         |
+| -------------------------------------- | ------------------------------- | ----------------------------------------------- |
+| `alibaba/wan-2.6`                      | Text-to-image (flexible res)    | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, 21:9, 9:21 |
+| `bytedance/seedream-3.0`               | Advanced text-to-image model    | 1:1, 4:3, 3:4                                   |
+| `bytedance/seedream-4.0`               | Text-to-image (v4)              | 1:1 (supports 1024, 2048, 4096)                 |
+| `bytedance/seedream-4.0-edit`          | Image editing (v4, multi-image) | 1:1 (supports 1024, 1536, 2048, 4096)           |
+| `black-forest-labs/flux-1-schnell`     | Fast image generation (4 steps) | 1:1, 4:3, 3:4                                   |
+| `black-forest-labs/flux-1-dev`         | High-quality image generation   | 1:1, 4:3, 3:4                                   |
+| `black-forest-labs/flux-1-kontext-dev` | Context-aware image generation  | 1:1, 4:3, 3:4                                   |
+| `qwen/qwen-image`                      | Text-to-image generation        | 1:1, 4:3, 3:4                                   |
+| `qwen/qwen-image-edit`                 | Image editing (prompt-guided)   | 1:1, 4:3, 3:4                                   |
+| `nano-banana-edit`                     | Image editing (multi-image)     | 1:1, 4:3, 3:4                                   |
+
+## WAN 2.6 Resolution Constraints
+
+Total pixels must be between 589,824 (768x768) and 1,638,400 (1280x1280). Aspect ratio must be between 1:4 and 4:1.
+
+| Aspect Ratio | Resolution |
+| :----------- | :--------- |
+| 1:1          | 1280x1280  |
+| 2:3          | 800x1200   |
+| 3:2          | 1200x800   |
+| 3:4          | 960x1280   |
+| 4:3          | 1280x960   |
+| 9:16         | 720x1280   |
+| 16:9         | 1280x720   |
+| 21:9         | 1344x576   |
+| 9:21         | 576x1344   |
 
 ## Multi-image Editing Example (Nano Banana)
 
