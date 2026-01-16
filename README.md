@@ -569,7 +569,7 @@ You can provide audio in several ways:
 // URL (recommended for large files)
 const result = await transcribe({
   model: runpod.transcription('pruna/whisper-v3-large'),
-  audio: new URL('https://example.com/audio.mp3'),
+  audio: new URL('https://image.runpod.ai/demo/transcription-demo.wav'),
 });
 
 // Local file as Uint8Array
@@ -610,11 +610,11 @@ Use `providerOptions.runpod` for model-specific parameters:
 ```ts
 const result = await transcribe({
   model: runpod.transcription('pruna/whisper-v3-large'),
-  audio: new URL('https://example.com/spanish-audio.mp3'),
+  audio: new URL('https://image.runpod.ai/demo/transcription-demo.wav'),
   providerOptions: {
     runpod: {
-      language: 'es',
-      prompt: 'This is a conversation about technology',
+      language: 'en',
+      prompt: 'This is a demo of audio transcription',
       word_timestamps: true,
     },
   },
