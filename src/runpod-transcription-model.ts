@@ -92,7 +92,7 @@ export class RunpodTranscriptionModel implements TranscriptionModelV3 {
 
     const warnings: SharedV3Warning[] = [];
 
-    const { audio, mediaType, providerOptions, abortSignal, headers } = options;
+    const { audio, providerOptions, abortSignal, headers } = options;
 
     // Extract Runpod-specific options
     const runpodOptions = this.extractRunpodOptions(providerOptions);
