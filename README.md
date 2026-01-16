@@ -278,22 +278,22 @@ Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/get
 
 ### Supported Models
 
-| Model ID                               | Type | Resolution      | Aspect Ratios                             |
-| -------------------------------------- | ---- | --------------- | ----------------------------------------- |
-| `alibaba/wan-2.6`                      | t2i  | 1024x1024       | 1:1, 4:3, 3:4                             |
-| `pruna/p-image-t2i`                    | t2i  | up to 1440x1440 | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3       |
-| `pruna/p-image-edit`                   | edit | up to 1440x1440 | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3       |
-| `google/nano-banana-edit`              | edit | up to 4096x4096 | 1:1, 4:3, 3:4                             |
-| `google/nano-banana-pro-edit`          | edit | 1k, 2k, 4k      | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, 21:9 |
-| `bytedance/seedream-3.0`               | t2i  | up to 4096x4096 | 1:1, 4:3, 3:4                             |
-| `bytedance/seedream-4.0`               | t2i  | up to 4096x4096 | 1:1, 4:3, 3:4                             |
-| `bytedance/seedream-4.0-edit`          | edit | up to 4096x4096 | uses size                                 |
-| `qwen/qwen-image`                      | t2i  | up to 4096x4096 | 1:1, 4:3, 3:4                             |
-| `qwen/qwen-image-edit`                 | edit | up to 4096x4096 | 1:1, 4:3, 3:4                             |
-| `qwen/qwen-image-edit-2511`            | edit | up to 1536x1536 | 1:1, 4:3, 3:4                             |
-| `black-forest-labs/flux-1-schnell`     | t2i  | up to 2048x2048 | 1:1, 4:3, 3:4                             |
-| `black-forest-labs/flux-1-dev`         | t2i  | up to 2048x2048 | 1:1, 4:3, 3:4                             |
-| `black-forest-labs/flux-1-kontext-dev` | edit | up to 2048x2048 | 1:1, 4:3, 3:4                             |
+| Model ID                               | Type | Resolution        | Aspect Ratios                                   |
+| -------------------------------------- | ---- | ----------------- | ----------------------------------------------- |
+| `alibaba/wan-2.6`                      | t2i  | 768x768–1280x1280 | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, 21:9, 9:21 |
+| `pruna/p-image-t2i`                    | t2i  | up to 1440x1440   | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3             |
+| `pruna/p-image-edit`                   | edit | up to 1440x1440   | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3             |
+| `google/nano-banana-edit`              | edit | up to 4096x4096   | 1:1, 4:3, 3:4                                   |
+| `google/nano-banana-pro-edit`          | edit | 1k, 2k, 4k        | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, 21:9       |
+| `bytedance/seedream-3.0`               | t2i  | up to 4096x4096   | 1:1, 4:3, 3:4                                   |
+| `bytedance/seedream-4.0`               | t2i  | up to 4096x4096   | 1:1, 4:3, 3:4                                   |
+| `bytedance/seedream-4.0-edit`          | edit | up to 4096x4096   | uses size                                       |
+| `qwen/qwen-image`                      | t2i  | up to 4096x4096   | 1:1, 4:3, 3:4                                   |
+| `qwen/qwen-image-edit`                 | edit | up to 4096x4096   | 1:1, 4:3, 3:4                                   |
+| `qwen/qwen-image-edit-2511`            | edit | up to 1536x1536   | 1:1, 4:3, 3:4                                   |
+| `black-forest-labs/flux-1-schnell`     | t2i  | up to 2048x2048   | 1:1, 4:3, 3:4                                   |
+| `black-forest-labs/flux-1-dev`         | t2i  | up to 2048x2048   | 1:1, 4:3, 3:4                                   |
+| `black-forest-labs/flux-1-kontext-dev` | edit | up to 2048x2048   | 1:1, 4:3, 3:4                                   |
 
 For the full list of models, see the [Runpod Public Endpoint Reference](https://docs.runpod.io/hub/public-endpoint-reference).
 
@@ -352,6 +352,38 @@ const { image } = await generateImage({
       height: 768,
     },
   },
+});
+```
+
+#### Alibaba (WAN 2.6)
+
+Text-to-image model with flexible resolution support.
+
+**Resolution constraints:**
+
+- Total pixels: 589,824 (768x768) to 1,638,400 (1280x1280)
+- Aspect ratio: 1:4 to 4:1
+- Default: 1280x1280
+
+**Recommended resolutions for common aspect ratios:**
+
+| Aspect Ratio | Resolution |
+| :----------- | :--------- |
+| 1:1          | 1280x1280  |
+| 2:3          | 800x1200   |
+| 3:2          | 1200x800   |
+| 3:4          | 960x1280   |
+| 4:3          | 1280x960   |
+| 9:16         | 720x1280   |
+| 16:9         | 1280x720   |
+| 21:9         | 1344x576   |
+| 9:21         | 576x1344   |
+
+```ts
+const { image } = await generateImage({
+  model: runpod.image('alibaba/wan-2.6'),
+  prompt: 'A serene mountain landscape at dawn',
+  aspectRatio: '16:9',
 });
 ```
 
