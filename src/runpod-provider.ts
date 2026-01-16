@@ -1,4 +1,9 @@
-import { ImageModelV3, LanguageModelV3, SpeechModelV3 } from '@ai-sdk/provider';
+import {
+  ImageModelV3,
+  LanguageModelV3,
+  SpeechModelV3,
+  TranscriptionModelV3,
+} from '@ai-sdk/provider';
 import {
   OpenAICompatibleChatLanguageModel,
   OpenAICompatibleCompletionLanguageModel,
@@ -10,6 +15,7 @@ import {
 } from '@ai-sdk/provider-utils';
 import { RunpodImageModel } from './runpod-image-model';
 import { RunpodSpeechModel } from './runpod-speech-model';
+import { RunpodTranscriptionModel } from './runpod-transcription-model';
 
 export interface RunpodProviderSettings {
   /**
@@ -72,6 +78,16 @@ Creates a speech model for speech generation.
 Creates a speech model for speech generation.
 */
   speech(modelId: string): SpeechModelV3;
+
+  /**
+Creates a transcription model for audio transcription.
+*/
+  transcriptionModel(modelId: string): TranscriptionModelV3;
+
+  /**
+Creates a transcription model for audio transcription.
+*/
+  transcription(modelId: string): TranscriptionModelV3;
 }
 
 // Mapping of Runpod model IDs to their endpoint URLs
@@ -121,6 +137,11 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
 // Note: This is intentionally a temporary mapping for a stealth release.
 const SPEECH_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   'resembleai/chatterbox-turbo': 'https://api.runpod.ai/v2/chatterbox-turbo/',
+};
+
+// Mapping of Runpod transcription model IDs to their serverless endpoint URLs
+const TRANSCRIPTION_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
+  'pruna/whisper-v3-large': 'https://api.runpod.ai/v2/whisper-v3-large',
 };
 
 // Mapping of Runpod model IDs to their OpenAI model names
@@ -272,6 +293,28 @@ export function createRunpod(
     });
   };
 
+  const createTranscriptionModel = (modelId: string) => {
+    const endpointIdFromConsole = parseRunpodConsoleEndpointId(modelId);
+    const normalizedModelId = endpointIdFromConsole ?? modelId;
+
+    // Prefer explicit mapping for known transcription model IDs.
+    const mappedBaseURL =
+      TRANSCRIPTION_MODEL_ID_TO_ENDPOINT_URL[normalizedModelId];
+
+    const baseURL =
+      mappedBaseURL ??
+      (normalizedModelId.startsWith('http')
+        ? normalizedModelId
+        : `https://api.runpod.ai/v2/${normalizedModelId}`);
+
+    return new RunpodTranscriptionModel(normalizedModelId, {
+      provider: 'runpod.transcription',
+      baseURL,
+      headers: getHeaders,
+      fetch: runpodFetch,
+    });
+  };
+
   const provider = (modelId: string) => createChatModel(modelId);
 
   provider.completionModel = createCompletionModel;
@@ -281,6 +324,8 @@ export function createRunpod(
   provider.image = createImageModel;
   provider.speechModel = createSpeechModel;
   provider.speech = createSpeechModel;
+  provider.transcriptionModel = createTranscriptionModel;
+  provider.transcription = createTranscriptionModel;
 
   return provider;
 }

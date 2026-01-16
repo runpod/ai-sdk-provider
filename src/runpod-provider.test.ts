@@ -5,6 +5,7 @@ import {
 } from '@ai-sdk/openai-compatible';
 import { RunpodImageModel } from './runpod-image-model';
 import { RunpodSpeechModel } from './runpod-speech-model';
+import { RunpodTranscriptionModel } from './runpod-transcription-model';
 import { loadApiKey } from '@ai-sdk/provider-utils';
 import { createRunpod } from './runpod-provider';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
@@ -24,6 +25,10 @@ vi.mock('./runpod-image-model', () => ({
 
 vi.mock('./runpod-speech-model', () => ({
   RunpodSpeechModel: vi.fn(),
+}));
+
+vi.mock('./runpod-transcription-model', () => ({
+  RunpodTranscriptionModel: vi.fn(),
 }));
 
 vi.mock('@ai-sdk/provider-utils', () => ({
@@ -243,6 +248,60 @@ describe('RunpodProvider', () => {
       expect(config.url({ path: '/chat/completions' })).toBe(
         'https://api.runpod.ai/v2/cogito-671b-v2-1-fp8-dynamic/openai/v1/chat/completions'
       );
+    });
+  });
+
+  describe('transcriptionModel', () => {
+    it('should use mapping for known transcription model IDs', () => {
+      const provider = createRunpod();
+
+      provider.transcriptionModel('pruna/whisper-v3-large');
+
+      expect((RunpodTranscriptionModel as any).mock.calls[0][0]).toBe(
+        'pruna/whisper-v3-large'
+      );
+      expect((RunpodTranscriptionModel as any).mock.calls[0][1].baseURL).toBe(
+        'https://api.runpod.ai/v2/whisper-v3-large'
+      );
+    });
+
+    it('should construct a transcription model for a serverless endpoint id', () => {
+      const provider = createRunpod();
+      const modelId = 'uhyz0hnkemrk6r';
+
+      const model = provider.transcriptionModel(modelId);
+      expect(model).toBeInstanceOf(RunpodTranscriptionModel);
+
+      expect((RunpodTranscriptionModel as any).mock.calls[0][0]).toBe(modelId);
+      expect((RunpodTranscriptionModel as any).mock.calls[0][1].baseURL).toBe(
+        `https://api.runpod.ai/v2/${modelId}`
+      );
+    });
+
+    it('should accept a Runpod Console endpoint URL', () => {
+      const provider = createRunpod();
+      const url =
+        'https://console.runpod.io/serverless/user/endpoint/uhyz0hnkemrk6r';
+
+      provider.transcriptionModel(url);
+
+      expect((RunpodTranscriptionModel as any).mock.calls[0][0]).toBe(
+        'uhyz0hnkemrk6r'
+      );
+      expect((RunpodTranscriptionModel as any).mock.calls[0][1].baseURL).toBe(
+        'https://api.runpod.ai/v2/uhyz0hnkemrk6r'
+      );
+    });
+  });
+
+  describe('transcription', () => {
+    it('should be an alias for transcriptionModel', () => {
+      const provider = createRunpod();
+      const modelId = 'pruna/whisper-v3-large';
+
+      const model = provider.transcription(modelId);
+
+      expect(model).toBeInstanceOf(RunpodTranscriptionModel);
     });
   });
 });
