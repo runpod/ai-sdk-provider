@@ -169,6 +169,13 @@ export class RunpodSpeechModel implements SpeechModelV3 {
       throw new Error(`Runpod speech request failed: ${message}`);
     }
 
+    // Check for FAILED status and surface the actual error message
+    if (parsed?.status === 'FAILED') {
+      throw new Error(
+        `Speech generation failed: ${parsed.error || 'Unknown error'}`
+      );
+    }
+
     const output = parsed?.output ?? parsed;
 
     const audioUrl = output?.audio_url;

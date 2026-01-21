@@ -138,4 +138,70 @@ describe('RunpodSpeechModel', () => {
       }),
     ]);
   });
+
+  describe('FAILED status handling', () => {
+    it('should throw error with actual error message when status is FAILED', async () => {
+      const model = new RunpodSpeechModel('chatterbox-turbo', {
+        provider: 'runpod.speech',
+        baseURL: 'https://api.runpod.ai/v2/chatterbox-turbo',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+
+      // Simulates actual Runpod API error response (e.g., invalid voice_url)
+      mockFetch.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            id: 'sync-8a97ae4d-af49-4ccd-82b9-006f0d7bd7b5-e1',
+            status: 'FAILED',
+            delayTime: 156,
+            executionTime: 60,
+            error: 'Failed to download voice prompt from provided URL.',
+          }),
+          { status: 200 }
+        )
+      );
+
+      await expect(
+        model.doGenerate({
+          text: 'Hello',
+          providerOptions: {
+            runpod: { voice_url: 'invalid-url' },
+          },
+          headers: {},
+          abortSignal: undefined,
+        } as any)
+      ).rejects.toThrow(
+        'Speech generation failed: Failed to download voice prompt from provided URL.'
+      );
+    });
+
+    it('should throw error with "Unknown error" when status is FAILED without error message', async () => {
+      const model = new RunpodSpeechModel('chatterbox-turbo', {
+        provider: 'runpod.speech',
+        baseURL: 'https://api.runpod.ai/v2/chatterbox-turbo',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+
+      mockFetch.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            id: 'test-job-id',
+            status: 'FAILED',
+          }),
+          { status: 200 }
+        )
+      );
+
+      await expect(
+        model.doGenerate({
+          text: 'Hello',
+          providerOptions: {},
+          headers: {},
+          abortSignal: undefined,
+        } as any)
+      ).rejects.toThrow('Speech generation failed: Unknown error');
+    });
+  });
 });

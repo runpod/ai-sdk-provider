@@ -973,4 +973,67 @@ describe('RunpodImageModel', () => {
       expect(warning.details).toContain('not yet supported');
     });
   });
+
+  describe('FAILED status handling', () => {
+    it('should throw error with actual error message when status is FAILED', async () => {
+      // This simulates an actual Runpod API error response (e.g., invalid size for WAN 2.6)
+      mockFetch.mockImplementationOnce(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              id: 'sync-6f9286ab-2453-4fba-a18d-871d514660ac-e2',
+              status: 'FAILED',
+              delayTime: 3383,
+              executionTime: 4651,
+              error: 'Total pixels (262144) must be between 589824 and 2073600.',
+              output: { status: 'failed' },
+            }),
+            { headers: { 'content-type': 'application/json' } }
+          )
+        )
+      );
+
+      await expect(
+        model.doGenerate({
+          prompt: 'Test prompt',
+          n: 1,
+          size: undefined,
+          aspectRatio: '1:1',
+          seed: undefined,
+          providerOptions: {},
+          headers: {},
+          abortSignal: undefined,
+        })
+      ).rejects.toThrow(
+        'Image generation failed: Total pixels (262144) must be between 589824 and 2073600.'
+      );
+    });
+
+    it('should throw error with "Unknown error" when status is FAILED without error message', async () => {
+      mockFetch.mockImplementationOnce(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              id: 'test-job-id',
+              status: 'FAILED',
+            }),
+            { headers: { 'content-type': 'application/json' } }
+          )
+        )
+      );
+
+      await expect(
+        model.doGenerate({
+          prompt: 'Test prompt',
+          n: 1,
+          size: undefined,
+          aspectRatio: '1:1',
+          seed: undefined,
+          providerOptions: {},
+          headers: {},
+          abortSignal: undefined,
+        })
+      ).rejects.toThrow('Image generation failed: Unknown error');
+    });
+  });
 });

@@ -344,6 +344,10 @@ export class RunpodImageModel implements ImageModelV3 {
           },
         },
       };
+    } else if (typedResponse.status === 'FAILED') {
+      throw new Error(
+        `Image generation failed: ${typedResponse.error || 'Unknown error'}`
+      );
     } else {
       throw new Error(`Unexpected response status: ${typedResponse.status}`);
     }
@@ -708,6 +712,7 @@ const runpodImageResponseSchema = z.object({
       image_url: z.string().optional(), // URL to the generated image (Flux format)
     })
     .optional(), // Optional for IN_QUEUE/IN_PROGRESS responses
+  error: z.string().optional(), // Error message if FAILED
 });
 
 // Schema for polling status endpoint
