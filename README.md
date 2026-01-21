@@ -565,6 +565,94 @@ const result = await generateSpeech({
 });
 ```
 
+## Transcription Models
+
+Transcribe audio using the AI SDK's `experimental_transcribe` and `runpod.transcription(...)`:
+
+```ts
+import { runpod } from '@runpod/ai-sdk-provider';
+import { experimental_transcribe as transcribe } from 'ai';
+
+const result = await transcribe({
+  model: runpod.transcription('pruna/whisper-v3-large'),
+  audio: new URL('https://image.runpod.ai/demo/transcription-demo.wav'),
+});
+
+console.log(result.text);
+```
+
+**Returns:**
+
+- `result.text` - Full transcription text
+- `result.segments` - Array of segments with timing info
+  - `segment.text` - Segment text
+  - `segment.startSecond` - Start time in seconds
+  - `segment.endSecond` - End time in seconds
+- `result.language` - Detected language code
+- `result.durationInSeconds` - Audio duration
+- `result.warnings` - Array of any warnings
+- `result.providerMetadata.runpod.jobId` - RunPod job ID
+
+### Audio Input
+
+You can provide audio in several ways:
+
+```ts
+// URL (recommended for large files)
+const result = await transcribe({
+  model: runpod.transcription('pruna/whisper-v3-large'),
+  audio: new URL('https://image.runpod.ai/demo/transcription-demo.wav'),
+});
+
+// Local file as Uint8Array
+import { readFileSync } from 'fs';
+const audioData = readFileSync('./audio.wav');
+
+const result = await transcribe({
+  model: runpod.transcription('pruna/whisper-v3-large'),
+  audio: audioData,
+});
+```
+
+### Examples
+
+Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
+
+### Supported Models
+
+- `pruna/whisper-v3-large`
+
+### Provider Options
+
+Use `providerOptions.runpod` for model-specific parameters:
+
+| Option              | Type      | Default | Description                                    |
+| ------------------- | --------- | ------- | ---------------------------------------------- |
+| `audio`             | `string`  | -       | URL to audio file (alternative to binary data) |
+| `prompt`            | `string`  | -       | Context prompt to guide transcription          |
+| `language`          | `string`  | Auto    | ISO-639-1 language code (e.g., 'en', 'es')     |
+| `word_timestamps`   | `boolean` | `false` | Include word-level timestamps                  |
+| `translate`         | `boolean` | `false` | Translate audio to English                     |
+| `enable_vad`        | `boolean` | `false` | Enable voice activity detection                |
+| `maxPollAttempts`   | `number`  | `120`   | Max polling attempts                           |
+| `pollIntervalMillis`| `number`  | `2000`  | Polling interval (ms)                          |
+
+**Example (providerOptions):**
+
+```ts
+const result = await transcribe({
+  model: runpod.transcription('pruna/whisper-v3-large'),
+  audio: new URL('https://image.runpod.ai/demo/transcription-demo.wav'),
+  providerOptions: {
+    runpod: {
+      language: 'en',
+      prompt: 'This is a demo of audio transcription',
+      word_timestamps: true,
+    },
+  },
+});
+```
+
 ## About Runpod
 
 [Runpod](https://runpod.io) is the foundation for developers to build, deploy, and scale custom AI systems.
