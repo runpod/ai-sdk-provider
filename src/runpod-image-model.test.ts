@@ -349,6 +349,162 @@ describe('RunpodImageModel', () => {
     });
   });
 
+  describe('Z-Image Turbo size validation', () => {
+    let zImageModel: RunpodImageModel;
+
+    beforeEach(() => {
+      zImageModel = new RunpodImageModel('tongyi-mai/z-image-turbo', {
+        provider: 'runpod',
+        baseURL: 'https://api.runpod.ai/v2/z-image-turbo',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+    });
+
+    it('should accept supported sizes', async () => {
+      const supportedSizes = [
+        '1328x1328',
+        '1472x1140',
+        '1140x1472',
+        '512x512',
+        '768x768',
+        '1024x1024',
+        '1280x1280',
+        '1536x1536',
+        '512x768',
+        '768x512',
+        '1024x768',
+        '768x1024',
+        '768x432',
+        '1024x576',
+        '1280x720',
+        '1536x864',
+        '432x768',
+        '576x1024',
+        '720x1280',
+        '864x1536',
+      ];
+
+      mockFetch.mockImplementation(async (input: any, init?: any) => {
+        const url = typeof input === 'string' ? input : input?.url;
+
+        if (url?.includes('/runsync')) {
+          return new Response(
+            JSON.stringify({
+              id: 'test',
+              status: 'COMPLETED',
+              output: { result: 'https://cdn.test/z-image.png' },
+            }),
+            { headers: { 'content-type': 'application/json' } }
+          );
+        }
+
+        if (url === 'https://cdn.test/z-image.png') {
+          return new Response(new Uint8Array([1, 2, 3]), {
+            headers: { 'content-type': 'image/png' },
+          });
+        }
+
+        throw new Error(`Unexpected fetch url: ${String(url)}`);
+      });
+
+      for (const size of supportedSizes) {
+        await expect(
+          zImageModel.doGenerate({
+            prompt: 'Test',
+            n: 1,
+            size,
+            aspectRatio: undefined,
+            seed: undefined,
+            providerOptions: {},
+            headers: {},
+            abortSignal: undefined,
+          })
+        ).resolves.toBeDefined();
+      }
+    });
+
+    it('should reject unsupported sizes', async () => {
+      await expect(
+        zImageModel.doGenerate({
+          prompt: 'Test',
+          n: 1,
+          size: '2048x2048',
+          aspectRatio: undefined,
+          seed: undefined,
+          providerOptions: {},
+          headers: {},
+          abortSignal: undefined,
+        })
+      ).rejects.toThrow(InvalidArgumentError);
+    });
+
+    it('should map supported aspect ratios to sizes', async () => {
+      const aspectRatioToSize = {
+        '1:1': '1328*1328',
+        '4:3': '1472*1140',
+        '3:4': '1140*1472',
+        '3:2': '768*512',
+        '2:3': '512*768',
+        '16:9': '1280*720',
+        '9:16': '720*1280',
+      };
+
+      for (const [aspectRatio, expectedSize] of Object.entries(
+        aspectRatioToSize
+      )) {
+        let capturedBody: any;
+
+        mockFetch.mockImplementationOnce(async (_input: any, init?: any) => {
+          capturedBody = JSON.parse(init?.body ?? '{}');
+          return new Response(
+            JSON.stringify({
+              id: 'test',
+              status: 'COMPLETED',
+              output: { result: 'https://cdn.test/z-image.png' },
+            }),
+            { headers: { 'content-type': 'application/json' } }
+          );
+        });
+        mockFetch.mockImplementationOnce(() =>
+          Promise.resolve(
+            new Response(new Uint8Array([1, 2, 3]), {
+              headers: { 'content-type': 'image/png' },
+            })
+          )
+        );
+
+        await zImageModel.doGenerate({
+          prompt: 'Test',
+          n: 1,
+          size: undefined,
+          aspectRatio,
+          seed: undefined,
+          providerOptions: {},
+          headers: {},
+          abortSignal: undefined,
+        });
+
+        expect(capturedBody?.input?.size).toBe(expectedSize);
+      }
+    });
+
+    it('should reject unsupported aspect ratios', async () => {
+      await expect(
+        zImageModel.doGenerate({
+          prompt: 'Test',
+          n: 1,
+          size: undefined,
+          aspectRatio: '21:9',
+          seed: undefined,
+          providerOptions: {},
+          headers: {},
+          abortSignal: undefined,
+        })
+      ).rejects.toThrow(InvalidArgumentError);
+    });
+  });
+
   describe('parameter conversion', () => {
     it('should build correct payload for Qwen models', () => {
       const qwenModel = new RunpodImageModel('qwen/qwen-image', {
@@ -373,6 +529,32 @@ describe('RunpodImageModel', () => {
         negative_prompt: 'bad quality',
         enable_safety_checker: false,
       });
+    });
+
+    it('should build correct payload for Z-Image Turbo', () => {
+      const zImageModel = new RunpodImageModel('tongyi-mai/z-image-turbo', {
+        provider: 'runpod',
+        baseURL: 'https://api.runpod.ai/v2/z-image-turbo',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+
+      const payload = (zImageModel as any).buildInputPayload(
+        'Test prompt',
+        '1024*1024',
+        42,
+        { strength: 0.8, output_format: 'png', enable_safety_checker: true }
+      );
+
+      expect(payload).toMatchObject({
+        prompt: 'Test prompt',
+        size: '1024*1024',
+        seed: 42,
+        strength: 0.8,
+        output_format: 'png',
+        enable_safety_checker: true,
+      });
+      expect(payload).not.toHaveProperty('negative_prompt');
     });
 
     it('should build correct payload for Flux standard models', () => {

@@ -10,6 +10,8 @@ export type RunpodImageModelId =
   | 'black-forest-labs/flux-1-dev'
   // Alibaba Wan 2.6 (t2i)
   | 'alibaba/wan-2.6'
+  // Tongyi Z-Image Turbo (t2i)
+  | 'tongyi-mai/z-image-turbo'
   // Nano Banana (edit only)
   | 'google/nano-banana-edit'
   | 'nano-banana-edit'; // backwards compatibility

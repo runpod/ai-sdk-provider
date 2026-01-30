@@ -291,6 +291,7 @@ Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/get
 | `qwen/qwen-image`                      | t2i  | up to 4096x4096   | 1:1, 4:3, 3:4                                   |
 | `qwen/qwen-image-edit`                 | edit | up to 4096x4096   | 1:1, 4:3, 3:4                                   |
 | `qwen/qwen-image-edit-2511`            | edit | up to 1536x1536   | 1:1, 4:3, 3:4                                   |
+| `tongyi-mai/z-image-turbo`             | t2i  | up to 1536x1536   | 1:1, 4:3, 3:4, 3:2, 2:3, 16:9, 9:16              |
 | `black-forest-labs/flux-1-schnell`     | t2i  | up to 2048x2048   | 1:1, 4:3, 3:4                                   |
 | `black-forest-labs/flux-1-dev`         | t2i  | up to 2048x2048   | 1:1, 4:3, 3:4                                   |
 | `black-forest-labs/flux-1-kontext-dev` | edit | up to 2048x2048   | 1:1, 4:3, 3:4                                   |
@@ -434,6 +435,14 @@ const { image } = await generateImage({
   },
 });
 ```
+
+#### Tongyi-MAI (Z-Image Turbo)
+
+Supported model: `tongyi-mai/z-image-turbo`
+
+- Supported sizes (validated by provider): 512x512, 768x768, 1024x1024, 1280x1280, 1536x1536, 512x768, 768x512, 1024x768, 768x1024, 1328x1328, 1472x1140, 1140x1472, 768x432, 1024x576, 1280x720, 1536x864, 432x768, 576x1024, 720x1280, 864x1536
+- Supported `aspectRatio` values: 1:1, 4:3, 3:4, 3:2, 2:3, 16:9, 9:16 (maps to sizes above; use `size` for exact dimensions)
+- Additional parameters: `strength`, `output_format`, `enable_safety_checker`, `seed`
 
 ## Speech Models
 
