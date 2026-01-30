@@ -385,7 +385,7 @@ describe('RunpodImageModel', () => {
         '864x1536',
       ];
 
-      mockFetch.mockImplementation(async (input: any, init?: any) => {
+      mockFetch.mockImplementation(async (input: any, _init?: any) => {
         const url = typeof input === 'string' ? input : input?.url;
 
         if (url?.includes('/runsync')) {
