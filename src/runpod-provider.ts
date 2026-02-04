@@ -122,6 +122,9 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
     'https://api.runpod.ai/v2/black-forest-labs-flux-1-dev',
   // Alibaba Wan 2.6 (t2i)
   'alibaba/wan-2.6': 'https://api.runpod.ai/v2/wan-2-6-t2i',
+  // Tongyi Z-Image Turbo (t2i)
+  'tongyi-mai/z-image-turbo': 'https://api.runpod.ai/v2/z-image-turbo',
+  'z-image-turbo': 'https://api.runpod.ai/v2/z-image-turbo', // alias, not advertised
   // Nano Banana (edit only)
   'google/nano-banana-edit': 'https://api.runpod.ai/v2/nano-banana-edit',
   'nano-banana-edit': 'https://api.runpod.ai/v2/nano-banana-edit', // backwards compatibility

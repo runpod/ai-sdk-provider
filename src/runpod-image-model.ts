@@ -34,7 +34,7 @@ const SUPPORTED_ASPECT_RATIOS: Record<string, string> = {
   '3:4': '1140*1472', // ✅ Native support
 };
 
-// Runpod supported sizes (validated working sizes)
+// Runpod supported sizes (validated working sizes for most models)
 const SUPPORTED_SIZES = new Set([
   // Native aspect ratio sizes
   '1328*1328', // 1:1
@@ -53,6 +53,50 @@ const SUPPORTED_SIZES = new Set([
   '1024*768',
   '768*1024',
 ]);
+
+// Z-Image Turbo supported sizes (validated working sizes)
+const Z_IMAGE_TURBO_SUPPORTED_SIZES = new Set([
+  '1328*1328', // 1:1
+  '1472*1140', // 4:3
+  '1140*1472', // 3:4
+  '512*512',
+  '768*768',
+  '1024*1024',
+  '1280*1280',
+  '1536*1536',
+  '512*768',
+  '768*512',
+  '1024*768',
+  '768*1024',
+  '768*432',
+  '1024*576',
+  '1280*720',
+  '1536*864',
+  '432*768',
+  '576*1024',
+  '720*1280',
+  '864*1536',
+]);
+
+const Z_IMAGE_TURBO_ASPECT_RATIOS: Record<string, string> = {
+  '1:1': '1328*1328',
+  '4:3': '1472*1140',
+  '3:4': '1140*1472',
+  '3:2': '768*512',
+  '2:3': '512*768',
+  '16:9': '1280*720',
+  '9:16': '720*1280',
+};
+
+const MODEL_SUPPORTED_SIZES: Record<string, Set<string>> = {
+  'tongyi-mai/z-image-turbo': Z_IMAGE_TURBO_SUPPORTED_SIZES,
+  'z-image-turbo': Z_IMAGE_TURBO_SUPPORTED_SIZES, // alias, not advertised
+};
+
+const MODEL_SUPPORTED_ASPECT_RATIOS: Record<string, Record<string, string>> = {
+  'tongyi-mai/z-image-turbo': Z_IMAGE_TURBO_ASPECT_RATIOS,
+  'z-image-turbo': Z_IMAGE_TURBO_ASPECT_RATIOS, // alias, not advertised
+};
 
 // WAN 2.6 specific aspect ratio to size mappings
 // Total pixels must be between 768*768 (589,824) and 1280*1280 (1,638,400)
@@ -193,11 +237,13 @@ export class RunpodImageModel implements ImageModelV3 {
       const runpodSizeCandidate = size.replace('x', '*');
 
       // Validate size is supported
-      if (!SUPPORTED_SIZES.has(runpodSizeCandidate)) {
+      const supportedSizes =
+        MODEL_SUPPORTED_SIZES[this.modelId] ?? SUPPORTED_SIZES;
+      if (!supportedSizes.has(runpodSizeCandidate)) {
         throw new InvalidArgumentError({
           argument: 'size',
           message: `Size ${size} is not supported by Runpod. Supported sizes: ${Array.from(
-            SUPPORTED_SIZES
+            supportedSizes
           )
             .map((s) => s.replace('*', 'x'))
             .join(', ')}`,
@@ -207,15 +253,19 @@ export class RunpodImageModel implements ImageModelV3 {
       runpodSize = runpodSizeCandidate;
     } else if (aspectRatio) {
       // Validate aspect ratio is supported
-      if (!SUPPORTED_ASPECT_RATIOS[aspectRatio]) {
+      const supportedAspectRatios =
+        MODEL_SUPPORTED_ASPECT_RATIOS[this.modelId] ?? SUPPORTED_ASPECT_RATIOS;
+      if (!supportedAspectRatios[aspectRatio]) {
         throw new InvalidArgumentError({
           argument: 'aspectRatio',
-          message: `Aspect ratio ${aspectRatio} is not supported by Runpod. Supported aspect ratios: ${Object.keys(SUPPORTED_ASPECT_RATIOS).join(', ')}`,
+          message: `Aspect ratio ${aspectRatio} is not supported by Runpod. Supported aspect ratios: ${Object.keys(
+            supportedAspectRatios
+          ).join(', ')}`,
         });
       }
 
       // Use supported aspect ratio mapping
-      runpodSize = SUPPORTED_ASPECT_RATIOS[aspectRatio];
+      runpodSize = supportedAspectRatios[aspectRatio];
     } else {
       // Default to square format
       runpodSize = '1328*1328';
@@ -660,6 +710,31 @@ export class RunpodImageModel implements ImageModelV3 {
       }
 
       return qwenEdit2511Payload;
+    }
+
+    // Check if this is Tongyi Z-Image Turbo (t2i)
+    const isZImageTurbo =
+      this.modelId === 'tongyi-mai/z-image-turbo' ||
+      this.modelId === 'z-image-turbo';
+    if (isZImageTurbo) {
+      const zImageTurboPayload: Record<string, unknown> = {
+        prompt,
+        size: runpodSize,
+        seed: seed ?? -1,
+        output_format: (runpodOptions?.output_format as string) ?? 'png',
+        enable_safety_checker: runpodOptions?.enable_safety_checker ?? true,
+        ...runpodOptions,
+      };
+
+      if (standardizedImages && standardizedImages.length > 0) {
+        if (standardizedImages.length === 1) {
+          zImageTurboPayload.image = standardizedImages[0];
+        } else {
+          zImageTurboPayload.images = standardizedImages;
+        }
+      }
+
+      return zImageTurboPayload;
     }
 
     // Check if this is an Alibaba Wan model
