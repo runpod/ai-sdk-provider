@@ -291,7 +291,7 @@ Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/get
 | `qwen/qwen-image`                      | t2i  | up to 4096x4096   | 1:1, 4:3, 3:4                                   |
 | `qwen/qwen-image-edit`                 | edit | up to 4096x4096   | 1:1, 4:3, 3:4                                   |
 | `qwen/qwen-image-edit-2511`            | edit | up to 1536x1536   | 1:1, 4:3, 3:4                                   |
-| `tongyi-mai/z-image-turbo`             | t2i  | up to 1536x1536   | 1:1, 4:3, 3:4, 3:2, 2:3, 16:9, 9:16              |
+| `tongyi-mai/z-image-turbo`             | t2i  | up to 1536x1536   | 1:1, 4:3, 3:4, 3:2, 2:3, 16:9, 9:16             |
 | `black-forest-labs/flux-1-schnell`     | t2i  | up to 2048x2048   | 1:1, 4:3, 3:4                                   |
 | `black-forest-labs/flux-1-dev`         | t2i  | up to 2048x2048   | 1:1, 4:3, 3:4                                   |
 | `black-forest-labs/flux-1-kontext-dev` | edit | up to 2048x2048   | 1:1, 4:3, 3:4                                   |
@@ -635,16 +635,16 @@ Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/get
 
 Use `providerOptions.runpod` for model-specific parameters:
 
-| Option              | Type      | Default | Description                                    |
-| ------------------- | --------- | ------- | ---------------------------------------------- |
-| `audio`             | `string`  | -       | URL to audio file (alternative to binary data) |
-| `prompt`            | `string`  | -       | Context prompt to guide transcription          |
-| `language`          | `string`  | Auto    | ISO-639-1 language code (e.g., 'en', 'es')     |
-| `word_timestamps`   | `boolean` | `false` | Include word-level timestamps                  |
-| `translate`         | `boolean` | `false` | Translate audio to English                     |
-| `enable_vad`        | `boolean` | `false` | Enable voice activity detection                |
-| `maxPollAttempts`   | `number`  | `120`   | Max polling attempts                           |
-| `pollIntervalMillis`| `number`  | `2000`  | Polling interval (ms)                          |
+| Option               | Type      | Default | Description                                    |
+| -------------------- | --------- | ------- | ---------------------------------------------- |
+| `audio`              | `string`  | -       | URL to audio file (alternative to binary data) |
+| `prompt`             | `string`  | -       | Context prompt to guide transcription          |
+| `language`           | `string`  | Auto    | ISO-639-1 language code (e.g., 'en', 'es')     |
+| `word_timestamps`    | `boolean` | `false` | Include word-level timestamps                  |
+| `translate`          | `boolean` | `false` | Translate audio to English                     |
+| `enable_vad`         | `boolean` | `false` | Enable voice activity detection                |
+| `maxPollAttempts`    | `number`  | `120`   | Max polling attempts                           |
+| `pollIntervalMillis` | `number`  | `2000`  | Polling interval (ms)                          |
 
 **Example (providerOptions):**
 
@@ -657,6 +657,97 @@ const result = await transcribe({
       language: 'en',
       prompt: 'This is a demo of audio transcription',
       word_timestamps: true,
+    },
+  },
+});
+```
+
+## Video Models
+
+Generate videos using the AI SDK's `experimental_generateVideo` and `runpod.video(...)`:
+
+```ts
+import { runpod } from '@runpod/ai-sdk-provider';
+import { experimental_generateVideo as generateVideo } from 'ai';
+
+// Text-to-video
+const result = await generateVideo({
+  model: runpod.video('alibaba/wan-2.6-t2v'),
+  prompt: 'A golden retriever running on a sunny beach, cinematic, 4k',
+});
+
+console.log(result.video.url);
+```
+
+```ts
+// Image-to-video
+const result = await generateVideo({
+  model: runpod.video('alibaba/wan-2.6-i2v'),
+  prompt: 'Animate this scene with gentle camera movement',
+  image: new URL('https://example.com/image.png'),
+});
+
+console.log(result.video.url);
+```
+
+**Returns:**
+
+- `result.video` - Generated video (`{ type: 'url', url, mediaType: 'video/mp4' }`)
+- `result.warnings` - Array of any warnings
+- `result.providerMetadata.runpod.jobId` - Runpod job ID
+
+### Examples
+
+Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/getting-started) for more code snippets on how to use all the different models.
+
+### Supported Models
+
+| Model ID                                | Type        | Company             |
+| --------------------------------------- | ----------- | ------------------- |
+| `pruna/p-video`                         | t2v         | Pruna AI            |
+| `vidu/q3-t2v`                           | t2v         | Shengshu Technology |
+| `vidu/q3-i2v`                           | i2v         | Shengshu Technology |
+| `kwaivgi/kling-v2.6-std-motion-control` | i2v + video | KwaiVGI (Kuaishou)  |
+| `kwaivgi/kling-video-o1-r2v`            | i2v         | KwaiVGI (Kuaishou)  |
+| `kwaivgi/kling-v2.1-i2v-pro`            | i2v         | KwaiVGI (Kuaishou)  |
+| `alibaba/wan-2.6-t2v`                   | t2v         | Alibaba             |
+| `alibaba/wan-2.6-i2v`                   | i2v         | Alibaba             |
+| `alibaba/wan-2.5`                       | i2v         | Alibaba             |
+| `alibaba/wan-2.2-t2v-720-lora`          | i2v         | Alibaba             |
+| `alibaba/wan-2.2-i2v-720`               | i2v         | Alibaba             |
+| `alibaba/wan-2.1-i2v-720`               | i2v         | Alibaba             |
+| `bytedance/seedance-v1.5-pro-i2v`       | i2v         | ByteDance           |
+| `openai/sora-2-pro-i2v`                 | i2v         | OpenAI              |
+| `openai/sora-2-i2v`                     | i2v         | OpenAI              |
+
+### Provider Options
+
+Use `providerOptions.runpod` for model-specific parameters:
+
+| Option                | Type     | Default | Description                          |
+| --------------------- | -------- | ------- | ------------------------------------ |
+| `negative_prompt`     | `string` | -       | What to avoid in the generated video |
+| `guidance_scale`      | `number` | -       | Guidance scale for prompt adherence  |
+| `num_inference_steps` | `number` | -       | Number of inference steps            |
+| `style`               | `string` | -       | Style preset (model-specific)        |
+| `maxPollAttempts`     | `number` | `120`   | Max polling attempts                 |
+| `pollIntervalMillis`  | `number` | `5000`  | Polling interval (ms)                |
+
+Any additional model-specific parameters can be passed through `providerOptions.runpod` and will be forwarded to the API.
+
+**Example (providerOptions):**
+
+```ts
+const result = await generateVideo({
+  model: runpod.video('alibaba/wan-2.6-t2v'),
+  prompt: 'A serene mountain landscape with flowing water',
+  duration: 5,
+  aspectRatio: '16:9',
+  seed: 42,
+  providerOptions: {
+    runpod: {
+      negative_prompt: 'blurry, low quality',
+      guidance_scale: 7.5,
     },
   },
 });
