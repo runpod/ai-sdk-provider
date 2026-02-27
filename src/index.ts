@@ -7,5 +7,9 @@ export type {
   RunpodTranscriptionModelId,
   RunpodTranscriptionProviderOptions,
 } from './runpod-transcription-options';
+export type {
+  RunpodVideoModelId,
+  RunpodVideoProviderOptions,
+} from './runpod-video-options';
 export type { OpenAICompatibleErrorData as RunpodErrorData } from '@ai-sdk/openai-compatible';
 export type { RunpodImageErrorData } from './runpod-error';
