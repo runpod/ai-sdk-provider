@@ -45,8 +45,13 @@ export const runpodImageFailedResponseHandler = createJsonErrorResponseHandler({
   errorToMessage: extractErrorMessage,
 });
 
-export const runpodTranscriptionFailedResponseHandler = createJsonErrorResponseHandler({
+export const runpodTranscriptionFailedResponseHandler =
+  createJsonErrorResponseHandler({
+    errorSchema: runpodImageErrorSchema as any,
+    errorToMessage: extractErrorMessage,
+  });
+
+export const runpodVideoFailedResponseHandler = createJsonErrorResponseHandler({
   errorSchema: runpodImageErrorSchema as any,
   errorToMessage: extractErrorMessage,
 });
-

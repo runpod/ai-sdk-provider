@@ -6,6 +6,7 @@ import {
 import { RunpodImageModel } from './runpod-image-model';
 import { RunpodSpeechModel } from './runpod-speech-model';
 import { RunpodTranscriptionModel } from './runpod-transcription-model';
+import { RunpodVideoModel } from './runpod-video-model';
 import { loadApiKey } from '@ai-sdk/provider-utils';
 import { createRunpod } from './runpod-provider';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
@@ -29,6 +30,10 @@ vi.mock('./runpod-speech-model', () => ({
 
 vi.mock('./runpod-transcription-model', () => ({
   RunpodTranscriptionModel: vi.fn(),
+}));
+
+vi.mock('./runpod-video-model', () => ({
+  RunpodVideoModel: vi.fn(),
 }));
 
 vi.mock('@ai-sdk/provider-utils', () => ({
@@ -302,6 +307,136 @@ describe('RunpodProvider', () => {
       const model = provider.transcription(modelId);
 
       expect(model).toBeInstanceOf(RunpodTranscriptionModel);
+    });
+  });
+
+  describe('videoModel', () => {
+    it('should use mapping for known video model IDs', () => {
+      const provider = createRunpod();
+
+      provider.videoModel('alibaba/wan-2.6-t2v');
+
+      expect((RunpodVideoModel as any).mock.calls[0][0]).toBe(
+        'alibaba/wan-2.6-t2v'
+      );
+      expect((RunpodVideoModel as any).mock.calls[0][1].baseURL).toBe(
+        'https://api.runpod.ai/v2/wan-2-6-t2v'
+      );
+    });
+
+    it('should construct a video model for a serverless endpoint id', () => {
+      const provider = createRunpod();
+      const modelId = 'uhyz0hnkemrk6r';
+
+      const model = provider.videoModel(modelId);
+      expect(model).toBeInstanceOf(RunpodVideoModel);
+
+      expect((RunpodVideoModel as any).mock.calls[0][0]).toBe(modelId);
+      expect((RunpodVideoModel as any).mock.calls[0][1].baseURL).toBe(
+        `https://api.runpod.ai/v2/${modelId}`
+      );
+    });
+
+    it('should accept a Runpod Console endpoint URL', () => {
+      const provider = createRunpod();
+      const url =
+        'https://console.runpod.io/serverless/user/endpoint/uhyz0hnkemrk6r';
+
+      provider.videoModel(url);
+
+      expect((RunpodVideoModel as any).mock.calls[0][0]).toBe('uhyz0hnkemrk6r');
+      expect((RunpodVideoModel as any).mock.calls[0][1].baseURL).toBe(
+        'https://api.runpod.ai/v2/uhyz0hnkemrk6r'
+      );
+    });
+
+    it('should use mapping for all 15 known video models', () => {
+      const provider = createRunpod();
+
+      const knownModels: Array<{ modelId: string; expectedBaseURL: string }> = [
+        {
+          modelId: 'pruna/p-video',
+          expectedBaseURL: 'https://api.runpod.ai/v2/p-video',
+        },
+        {
+          modelId: 'vidu/q3-t2v',
+          expectedBaseURL: 'https://api.runpod.ai/v2/vidu-q3-t2v',
+        },
+        {
+          modelId: 'vidu/q3-i2v',
+          expectedBaseURL: 'https://api.runpod.ai/v2/vidu-q3-i2v',
+        },
+        {
+          modelId: 'kwaivgi/kling-v2.6-std-motion-control',
+          expectedBaseURL:
+            'https://api.runpod.ai/v2/kling-v2-6-std-motion-control',
+        },
+        {
+          modelId: 'kwaivgi/kling-video-o1-r2v',
+          expectedBaseURL: 'https://api.runpod.ai/v2/kling-video-o1-r2v',
+        },
+        {
+          modelId: 'kwaivgi/kling-v2.1-i2v-pro',
+          expectedBaseURL: 'https://api.runpod.ai/v2/kling-v2-1-i2v-pro',
+        },
+        {
+          modelId: 'alibaba/wan-2.6-t2v',
+          expectedBaseURL: 'https://api.runpod.ai/v2/wan-2-6-t2v',
+        },
+        {
+          modelId: 'alibaba/wan-2.6-i2v',
+          expectedBaseURL: 'https://api.runpod.ai/v2/wan-2-6-i2v',
+        },
+        {
+          modelId: 'alibaba/wan-2.5',
+          expectedBaseURL: 'https://api.runpod.ai/v2/wan-2-5',
+        },
+        {
+          modelId: 'alibaba/wan-2.2-t2v-720-lora',
+          expectedBaseURL: 'https://api.runpod.ai/v2/wan-2-2-t2v-720-lora',
+        },
+        {
+          modelId: 'alibaba/wan-2.2-i2v-720',
+          expectedBaseURL: 'https://api.runpod.ai/v2/wan-2-2-i2v-720',
+        },
+        {
+          modelId: 'alibaba/wan-2.1-i2v-720',
+          expectedBaseURL: 'https://api.runpod.ai/v2/wan-2-1-i2v-720',
+        },
+        {
+          modelId: 'bytedance/seedance-v1.5-pro-i2v',
+          expectedBaseURL: 'https://api.runpod.ai/v2/seedance-v1-5-pro-i2v',
+        },
+        {
+          modelId: 'openai/sora-2-pro-i2v',
+          expectedBaseURL: 'https://api.runpod.ai/v2/sora-2-pro-i2v',
+        },
+        {
+          modelId: 'openai/sora-2-i2v',
+          expectedBaseURL: 'https://api.runpod.ai/v2/sora-2-i2v',
+        },
+      ];
+
+      for (const { modelId, expectedBaseURL } of knownModels) {
+        vi.clearAllMocks();
+        provider.videoModel(modelId);
+
+        expect((RunpodVideoModel as any).mock.calls[0][0]).toBe(modelId);
+        expect((RunpodVideoModel as any).mock.calls[0][1].baseURL).toBe(
+          expectedBaseURL
+        );
+      }
+    });
+  });
+
+  describe('video', () => {
+    it('should be an alias for videoModel', () => {
+      const provider = createRunpod();
+      const modelId = 'alibaba/wan-2.6-t2v';
+
+      const model = provider.video(modelId);
+
+      expect(model).toBeInstanceOf(RunpodVideoModel);
     });
   });
 });

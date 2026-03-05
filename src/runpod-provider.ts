@@ -1,4 +1,5 @@
 import {
+  Experimental_VideoModelV3,
   ImageModelV3,
   LanguageModelV3,
   SpeechModelV3,
@@ -16,6 +17,7 @@ import {
 import { RunpodImageModel } from './runpod-image-model';
 import { RunpodSpeechModel } from './runpod-speech-model';
 import { RunpodTranscriptionModel } from './runpod-transcription-model';
+import { RunpodVideoModel } from './runpod-video-model';
 
 export interface RunpodProviderSettings {
   /**
@@ -88,6 +90,16 @@ Creates a transcription model for audio transcription.
 Creates a transcription model for audio transcription.
 */
   transcription(modelId: string): TranscriptionModelV3;
+
+  /**
+Creates a video model for video generation.
+*/
+  videoModel(modelId: string): Experimental_VideoModelV3;
+
+  /**
+Creates a video model for video generation.
+*/
+  video(modelId: string): Experimental_VideoModelV3;
 }
 
 // Mapping of Runpod model IDs to their endpoint URLs
@@ -145,6 +157,28 @@ const SPEECH_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
 // Mapping of Runpod transcription model IDs to their serverless endpoint URLs
 const TRANSCRIPTION_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   'pruna/whisper-v3-large': 'https://api.runpod.ai/v2/whisper-v3-large',
+};
+
+// Mapping of Runpod video model IDs to their serverless endpoint URLs
+const VIDEO_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
+  'pruna/p-video': 'https://api.runpod.ai/v2/p-video',
+  'vidu/q3-t2v': 'https://api.runpod.ai/v2/vidu-q3-t2v',
+  'vidu/q3-i2v': 'https://api.runpod.ai/v2/vidu-q3-i2v',
+  'kwaivgi/kling-v2.6-std-motion-control':
+    'https://api.runpod.ai/v2/kling-v2-6-std-motion-control',
+  'kwaivgi/kling-video-o1-r2v': 'https://api.runpod.ai/v2/kling-video-o1-r2v',
+  'kwaivgi/kling-v2.1-i2v-pro': 'https://api.runpod.ai/v2/kling-v2-1-i2v-pro',
+  'alibaba/wan-2.6-t2v': 'https://api.runpod.ai/v2/wan-2-6-t2v',
+  'alibaba/wan-2.6-i2v': 'https://api.runpod.ai/v2/wan-2-6-i2v',
+  'alibaba/wan-2.5': 'https://api.runpod.ai/v2/wan-2-5',
+  'alibaba/wan-2.2-t2v-720-lora':
+    'https://api.runpod.ai/v2/wan-2-2-t2v-720-lora',
+  'alibaba/wan-2.2-i2v-720': 'https://api.runpod.ai/v2/wan-2-2-i2v-720',
+  'alibaba/wan-2.1-i2v-720': 'https://api.runpod.ai/v2/wan-2-1-i2v-720',
+  'bytedance/seedance-v1.5-pro-i2v':
+    'https://api.runpod.ai/v2/seedance-v1-5-pro-i2v',
+  'openai/sora-2-pro-i2v': 'https://api.runpod.ai/v2/sora-2-pro-i2v',
+  'openai/sora-2-i2v': 'https://api.runpod.ai/v2/sora-2-i2v',
 };
 
 // Mapping of Runpod model IDs to their OpenAI model names
@@ -318,6 +352,27 @@ export function createRunpod(
     });
   };
 
+  const createVideoModel = (modelId: string) => {
+    const endpointIdFromConsole = parseRunpodConsoleEndpointId(modelId);
+    const normalizedModelId = endpointIdFromConsole ?? modelId;
+
+    // Prefer explicit mapping for known video model IDs.
+    const mappedBaseURL = VIDEO_MODEL_ID_TO_ENDPOINT_URL[normalizedModelId];
+
+    const baseURL =
+      mappedBaseURL ??
+      (normalizedModelId.startsWith('http')
+        ? normalizedModelId
+        : `https://api.runpod.ai/v2/${normalizedModelId}`);
+
+    return new RunpodVideoModel(normalizedModelId, {
+      provider: 'runpod.video',
+      baseURL,
+      headers: getHeaders,
+      fetch: options.fetch,
+    });
+  };
+
   const provider = (modelId: string) => createChatModel(modelId);
 
   provider.completionModel = createCompletionModel;
@@ -329,6 +384,8 @@ export function createRunpod(
   provider.speech = createSpeechModel;
   provider.transcriptionModel = createTranscriptionModel;
   provider.transcription = createTranscriptionModel;
+  provider.videoModel = createVideoModel;
+  provider.video = createVideoModel;
 
   return provider;
 }
