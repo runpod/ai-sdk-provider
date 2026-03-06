@@ -1,5 +1,11 @@
 # @runpod/ai-sdk-provider
 
+## 1.3.0
+
+### Minor Changes
+
+- 973fae6: Add support for the Tongyi-MAI Z-Image Turbo image model with validated sizes and aspect ratios.
+
 ## 1.2.0
 
 ### Minor Changes
