@@ -145,7 +145,10 @@ function validateWanSize(size: string): boolean {
     });
   }
 
-  if (aspectRatio < WAN_MIN_ASPECT_RATIO || aspectRatio > WAN_MAX_ASPECT_RATIO) {
+  if (
+    aspectRatio < WAN_MIN_ASPECT_RATIO ||
+    aspectRatio > WAN_MAX_ASPECT_RATIO
+  ) {
     throw new InvalidArgumentError({
       argument: 'size',
       message: `Size ${size} has aspect ratio ${aspectRatio.toFixed(2)}, which is outside the valid range for WAN 2.6 (1:4 to 4:1).`,
@@ -651,8 +654,7 @@ export class RunpodImageModel implements ImageModelV3 {
         output_format: (runpodOptions?.output_format as string) ?? 'jpeg',
         enable_base64_output:
           (runpodOptions?.enable_base64_output as boolean) ?? false,
-        enable_sync_mode:
-          (runpodOptions?.enable_sync_mode as boolean) ?? false,
+        enable_sync_mode: (runpodOptions?.enable_sync_mode as boolean) ?? false,
       };
 
       // Use standardized files if provided, otherwise use providerOptions.images
@@ -697,8 +699,7 @@ export class RunpodImageModel implements ImageModelV3 {
         output_format: (runpodOptions?.output_format as string) ?? 'jpeg',
         enable_base64_output:
           (runpodOptions?.enable_base64_output as boolean) ?? false,
-        enable_sync_mode:
-          (runpodOptions?.enable_sync_mode as boolean) ?? false,
+        enable_sync_mode: (runpodOptions?.enable_sync_mode as boolean) ?? false,
         ...runpodOptions,
       };
 

@@ -148,9 +148,22 @@ describe('RunpodProvider', () => {
       const model = provider.imageModel('my-custom/image-model' as any);
       expect(model).toBeInstanceOf(RunpodImageModel);
 
-      // Verify the model was created with derived endpoint
+      // Verify the model was created with derived endpoint (no /openai/v1 for image models)
       expect((RunpodImageModel as any).mock.calls[0][1].baseURL).toBe(
-        'https://api.runpod.ai/v2/my-custom-image-model/openai/v1'
+        'https://api.runpod.ai/v2/my-custom/image-model'
+      );
+    });
+
+    it('should accept a Runpod Console endpoint URL for image models', () => {
+      const provider = createRunpod();
+      const url =
+        'https://console.runpod.io/serverless/user/endpoint/uhyz0hnkemrk6r';
+
+      provider.imageModel(url);
+
+      expect((RunpodImageModel as any).mock.calls[0][0]).toBe('uhyz0hnkemrk6r');
+      expect((RunpodImageModel as any).mock.calls[0][1].baseURL).toBe(
+        'https://api.runpod.ai/v2/uhyz0hnkemrk6r'
       );
     });
   });
@@ -437,6 +450,92 @@ describe('RunpodProvider', () => {
       const model = provider.video(modelId);
 
       expect(model).toBeInstanceOf(RunpodVideoModel);
+    });
+  });
+
+  describe('aiApiId resolution (endpoint IDs used directly)', () => {
+    it('should derive correct endpoint for chat model aiApiIds via fallback', () => {
+      const provider = createRunpod();
+
+      // aiApiIds have no slashes, so deriveEndpointURL just appends /openai/v1
+      provider.chatModel('qwen3-32b-awq');
+
+      const call = OpenAICompatibleChatLanguageModelMock.mock.calls[0];
+      // Model name is passed through as-is (no mapping needed)
+      expect(call[0]).toBe('qwen3-32b-awq');
+      expect(call[1].url({ path: '/chat/completions' })).toBe(
+        'https://api.runpod.ai/v2/qwen3-32b-awq/openai/v1/chat/completions'
+      );
+    });
+
+    it('should derive correct endpoint for image model aiApiIds via fallback', () => {
+      const provider = createRunpod();
+
+      const aiApiIds = [
+        'seedream-3-0-t2i',
+        'wan-2-6-t2i',
+        'qwen-image-t2i',
+        'black-forest-labs-flux-1-schnell',
+      ];
+
+      for (const aiApiId of aiApiIds) {
+        vi.clearAllMocks();
+        provider.imageModel(aiApiId);
+
+        expect((RunpodImageModel as any).mock.calls[0][0]).toBe(aiApiId);
+        expect((RunpodImageModel as any).mock.calls[0][1].baseURL).toBe(
+          `https://api.runpod.ai/v2/${aiApiId}`
+        );
+      }
+    });
+
+    it('should derive correct endpoint for speech model aiApiIds via fallback', () => {
+      const provider = createRunpod();
+
+      provider.speechModel('chatterbox-turbo');
+
+      expect((RunpodSpeechModel as any).mock.calls[0][0]).toBe(
+        'chatterbox-turbo'
+      );
+      // Falls through to fallback since 'chatterbox-turbo' is not in the mapping
+      // (only 'resembleai/chatterbox-turbo' is) — produces the same URL
+      expect((RunpodSpeechModel as any).mock.calls[0][1].baseURL).toBe(
+        'https://api.runpod.ai/v2/chatterbox-turbo'
+      );
+    });
+
+    it('should derive correct endpoint for transcription model aiApiIds via fallback', () => {
+      const provider = createRunpod();
+
+      provider.transcriptionModel('whisper-v3-large');
+
+      expect((RunpodTranscriptionModel as any).mock.calls[0][0]).toBe(
+        'whisper-v3-large'
+      );
+      expect((RunpodTranscriptionModel as any).mock.calls[0][1].baseURL).toBe(
+        'https://api.runpod.ai/v2/whisper-v3-large'
+      );
+    });
+
+    it('should derive correct endpoint for video model aiApiIds via fallback', () => {
+      const provider = createRunpod();
+
+      const aiApiIds = [
+        'p-video',
+        'wan-2-6-t2v',
+        'seedance-v1-5-pro-i2v',
+        'sora-2-pro-i2v',
+      ];
+
+      for (const aiApiId of aiApiIds) {
+        vi.clearAllMocks();
+        provider.videoModel(aiApiId);
+
+        expect((RunpodVideoModel as any).mock.calls[0][0]).toBe(aiApiId);
+        expect((RunpodVideoModel as any).mock.calls[0][1].baseURL).toBe(
+          `https://api.runpod.ai/v2/${aiApiId}`
+        );
+      }
     });
   });
 });

@@ -291,17 +291,20 @@ export function createRunpod(
   };
 
   const createImageModel = (modelId: string) => {
-    let baseURL: string;
+    const endpointIdFromConsole = parseRunpodConsoleEndpointId(modelId);
+    const normalizedModelId = endpointIdFromConsole ?? modelId;
 
-    if (options.baseURL) {
-      baseURL = options.baseURL;
-    } else {
-      // Use hardcoded mapping if available, otherwise derive endpoint
-      baseURL =
-        IMAGE_MODEL_ID_TO_ENDPOINT_URL[modelId] || deriveEndpointURL(modelId);
-    }
+    // Prefer explicit mapping for known image model IDs.
+    const mappedBaseURL = IMAGE_MODEL_ID_TO_ENDPOINT_URL[normalizedModelId];
 
-    return new RunpodImageModel(modelId, {
+    const baseURL =
+      options.baseURL ??
+      mappedBaseURL ??
+      (normalizedModelId.startsWith('http')
+        ? normalizedModelId
+        : `https://api.runpod.ai/v2/${normalizedModelId}`);
+
+    return new RunpodImageModel(normalizedModelId, {
       provider: 'runpod.image',
       baseURL,
       headers: getHeaders,
