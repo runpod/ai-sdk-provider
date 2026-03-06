@@ -3,18 +3,9 @@ This document exists for non-obvious, error-prone shortcomings in the codebase, 
 
 ---
 
-## Branding
+## Gotchas
 
-Always "Runpod" (capital R, lowercase unpod). Never "RunPod", "RUNPOD", or "run-pod".
-
-## Documentation sync
-
-**README.md** and the AI SDK community docs (`ai/content/providers/03-community-providers/22-runpod.mdx`) must stay in sync. Any change to examples, features, or capabilities must be updated in both files.
-
-## Versioning
-
-Never manually edit version numbers or CHANGELOG.md. Always create a changeset (`pnpm changeset`) before opening a pull request — this is mandatory for every PR with user-facing changes.
-
-## Model ID validation
-
-Never validate model IDs at provider creation time. Any string is accepted. Unknown models derive their endpoint by replacing `/` with `-`. Invalid models only fail when the API call is made.
+- **Branding**: Always "Runpod" (capital R, lowercase unpod). Never "RunPod", "RUNPOD", or "run-pod".
+- **Documentation sync**: `README.md` and the AI SDK community docs (`ai/content/providers/03-community-providers/22-runpod.mdx`) must stay in sync. Any change to examples, features, or capabilities must be updated in both files.
+- **Versioning**: Never manually edit version numbers or CHANGELOG.md. Always create a changeset (`pnpm changeset`) before opening a pull request — mandatory for every PR with user-facing changes.
+- **Model ID validation**: Never validate model IDs at provider creation time. Any string is accepted. Unknown models derive their endpoint by replacing `/` with `-`. Invalid models only fail when the API call is made.
