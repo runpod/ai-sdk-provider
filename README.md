@@ -285,6 +285,7 @@ Check out our [examples](https://github.com/runpod/examples/tree/main/ai-sdk/get
 | `pruna/p-image-edit`                   | edit | up to 1440x1440   | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3             |
 | `google/nano-banana-edit`              | edit | up to 4096x4096   | 1:1, 4:3, 3:4                                   |
 | `google/nano-banana-pro-edit`          | edit | 1k, 2k, 4k        | 1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, 21:9       |
+| `google/nano-banana-2-edit`           | edit | 1k, 2k, 4k        | 1:1, 3:2, 2:3, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9, 1:4, 4:1, 1:8, 8:1 |
 | `bytedance/seedream-3.0`               | t2i  | up to 4096x4096   | 1:1, 4:3, 3:4                                   |
 | `bytedance/seedream-4.0`               | t2i  | up to 4096x4096   | 1:1, 4:3, 3:4                                   |
 | `bytedance/seedream-4.0-edit`          | edit | up to 4096x4096   | uses size                                       |

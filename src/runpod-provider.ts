@@ -140,6 +140,9 @@ const IMAGE_MODEL_ID_TO_ENDPOINT_URL: Record<string, string> = {
   // Nano Banana (edit only)
   'google/nano-banana-edit': 'https://api.runpod.ai/v2/nano-banana-edit',
   'nano-banana-edit': 'https://api.runpod.ai/v2/nano-banana-edit', // backwards compatibility
+  // Nano Banana 2 (edit only)
+  'google/nano-banana-2-edit':
+    'https://api.runpod.ai/v2/google-nano-banana-2-edit',
   // Nano Banana Pro (edit only)
   'google/nano-banana-pro-edit':
     'https://api.runpod.ai/v2/nano-banana-pro-edit',

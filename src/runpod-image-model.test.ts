@@ -654,6 +654,105 @@ describe('RunpodImageModel', () => {
       expect(payload).not.toHaveProperty('seed');
     });
 
+    it('should build correct payload for Nano Banana 2 edit', () => {
+      const nanoBanana2Model = new RunpodImageModel(
+        'google/nano-banana-2-edit',
+        {
+          provider: 'runpod',
+          baseURL: 'https://api.runpod.ai/v2/google-nano-banana-2-edit',
+          headers: () => ({ Authorization: 'Bearer test-key' }),
+          fetch: mockFetch,
+        }
+      );
+
+      const images = [
+        'https://example.com/img1.jpg',
+        'https://example.com/img2.jpg',
+      ];
+
+      const payload = (nanoBanana2Model as any).buildInputPayload(
+        'Edit these images together',
+        '1:1',
+        undefined,
+        {
+          images,
+          resolution: '2k',
+          output_format: 'png',
+          enable_safety_checker: false,
+        }
+      );
+
+      expect(payload).toMatchObject({
+        prompt: 'Edit these images together',
+        aspect_ratio: '1:1',
+        resolution: '2k',
+        output_format: 'png',
+        enable_safety_checker: false,
+        images,
+      });
+      expect(payload).not.toHaveProperty('size');
+      expect(payload).not.toHaveProperty('seed');
+    });
+
+    it('should build correct payload for Nano Banana 2 edit with defaults', () => {
+      const nanoBanana2Model = new RunpodImageModel(
+        'google/nano-banana-2-edit',
+        {
+          provider: 'runpod',
+          baseURL: 'https://api.runpod.ai/v2/google-nano-banana-2-edit',
+          headers: () => ({ Authorization: 'Bearer test-key' }),
+          fetch: mockFetch,
+        }
+      );
+
+      const payload = (nanoBanana2Model as any).buildInputPayload(
+        'A futuristic cityscape',
+        '1:1',
+        undefined,
+        {}
+      );
+
+      expect(payload).toMatchObject({
+        prompt: 'A futuristic cityscape',
+        aspect_ratio: '1:1',
+        resolution: '1k',
+        output_format: 'jpeg',
+        enable_safety_checker: true,
+      });
+      expect(payload).not.toHaveProperty('images');
+    });
+
+    it('should build correct payload for Nano Banana 2 edit with standardized files', () => {
+      const nanoBanana2Model = new RunpodImageModel(
+        'google/nano-banana-2-edit',
+        {
+          provider: 'runpod',
+          baseURL: 'https://api.runpod.ai/v2/google-nano-banana-2-edit',
+          headers: () => ({ Authorization: 'Bearer test-key' }),
+          fetch: mockFetch,
+        }
+      );
+
+      const standardizedImages = [
+        'https://standard.com/img1.jpg',
+        'https://standard.com/img2.jpg',
+      ];
+
+      const payload = (nanoBanana2Model as any).buildInputPayload(
+        'Combine these',
+        '1:1',
+        undefined,
+        { images: ['https://legacy.com/img1.jpg'] },
+        '16:9',
+        standardizedImages
+      );
+
+      // Standardized files should take precedence over providerOptions.images
+      expect(payload.images).toEqual(standardizedImages);
+      // aspect_ratio from providerOptions not set, so falls back to aspectRatio param
+      expect(payload.aspect_ratio).toBe('16:9');
+    });
+
     it('should build correct payload for Qwen Image Edit 2511', () => {
       const qwenEdit2511Model = new RunpodImageModel(
         'qwen/qwen-image-edit-2511',
@@ -938,6 +1037,75 @@ describe('RunpodImageModel', () => {
 
       expect(capturedBody?.input?.images).toEqual(inputImages);
       expect(result.images[0]).toEqual(new Uint8Array([9, 8, 7]));
+    });
+
+    it('should send Nano Banana 2 edit payload from files', async () => {
+      let capturedBody: any | undefined;
+
+      mockFetch.mockImplementation(async (input: any, init?: any) => {
+        const url = typeof input === 'string' ? input : input?.url;
+
+        if (url?.includes('/runsync')) {
+          capturedBody = JSON.parse(init?.body ?? '{}');
+          return new Response(
+            JSON.stringify({
+              id: 'job-nb2',
+              status: 'COMPLETED',
+              output: { result: 'https://cdn.test/nb2-out.jpg' },
+            }),
+            { headers: { 'content-type': 'application/json' } }
+          );
+        }
+
+        if (url === 'https://cdn.test/nb2-out.jpg') {
+          return new Response(new Uint8Array([4, 5, 6]), {
+            headers: { 'content-type': 'image/jpeg' },
+          });
+        }
+
+        throw new Error(`Unexpected fetch url: ${String(url)}`);
+      });
+
+      const nb2Model = new RunpodImageModel('google/nano-banana-2-edit', {
+        provider: 'runpod',
+        baseURL: 'https://api.runpod.ai/v2/google-nano-banana-2-edit',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+
+      const inputImages = [
+        'https://example.com/img1.jpg',
+        'https://example.com/img2.jpg',
+      ];
+
+      const result = await nb2Model.doGenerate({
+        prompt: 'Combine these images',
+        n: 1,
+        size: undefined,
+        aspectRatio: '16:9',
+        seed: undefined,
+        files: promptImagesToFiles(inputImages),
+        mask: undefined,
+        providerOptions: {
+          runpod: {
+            resolution: '4k',
+            output_format: 'png',
+            enable_safety_checker: false,
+          },
+        } as any,
+        headers: {},
+        abortSignal: undefined,
+      });
+
+      expect(capturedBody?.input).toMatchObject({
+        prompt: 'Combine these images',
+        aspect_ratio: '16:9',
+        resolution: '4k',
+        output_format: 'png',
+        enable_safety_checker: false,
+        images: inputImages,
+      });
+      expect(result.images[0]).toEqual(new Uint8Array([4, 5, 6]));
     });
   });
 
