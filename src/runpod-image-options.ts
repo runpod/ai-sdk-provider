@@ -14,4 +14,6 @@ export type RunpodImageModelId =
   | 'tongyi-mai/z-image-turbo'
   // Nano Banana (edit only)
   | 'google/nano-banana-edit'
-  | 'nano-banana-edit'; // backwards compatibility
+  | 'nano-banana-edit' // backwards compatibility
+  // Nano Banana 2 (edit only)
+  | 'google/nano-banana-2-edit';

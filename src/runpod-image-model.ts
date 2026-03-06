@@ -145,7 +145,10 @@ function validateWanSize(size: string): boolean {
     });
   }
 
-  if (aspectRatio < WAN_MIN_ASPECT_RATIO || aspectRatio > WAN_MAX_ASPECT_RATIO) {
+  if (
+    aspectRatio < WAN_MIN_ASPECT_RATIO ||
+    aspectRatio > WAN_MAX_ASPECT_RATIO
+  ) {
     throw new InvalidArgumentError({
       argument: 'size',
       message: `Size ${size} has aspect ratio ${aspectRatio.toFixed(2)}, which is outside the valid range for WAN 2.6 (1:4 to 4:1).`,
@@ -202,13 +205,16 @@ export class RunpodImageModel implements ImageModelV3 {
     // Check if this is a Nano Banana Pro model (skip standard size/aspectRatio validation)
     const isNanoBananaProModel = this.modelId.includes('nano-banana-pro');
 
+    // Check if this is a Nano Banana 2 model (skip standard size/aspectRatio validation)
+    const isNanoBanana2Model = this.modelId.includes('nano-banana-2');
+
     // Check if this is a WAN model (uses WAN-specific pixel/aspect ratio constraints)
     const isWanModel = this.modelId.includes('wan-2');
 
     // Determine the size to use
     let runpodSize: string;
 
-    if (isPrunaModel || isNanoBananaProModel) {
+    if (isPrunaModel || isNanoBananaProModel || isNanoBanana2Model) {
       // These models use aspect_ratio string directly, skip size validation
       // Pass through the aspectRatio or use default, validation happens at API level
       runpodSize = aspectRatio || '1:1';
@@ -636,6 +642,33 @@ export class RunpodImageModel implements ImageModelV3 {
       }
     }
 
+    // Check if this is a Nano Banana 2 model (google/nano-banana-2-edit)
+    const isNanoBanana2Model = this.modelId.includes('nano-banana-2');
+    if (isNanoBanana2Model) {
+      // Nano Banana 2 image edit
+      // Supported aspect_ratio: "1:1", "3:2", "2:3", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9", "1:4", "4:1", "1:8", "8:1"
+      // Supported resolution: "1k", "2k", "4k"
+      // Supported output_format: "jpeg", "png"
+      const nanoBanana2Payload: Record<string, unknown> = {
+        prompt,
+        aspect_ratio:
+          (runpodOptions?.aspect_ratio as string) ?? aspectRatio ?? '1:1',
+        resolution: (runpodOptions?.resolution as string) ?? '1k',
+        output_format: (runpodOptions?.output_format as string) ?? 'jpeg',
+        enable_safety_checker:
+          (runpodOptions?.enable_safety_checker as boolean) ?? true,
+      };
+
+      // Use standardized files if provided, otherwise use providerOptions.images
+      if (standardizedImages && standardizedImages.length > 0) {
+        nanoBanana2Payload.images = standardizedImages;
+      } else if (runpodOptions?.images) {
+        nanoBanana2Payload.images = runpodOptions.images;
+      }
+
+      return nanoBanana2Payload;
+    }
+
     // Check if this is a Nano Banana Pro model (google/nano-banana-pro-edit)
     const isNanaBananaProModel = this.modelId.includes('nano-banana-pro');
     if (isNanaBananaProModel) {
@@ -651,8 +684,7 @@ export class RunpodImageModel implements ImageModelV3 {
         output_format: (runpodOptions?.output_format as string) ?? 'jpeg',
         enable_base64_output:
           (runpodOptions?.enable_base64_output as boolean) ?? false,
-        enable_sync_mode:
-          (runpodOptions?.enable_sync_mode as boolean) ?? false,
+        enable_sync_mode: (runpodOptions?.enable_sync_mode as boolean) ?? false,
       };
 
       // Use standardized files if provided, otherwise use providerOptions.images
@@ -697,8 +729,7 @@ export class RunpodImageModel implements ImageModelV3 {
         output_format: (runpodOptions?.output_format as string) ?? 'jpeg',
         enable_base64_output:
           (runpodOptions?.enable_base64_output as boolean) ?? false,
-        enable_sync_mode:
-          (runpodOptions?.enable_sync_mode as boolean) ?? false,
+        enable_sync_mode: (runpodOptions?.enable_sync_mode as boolean) ?? false,
         ...runpodOptions,
       };
 
