@@ -1156,6 +1156,132 @@ describe('RunpodImageModel', () => {
     });
   });
 
+  describe('aiApiId format support', () => {
+    it('should build correct payload for WAN model with aiApiId format', () => {
+      const wanModel = new RunpodImageModel('wan-2-6-t2i', {
+        provider: 'runpod',
+        baseURL: 'https://api.runpod.ai/v2/wan-2-6-t2i',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+
+      const payload = (wanModel as any).buildInputPayload(
+        'A tea shop',
+        '1280*1280',
+        42,
+        {}
+      );
+
+      expect(payload).toMatchObject({
+        prompt: 'A tea shop',
+        size: '1280*1280',
+        seed: 42,
+      });
+      // WAN model should not have negative_prompt
+      expect(payload.negative_prompt).toBeUndefined();
+    });
+
+    it('should build correct payload for Flux model with aiApiId format', () => {
+      const fluxModel = new RunpodImageModel(
+        'black-forest-labs-flux-1-schnell',
+        {
+          provider: 'runpod',
+          baseURL: 'https://api.runpod.ai/v2/black-forest-labs-flux-1-schnell',
+          headers: () => ({ Authorization: 'Bearer test-key' }),
+          fetch: mockFetch,
+        }
+      );
+
+      const payload = (fluxModel as any).buildInputPayload(
+        'Test prompt',
+        '1024*768',
+        42,
+        {}
+      );
+
+      expect(payload).toMatchObject({
+        prompt: 'Test prompt',
+        width: 1024,
+        height: 768,
+        seed: 42,
+        num_inference_steps: 4,
+        image_format: 'png',
+      });
+    });
+
+    it('should build correct payload for Z-Image Turbo with aiApiId format', () => {
+      const zImageModel = new RunpodImageModel('z-image-turbo', {
+        provider: 'runpod',
+        baseURL: 'https://api.runpod.ai/v2/z-image-turbo',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+
+      const payload = (zImageModel as any).buildInputPayload(
+        'Test prompt',
+        '1024*1024',
+        42,
+        {}
+      );
+
+      expect(payload).toMatchObject({
+        prompt: 'Test prompt',
+        size: '1024*1024',
+        seed: 42,
+        output_format: 'png',
+        enable_safety_checker: true,
+      });
+    });
+
+    it('should use Z-Image Turbo size validation with aiApiId format', async () => {
+      const zImageModel = new RunpodImageModel('z-image-turbo', {
+        provider: 'runpod',
+        baseURL: 'https://api.runpod.ai/v2/z-image-turbo',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+
+      // 2048x2048 is not in Z-Image Turbo's supported sizes
+      await expect(
+        zImageModel.doGenerate({
+          prompt: 'Test',
+          n: 1,
+          size: '2048x2048',
+          aspectRatio: undefined,
+          seed: undefined,
+          providerOptions: {},
+          headers: {},
+          abortSignal: undefined,
+        })
+      ).rejects.toThrow(InvalidArgumentError);
+    });
+
+    it('should build correct payload for Qwen Image Edit 2511 with aiApiId format', () => {
+      const qwenModel = new RunpodImageModel('qwen-image-edit-2511', {
+        provider: 'runpod',
+        baseURL: 'https://api.runpod.ai/v2/qwen-image-edit-2511',
+        headers: () => ({ Authorization: 'Bearer test-key' }),
+        fetch: mockFetch,
+      });
+
+      const payload = (qwenModel as any).buildInputPayload(
+        'Edit this',
+        '1024*1024',
+        42,
+        {},
+        '1:1',
+        ['https://example.com/input.jpg']
+      );
+
+      expect(payload).toMatchObject({
+        prompt: 'Edit this',
+        size: '1024*1024',
+        seed: 42,
+        images: ['https://example.com/input.jpg'],
+      });
+    });
+  });
+
   describe('FAILED status handling', () => {
     it('should throw error with actual error message when status is FAILED', async () => {
       // This simulates an actual Runpod API error response (e.g., invalid size for WAN 2.6)
@@ -1167,7 +1293,8 @@ describe('RunpodImageModel', () => {
               status: 'FAILED',
               delayTime: 3383,
               executionTime: 4651,
-              error: 'Total pixels (262144) must be between 589824 and 2073600.',
+              error:
+                'Total pixels (262144) must be between 589824 and 2073600.',
               output: { status: 'failed' },
             }),
             { headers: { 'content-type': 'application/json' } }
