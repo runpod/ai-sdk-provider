@@ -384,6 +384,57 @@ describe('RunpodVideoModel', () => {
       expect(submitBody.input.image).toMatch(/^data:image\/jpeg;base64,/);
     });
 
+    it('should map image to images array for kling-video-o1-r2v', async () => {
+      mockFetch
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ id: 'job-img-arr', status: 'IN_QUEUE' }),
+            { status: 200 }
+          )
+        )
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({
+              id: 'job-img-arr',
+              status: 'COMPLETED',
+              output: {
+                video_url: 'https://cdn.runpod.ai/videos/r2v.mp4',
+              },
+            }),
+            { status: 200 }
+          )
+        );
+
+      const model = new RunpodVideoModel('kwaivgi/kling-video-o1-r2v', {
+        provider: 'runpod.video',
+        baseURL: 'https://api.runpod.ai/v2/kling-video-o1-r2v',
+        headers: mockHeaders,
+        fetch: mockFetch,
+        _internal: { currentDate: () => mockDate },
+      });
+
+      await model.doGenerate({
+        prompt: 'Animate this scene',
+        n: 1,
+        aspectRatio: undefined,
+        resolution: undefined,
+        duration: undefined,
+        fps: undefined,
+        seed: undefined,
+        image: {
+          type: 'url',
+          url: 'https://example.com/image.png',
+        },
+        providerOptions: {},
+      });
+
+      const submitBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(submitBody.input.images).toEqual([
+        'https://example.com/image.png',
+      ]);
+      expect(submitBody.input.image).toBeUndefined();
+    });
+
     it('should spread providerOptions.runpod into input', async () => {
       mockFetch
         .mockResolvedValueOnce(

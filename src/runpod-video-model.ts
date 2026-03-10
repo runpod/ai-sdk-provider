@@ -192,10 +192,23 @@ export class RunpodVideoModel implements VideoModelV3 {
     }
 
     if (options.image) {
-      input.image = this.convertFileToRunpodFormat(options.image);
+      const converted = this.convertFileToRunpodFormat(options.image);
+
+      if (this.usesImagesArray()) {
+        input.images = [converted];
+      } else {
+        input.image = converted;
+      }
     }
 
     return input;
+  }
+
+  /**
+   * Models that expect `images` (array) instead of `image` (singular).
+   */
+  private usesImagesArray(): boolean {
+    return this.modelId === 'kwaivgi/kling-video-o1-r2v';
   }
 
   private convertFileToRunpodFormat(file: VideoModelV3File): string {
