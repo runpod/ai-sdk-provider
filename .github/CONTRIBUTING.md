@@ -11,19 +11,25 @@ Thank you for your interest in contributing to the RunPod AI SDK Provider! This 
    cd ai-sdk-provider
    ```
 
-2. **Install dependencies**
+2. **Enable the pinned package manager**
+
+   ```bash
+   corepack enable
+   ```
+
+3. **Install dependencies**
 
    ```bash
    pnpm install
    ```
 
-3. **Run tests**
+4. **Run tests**
 
    ```bash
    pnpm test
    ```
 
-4. **Build the project**
+5. **Build the project**
    ```bash
    pnpm build
    ```

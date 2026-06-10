@@ -1,6 +1,7 @@
 {
   "name": "@runpod/ai-sdk-provider",
   "version": "1.4.0",
+  "packageManager": "pnpm@9.15.9",
   "license": "Apache-2.0",
   "sideEffects": false,
   "main": "./dist/index.js",
