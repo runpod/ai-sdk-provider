@@ -1,6 +1,6 @@
 # Contributing to @runpod/ai-sdk-provider
 
-Thank you for your interest in contributing to the RunPod AI SDK Provider! This document outlines the process for making releases and contributing to the project.
+Thank you for your interest in contributing to the Runpod AI SDK Provider! This document outlines the process for making releases and contributing to the project.
 
 ## Development Setup
 
