@@ -52,7 +52,7 @@ ai-sdk-provider/
 
 ### 1. **Branding & Naming**
 
-- ✅ **Always use "Runpod"** (not "RunPod", "runpod", or "run-pod")
+- ✅ **Always use "Runpod"** (not "Runpod", "runpod", or "run-pod")
 - ✅ **Package name**: `@runpod/ai-sdk-provider`
 - ✅ **Function names**: `runpod()`, `createRunpod()`
 - ✅ **Types**: `RunpodProvider`, `RunpodChatModelId`
