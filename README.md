@@ -601,7 +601,7 @@ console.log(result.text);
 - `result.language` - Detected language code
 - `result.durationInSeconds` - Audio duration
 - `result.warnings` - Array of any warnings
-- `result.providerMetadata.runpod.jobId` - RunPod job ID
+- `result.providerMetadata.runpod.jobId` - Runpod job ID
 
 ### Audio Input
 
