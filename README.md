@@ -3,7 +3,7 @@
 The **Runpod provider** for the [AI SDK](https://ai-sdk.dev/docs) contains language model and image generation support for [Runpod's](https://runpod.io) public endpoints.
 
 <!-- runpod-agent-setup:start -->
-**Using an AI agent?** Point it to https://docs.runpod.io/agent-setup.md to install the Runpod skills and MCP server.
+**Using an AI agent?** Point it to https://agents.runpod.io/ to install the Runpod skills and MCP server.
 <!-- runpod-agent-setup:end -->
 
 ## Setup
